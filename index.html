@@ -111,12 +111,13 @@
             grid-template-columns: 1.8fr 1fr 1fr 2.2fr;
             gap: 10px;
             width: 100%;
+            align-items: stretch; /* Garante que todos os cards tenham a mesma altura */
         }
 
         .card-panel {
             background: var(--surface-color);
             border-radius: 12px;
-            padding: 16px; /* Preenchimento interno ainda maior para respiro */
+            padding: 16px;
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             min-width: 0;
@@ -141,6 +142,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
             gap: 6px;
+            flex: 1;
             max-height: 250px;
             overflow-y: auto;
         }
@@ -172,6 +174,7 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
+            flex: 1;
             max-height: 250px;
             overflow-y: auto;
         }
@@ -184,12 +187,13 @@
             text-overflow: ellipsis;
         }
 
-        /* Container de Métricas alinhado em altura e proporção com as demais segmentações */
+        /* Container de Métricas esticado para corresponder exatamente à altura dos filtros */
         .metrics-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: auto 1fr 1fr; /* Distribui proporcionalmente o espaço vertical */
             gap: 8px;
-            align-content: stretch;
+            flex: 1;
             max-height: 250px;
             overflow-y: auto;
         }
@@ -197,7 +201,7 @@
         .metric-box {
             background: #f8fafc;
             border-radius: 8px;
-            padding: 10px; /* Preenchimento ampliado */
+            padding: 10px;
             border: 1px solid var(--border-color);
             text-align: center;
             display: flex;
@@ -210,14 +214,14 @@
         }
 
         .metric-box h4 {
-            font-size: 0.7rem; /* Fonte levemente aumentada para legibilidade */
+            font-size: 0.7rem;
             color: var(--text-muted);
             margin-bottom: 3px;
             text-transform: uppercase;
         }
 
         .metric-box .val {
-            font-size: 1.3rem; /* Fonte dos números aumentada */
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--primary);
         }
@@ -444,26 +448,31 @@
                 </div>
 
                 <!-- Painel de Métricas Separadas -->
-                <div class="card-panel metrics-container">
-                    <div class="metric-box full-width">
-                        <h4 id="labelMetricaTotais">Alterações Totais</h4>
-                        <div class="val" id="mTotGeral">0</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>Mobilibus</h4>
-                        <div class="val red" id="mPendMobi">0</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>Terminais</h4>
-                        <div class="val red" id="mPendTerm">0</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>Avisos</h4>
-                        <div class="val red" id="mPendAvis">0</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>Agência/Telão</h4>
-                        <div class="val red" id="mPendAgen">0</div>
+                <div class="card-panel metrics-container-wrapper">
+                    <div class="card-panel" style="border: none; box-shadow: none; padding: 0; height: 100%; display: flex; flex-direction: column;">
+                        <h3>Resumo de Pendências</h3>
+                        <div class="metrics-container">
+                            <div class="metric-box full-width">
+                                <h4 id="labelMetricaTotais">Alterações Totais</h4>
+                                <div class="val" id="mTotGeral">0</div>
+                            </div>
+                            <div class="metric-box">
+                                <h4>Mobilibus</h4>
+                                <div class="val red" id="mPendMobi">0</div>
+                            </div>
+                            <div class="metric-box">
+                                <h4>Terminais</h4>
+                                <div class="val red" id="mPendTerm">0</div>
+                            </div>
+                            <div class="metric-box">
+                                <h4>Avisos</h4>
+                                <div class="val red" id="mPendAvis">0</div>
+                            </div>
+                            <div class="metric-box">
+                                <h4>Agência/Telão</h4>
+                                <div class="val red" id="mPendAgen">0</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
