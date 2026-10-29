@@ -262,7 +262,17 @@
             color: var(--text-muted);
         }
 
-        tbody tr:hover { background: #f8fafc; }
+        /* Efeito Hover e Seleção Horizontal Fixa da Linha */
+        tbody tr {
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        tbody tr:hover { 
+            background: #f1f5f9; 
+        }
+        tbody tr.linha-selecionada {
+            background-color: #cbd5e1 !important;
+        }
 
         tr.linha-focada {
             animation: highlightFade 3s ease-out forwards;
@@ -535,6 +545,7 @@
         };
 
         let ultimaLinhaSalvaId = null;
+        let linhaSelecionadaId = null; // Armazena permanentemente a linha clicada
 
         async function carregarDados() {
             const tbody = document.getElementById('tableBody');
@@ -657,6 +668,7 @@
                 if (tipoVal) tiposSet.add(tipoVal);
             });
 
+            // Ordem estática fixa baseada no `.sort()`
             const containerLinhas = document.getElementById('filterLinhas');
             containerLinhas.innerHTML = '';
             Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})).forEach(linha => {
@@ -767,7 +779,20 @@
                 const row = item.data;
                 const tr = document.createElement('tr');
                 tr.id = `row-${item.rowIndex}`;
+
+                // Mantém a seleção horizontal fixa se for a linha clicada anteriormente
+                if (item.rowIndex === linhaSelecionadaId) {
+                    tr.classList.add('linha-selecionada');
+                }
                 
+                // Evento de seleção horizontal ao clicar em qualquer lugar da linha
+                tr.onclick = (e) => {
+                    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                    document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
+                    tr.classList.add('linha-selecionada');
+                    linhaSelecionadaId = item.rowIndex; // Salva o ID da linha selecionada
+                };
+
                 let tdContent = '';
                 
                 tdContent += `<td>${formatCell(row[0])}</td>`;
@@ -851,7 +876,18 @@
 
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
-            document.getElementById('mRestGeral').innerText = dados.filter(d => (d.data[10] || '').toString().toLowerCase() === 'pendente').length;
+            
+            // Contagem de quantas linhas faltam informações baseando-se nas colunas operacionais (Mobilibus, Terminais, Avisos, Agência/Telão)
+            const pendentesCount = dados.filter(d => {
+                const r = d.data;
+                const mobi = formatCell(r[4]);
+                const term = formatCell(r[5]);
+                const avis = formatCell(r[6]);
+                const agen = formatCell(r[7]);
+                return (!mobi || !term || !avis || !agen);
+            }).length;
+
+            document.getElementById('mRestGeral').innerText = pendentesCount;
         }
 
         function abrirModal() {
@@ -923,6 +959,9 @@
             };
 
             ultimaLinhaSalvaId = targetRow ? parseInt(targetRow) : 2;
+            if (targetRow) {
+                linhaSelecionadaId = parseInt(targetRow);
+            }
 
             document.getElementById('statusNuvem').innerText = "Salvando...";
 
