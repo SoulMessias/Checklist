@@ -108,7 +108,7 @@
 
         .top-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 2fr;
+            grid-template-columns: 2fr 1fr 1fr 1.8fr;
             gap: 12px;
         }
 
@@ -173,37 +173,28 @@
             padding: 6px 8px;
         }
 
-        /* Container de Métricas em Grid de 2 colunas */
         .metrics-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
-            align-content: start;
-            max-height: 150px;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .metric-box {
             background: #f8fafc;
             border-radius: 8px;
-            padding: 6px;
+            padding: 8px;
             border: 1px solid var(--border-color);
             text-align: center;
         }
 
-        .metric-box.full-width {
-            grid-column: span 2;
-        }
-
         .metric-box h4 {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
-            margin-bottom: 1px;
-            text-transform: uppercase;
+            margin-bottom: 2px;
         }
 
         .metric-box .val {
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--primary);
         }
@@ -271,6 +262,7 @@
             color: var(--text-muted);
         }
 
+        /* Efeito Hover e Seleção Horizontal Fixa da Linha */
         tbody tr {
             cursor: pointer;
             transition: background-color 0.15s ease;
@@ -429,27 +421,14 @@
                     <div class="stack-list" id="filterTipo"></div>
                 </div>
 
-                <!-- Painel de Métricas Separadas -->
                 <div class="card-panel metrics-container">
-                    <div class="metric-box full-width">
+                    <div class="metric-box">
                         <h4 id="labelMetricaTotais">Alterações Totais</h4>
                         <div class="val" id="mTotGeral">0</div>
                     </div>
                     <div class="metric-box">
-                        <h4>Mobilibus</h4>
-                        <div class="val red" id="mPendMobi">0</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>Terminais</h4>
-                        <div class="val red" id="mPendTerm">0</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>Avisos</h4>
-                        <div class="val red" id="mPendAvis">0</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>Agência/Telão</h4>
-                        <div class="val red" id="mPendAgen">0</div>
+                        <h4>Pendências no Período</h4>
+                        <div class="val red" id="mRestGeral">0</div>
                     </div>
                 </div>
             </div>
@@ -566,7 +545,7 @@
         };
 
         let ultimaLinhaSalvaId = null;
-        let linhaSelecionadaId = null;
+        let linhaSelecionadaId = null; // Armazena permanentemente a linha clicada
 
         async function carregarDados() {
             const tbody = document.getElementById('tableBody');
@@ -689,6 +668,7 @@
                 if (tipoVal) tiposSet.add(tipoVal);
             });
 
+            // Ordem estática fixa baseada no `.sort()`
             const containerLinhas = document.getElementById('filterLinhas');
             containerLinhas.innerHTML = '';
             Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})).forEach(linha => {
@@ -800,15 +780,17 @@
                 const tr = document.createElement('tr');
                 tr.id = `row-${item.rowIndex}`;
 
+                // Mantém a seleção horizontal fixa se for a linha clicada anteriormente
                 if (item.rowIndex === linhaSelecionadaId) {
                     tr.classList.add('linha-selecionada');
                 }
                 
+                // Evento de seleção horizontal ao clicar em qualquer lugar da linha
                 tr.onclick = (e) => {
                     if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
                     document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
                     tr.classList.add('linha-selecionada');
-                    linhaSelecionadaId = item.rowIndex;
+                    linhaSelecionadaId = item.rowIndex; // Salva o ID da linha selecionada
                 };
 
                 let tdContent = '';
@@ -895,28 +877,17 @@
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
             
-            let pendMobi = 0;
-            let pendTerm = 0;
-            let pendAvis = 0;
-            let pendAgen = 0;
-
-            dados.forEach(d => {
+            // Contagem de quantas linhas faltam informações baseando-se nas colunas operacionais (Mobilibus, Terminais, Avisos, Agência/Telão)
+            const pendentesCount = dados.filter(d => {
                 const r = d.data;
-                const statusVal = formatCell(r[9]).toLowerCase();
+                const mobi = formatCell(r[4]);
+                const term = formatCell(r[5]);
+                const avis = formatCell(r[6]);
+                const agen = formatCell(r[7]);
+                return (!mobi || !term || !avis || !agen);
+            }).length;
 
-                // Se o status for "ok", não conta as pendências desta linha
-                if (statusVal === 'ok') return;
-
-                if (!formatCell(r[4])) pendMobi++;
-                if (!formatCell(r[5])) pendTerm++;
-                if (!formatCell(r[6])) pendAvis++;
-                if (!formatCell(r[7])) pendAgen++;
-            });
-
-            document.getElementById('mPendMobi').innerText = pendMobi;
-            document.getElementById('mPendTerm').innerText = pendTerm;
-            document.getElementById('mPendAvis').innerText = pendAvis;
-            document.getElementById('mPendAgen').innerText = pendAgen;
+            document.getElementById('mRestGeral').innerText = pendentesCount;
         }
 
         function abrirModal() {
