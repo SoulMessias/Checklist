@@ -3,265 +3,708 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Dinâmico na Nuvem</title>
+    <title>Painel Operacional - Monitoramento de Linhas</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root {
-            --bg-color: #f4f6f9;
-            --card-bg: #ffffff;
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --border-color: #e5e7eb;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap');
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #ffffff;
+            color: #000000;
             margin: 0;
-            padding: 20px;
+            padding: 12px;
+            user-select: none;
         }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
+        /* Cor Verde Oficial da Imagem (#0e5c28) */
+        .bg-system-green {
+            background-color: #0e5c28;
+        }
+        .text-system-green {
+            color: #0e5c28;
+        }
+        .border-system-green {
+            border-color: #0e5c28;
         }
 
-        h1 {
-            margin-bottom: 24px;
-            font-size: 1.8rem;
+        /* Tipografia em itálico idêntica ao sistema da imagem */
+        .font-system-italic {
+            font-style: italic;
+            font-weight: 700;
         }
 
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        /* Estilo dos Botões de Linha (Cards Verdes) */
+        .btn-green-card {
+            background-color: #0e5c28;
+            color: #ffffff;
+            font-style: italic;
+            font-weight: 700;
+            border-radius: 4px;
+            border: 1px solid #0a441d;
+            transition: all 0.15s ease-in-out;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .btn-green-card:hover {
+            background-color: #147a37;
+            transform: translateY(-1px);
+        }
+        .btn-green-card.active {
+            background-color: #eab308 !important; /* Destaque amarelo quando ativo */
+            color: #000000 !important;
+            border-color: #ca8a04 !important;
         }
 
-        .card {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        /* Scrollbar customizada idêntica à imagem */
+        .custom-scroll::-webkit-scrollbar {
+            width: 12px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #e5e5e5;
+            border-left: 1px solid #ccc;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #737373;
+            border-radius: 0px;
         }
 
-        .card h3 {
-            margin: 0 0 8px 0;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        .card .value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .form-section {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .form-section h2 {
-            margin-top: 0;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 140px;
-            gap: 12px;
-            align-items: end;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-size: 0.85rem;
-            margin-bottom: 5px;
-            color: var(--text-muted);
-        }
-
-        .form-group input {
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            outline: none;
-        }
-
-        button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            font-size: 0.95rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            height: 41px;
-        }
-
-        button:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .table-container {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        table {
-            width: 100%;
+        /* Tabela Estilo Planilha com Borda Dupla / Nítida */
+        .table-grid-system {
             border-collapse: collapse;
-            text-align: left;
+            width: 100%;
+        }
+        .table-grid-system th, .table-grid-system td {
+            border: 1px solid #000000;
+            padding: 6px 8px;
+            text-align: center;
+            font-size: 13px;
         }
 
-        th, td {
-            padding: 14px 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: #f9fafb;
-            font-weight: 600;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        tbody tr:hover {
-            background-color: #f9fafb;
+        .text-yellow-highlight {
+            color: #eab308;
+            font-weight: bold;
         }
     </style>
 </head>
-<body onload="carregarDados()">
+<body class="min-h-screen">
 
-    <div class="container">
-        <h1>Painel Sincronizado (Google Planilhas)</h1>
-
-        <div class="cards-grid">
-            <div class="card">
-                <h3>Total de Registros</h3>
-                <div class="value" id="totalCount">0</div>
+    <div class="max-w-[1700px] mx-auto space-y-3">
+        
+        <!-- BARRA SUPERIOR DE AÇÕES & SINCRONIZAÇÃO -->
+        <div class="flex justify-between items-center bg-gray-100 p-2.5 rounded border border-gray-300">
+            <div class="flex items-center gap-3">
+                <span class="font-system-italic text-lg text-system-green flex items-center gap-2">
+                    <i data-lucide="bus" class="w-5 h-5"></i> MONITORAMENTO DE LINHAS E ALTERAÇÕES
+                </span>
+                <span id="statusConexao" class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
+                    Sincronizado
+                </span>
             </div>
-            <div class="card">
-                <h3>Status da Nuvem</h3>
-                <div class="value" id="statusNuvem" style="font-size: 1.2rem; color: #10b981; padding-top: 8px;">Conectado</div>
-            </div>
-        </div>
-
-        <div class="form-section">
-            <h2>Adicionar Novo Item na Nuvem</h2>
-            <div class="form-grid">
-                <div class="form-group"><label>Item</label><input type="text" id="col1"></div>
-                <div class="form-group"><label>Descrição</label><input type="text" id="col2"></div>
-                <div class="form-group"><label>Categoria</label><input type="text" id="col3"></div>
-                <div class="form-group"><label>Valor</label><input type="text" id="col4"></div>
-                <div class="form-group"><label>Data</label><input type="text" id="col5"></div>
-                <button onclick="adicionarLinha()">Salvar</button>
+            <div class="flex items-center gap-2">
+                <button onclick="abrirModal()" class="bg-system-green hover:bg-emerald-800 text-white font-system-italic text-xs px-3 py-1.5 rounded flex items-center gap-1.5 shadow transition">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> ADICIONAR REGISTRO
+                </button>
+                <button onclick="carregarDados()" class="bg-white hover:bg-gray-50 text-gray-800 font-bold text-xs px-3 py-1.5 rounded border border-gray-400 flex items-center gap-1.5 shadow-sm transition">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5" id="refreshIcon"></i> RECARREGAR
+                </button>
             </div>
         </div>
 
-        <div class="table-container">
-            <table id="dataTable">
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Descrição</th>
-                        <th>Categoria</th>
-                        <th>Valor</th>
-                        <th>Data</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Os dados da planilha entram aqui automaticamente -->
-                </tbody>
-            </table>
+        <!-- ESTRUTURA DOS PAINÉIS SUPERIORES (LAYOUT EXATO DA IMAGEM) -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-3">
+            
+            <!-- PAINEL 1: GRADE DE LINHAS (SCROLLÁVEL) -->
+            <div class="xl:col-span-4 border border-gray-400 p-2 rounded bg-gray-50">
+                <div class="flex justify-between items-center mb-1 px-1">
+                    <span class="text-[11px] font-bold text-gray-600 uppercase">Linhas de Ônibus</span>
+                    <button onclick="limparFiltroLinha()" class="text-[11px] text-system-green font-bold hover:underline">Limpar Seleção</button>
+                </div>
+                <div class="grid grid-cols-7 gap-1 h-[210px] overflow-y-auto pr-1 custom-scroll bg-gray-200/50 p-1.5 border border-gray-300 rounded" id="linesGrid">
+                    <!-- Gerado via JavaScript -->
+                </div>
+            </div>
+
+            <!-- PAINEL 2: DIAS DA SEMANA & TIPOS -->
+            <div class="xl:col-span-2 grid grid-cols-2 gap-2">
+                
+                <!-- Coluna Dias -->
+                <div class="border border-dashed border-gray-400 p-1.5 rounded bg-white flex flex-col gap-1 justify-between" id="diasContainer">
+                    <!-- Botões de Dias gerados via JS -->
+                </div>
+
+                <!-- Coluna Tipos -->
+                <div class="border border-dashed border-gray-400 p-1.5 rounded bg-white flex flex-col gap-1 justify-between" id="tiposContainer">
+                    <!-- Botões de Tipos gerados via JS -->
+                </div>
+
+            </div>
+
+            <!-- PAINEL 3: TABELAS DE RESUMO (ALTERAÇÕES TOTAIS E RESTANTES) -->
+            <div class="xl:col-span-4 flex flex-col gap-2 justify-between">
+                
+                <!-- TABELA: ALTERAÇÕES TOTAIS -->
+                <div>
+                    <table class="table-grid-system bg-white">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th colspan="4" class="font-system-italic text-sm text-black py-1">ALTERAÇÕES TOTAIS</th>
+                            </tr>
+                            <tr class="bg-gray-100 font-system-italic text-[11px] text-black uppercase">
+                                <th class="w-1/4">MOBILIBUS</th>
+                                <th class="w-1/4">TERMINAIS</th>
+                                <th class="w-1/4">AVISOS</th>
+                                <th class="w-1/4">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="font-bold text-lg text-red-600">
+                                <td id="totMobili">0</td>
+                                <td id="totTerminais">0</td>
+                                <td id="totAvisos">0</td>
+                                <td id="totGeral">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- TABELA: ALTERAÇÕES RESTANTES -->
+                <div>
+                    <table class="table-grid-system bg-white">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th colspan="4" class="font-system-italic text-sm text-black py-1">ALTERAÇÕES RESANTES</th>
+                            </tr>
+                            <tr class="bg-gray-100 font-system-italic text-[11px] text-black uppercase">
+                                <th class="w-1/4">MOBILIBUS</th>
+                                <th class="w-1/4">TERMINAIS</th>
+                                <th class="w-1/4">AVISOS</th>
+                                <th class="w-1/4">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="font-bold text-lg text-red-600">
+                                <td id="restMobili">0</td>
+                                <td id="restTerminais">0</td>
+                                <td id="restAvisos">0</td>
+                                <td id="restGeral">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <!-- PAINEL 4: PERÍODO VIGÊNCIA & LIMPEZA DE FILTROS -->
+            <div class="xl:col-span-2 border border-black p-3 rounded bg-white flex flex-col justify-between items-center text-center">
+                
+                <div class="w-full">
+                    <div class="flex justify-around text-[10px] font-system-italic text-gray-700 border-b border-gray-300 pb-1 mb-2">
+                        <span>INICIO</span>
+                        <span>FIM</span>
+                    </div>
+                    <div class="font-bold text-xs text-black tracking-tight bg-gray-50 p-1.5 border border-gray-300 rounded">
+                        26/10/2026 &nbsp;&nbsp; 07/11/2026
+                    </div>
+                </div>
+
+                <!-- Ícones / Ações Fiéis -->
+                <div class="flex items-center justify-center gap-4 my-2">
+                    <button onclick="limparTodosFiltros()" title="Limpar Filtros" class="p-2 hover:bg-yellow-50 rounded-full transition">
+                        <i data-lucide="filter" class="w-8 h-8 text-yellow-500"></i>
+                    </button>
+                    <button onclick="carregarDados()" title="Sincronizar" class="p-2 hover:bg-green-50 rounded-full transition">
+                        <i data-lucide="refresh-cw" class="w-8 h-8 text-system-green"></i>
+                    </button>
+                </div>
+
+                <div class="w-full text-[10px] font-bold text-gray-500 uppercase">
+                    Filtros Ativos: <span id="filtrosAtivosTexto" class="text-system-green font-bold">Nenhum</span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TABELA PRINCIPAL (12 CABEÇALHOS DO SISTEMA) -->
+        <div class="border border-black rounded overflow-hidden shadow-sm bg-white mt-3">
+            <div class="overflow-x-auto">
+                <table class="w-full table-grid-system text-left" id="mainTable">
+                    <thead>
+                        <tr class="bg-system-green text-white font-system-italic text-xs tracking-wider uppercase">
+                            <th class="border-r border-emerald-900 py-2.5">LINHA</th>
+                            <th class="border-r border-emerald-900 py-2.5">VIGÊNCIA</th>
+                            <th class="border-r border-emerald-900 py-2.5">TIPO</th>
+                            <th class="border-r border-emerald-900 py-2.5">DIA</th>
+                            <th class="border-r border-emerald-900 py-2.5">MOBILIBUS</th>
+                            <th class="border-r border-emerald-900 py-2.5">TERMINAIS</th>
+                            <th class="border-r border-emerald-900 py-2.5">AVISOS</th>
+                            <th class="border-r border-emerald-900 py-2.5">AGÊNCIA/TELÃO</th>
+                            <th class="border-r border-emerald-900 py-2.5">IMAGENS</th>
+                            <th class="border-r border-emerald-900 py-2.5">ANOTAÇÕES</th>
+                            <th class="border-r border-emerald-900 py-2.5">STATUS</th>
+                            <th class="py-2.5">PENDÊNCIA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="font-bold text-xs text-black">
+                        <!-- Conteúdo inserido dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="p-2 bg-gray-100 border-t border-gray-300 text-xs text-gray-600 flex justify-between items-center font-medium">
+                <span>Registros Exibidos: <b id="countExibidos" class="text-black">0</b> de <b id="countTotal" class="text-black">0</b></span>
+                <span>Servidor: Google Apps Script API</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL DE INSERÇÃO DE NOVOS REGISTROS (12 CAMPOS) -->
+    <div id="modalInsercao" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-2xl rounded-lg shadow-2xl overflow-hidden border border-gray-400">
+            
+            <div class="bg-system-green text-white px-4 py-3 flex justify-between items-center">
+                <h3 class="font-system-italic text-base flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i> ADICIONAR NOVO REGISTRO
+                </h3>
+                <button onclick="fecharModal()" class="hover:bg-emerald-800 p-1 rounded transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="formNovoRegistro" onsubmit="adicionarLinha(event)" class="p-5 space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">1. Linha</label>
+                        <input type="text" id="fLinha" required placeholder="Ex: 309" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">2. Vigência</label>
+                        <input type="text" id="fVigencia" required placeholder="Ex: 31/10/2026" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">3. Tipo</label>
+                        <select id="fTipo" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
+                            <option value="PROPOSTA">PROPOSTA</option>
+                            <option value="AJUSTE EMERG.">AJUSTE EMERG.</option>
+                            <option value="CORREÇÃO">CORREÇÃO</option>
+                            <option value="EXPOSIÇÃO">EXPOSIÇÃO</option>
+                            <option value="FINADOS">FINADOS</option>
+                            <option value="-">-</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">4. Dia</label>
+                        <select id="fDia" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
+                            <option value="Sáb">Sáb</option>
+                            <option value="Dom">Dom</option>
+                            <option value="Útil">Útil</option>
+                            <option value="Útil-Sáb">Útil-Sáb</option>
+                            <option value="Útil-Sáb-Dom">Útil-Sáb-Dom</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">5. Mobilibus</label>
+                        <input type="text" id="fMobili" placeholder="Ex: Denis - 26/10/2026" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">6. Terminais</label>
+                        <input type="text" id="fTerminais" placeholder="Ex: Denis - 26/10/2026" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">7. Avisos</label>
+                        <input type="text" id="fAvisos" placeholder="Ex: Denis - 21/10/2026" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">8. Agência/Telão</label>
+                        <input type="text" id="fAgencia" placeholder="Ex: -" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">9. Imagens</label>
+                        <input type="text" id="fImagens" placeholder="Ex: ok.png" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">10. Anotações</label>
+                        <input type="text" id="fAnotacoes" placeholder="Ex: COMENTÁRIO DISPONÍVEL" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">11. Status</label>
+                        <select id="fStatus" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
+                            <option value="Ok">Ok</option>
+                            <option value="Pendente">Pendente</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">12. Pendência</label>
+                        <input type="text" id="fPendencia" value="Atualizado" placeholder="Ex: Atualizado" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
+                    </div>
+
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
+                    <button type="button" onclick="fecharModal()" class="px-3 py-1.5 border border-gray-300 rounded text-gray-700 font-bold text-xs hover:bg-gray-100 transition">Cancelar</button>
+                    <button type="submit" id="btnSalvar" class="px-4 py-1.5 bg-system-green text-white font-system-italic text-xs rounded hover:bg-emerald-800 transition">
+                        SALVAR NO SHEETS
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
+    <!-- SCRIPT DE LOGICA E SINCRONIZAÇÃO -->
     <script>
-        // COLE AQUI A SUA URL DO APPS SCRIPT ENTRE AS ASPAS
+        // URL da sua API do Google Apps Script
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyw8SmxPICzpGnt4VXYAGGENclDdmpmUP-CsrcikfpCvjYJ7WHanhyzLZ-d1g7bNhtTPw/exec';
 
-        async function carregarDados() {
-            try {
-                const response = await fetch(WEB_APP_URL);
-                const data = await response.json();
-                
-                const tbody = document.querySelector('#dataTable tbody');
-                tbody.innerHTML = '';
+        // Lista de Linhas idêntica à imagem
+        const LISTA_LINHAS = [
+            '91', '92', '96', '97', '99', '100', '101',
+            '102', '103', '104', '106', '107', '108', '109',
+            '110', '111', '112', '113', '114', '121', '200',
+            '301', '302', '303', '305', '306', '307', '308',
+            '309', '310', '311', '312', '313', '314', '315',
+            '317', '319', '351', '360', '400', '401', '402', '430'
+        ];
 
-                // Assume que a primeira linha da planilha são os cabeçalhos, então começamos do i = 1
-                for (let i = 1; i < data.length; i++) {
-                    const row = data[i];
-                    if(row[0]) { // Se tiver conteúdo na primeira coluna
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td>`;
-                        tbody.appendChild(tr);
-                    }
-                }
-                document.getElementById('totalCount').innerText = data.length - 1;
-            } catch (error) {
-                console.error("Erro ao carregar dados:", error);
-                document.getElementById('statusNuvem').innerText = "Erro de Conexão";
-                document.getElementById('statusNuvem').style.color = "#ef4444";
+        const LISTA_DIAS = ['Dom', 'Sáb', 'Útil', 'Útil-Sáb', 'Útil-Sáb-Dom'];
+        const LISTA_TIPOS = ['-', 'AJUSTE EMERG.', 'CORREÇÃO', 'EXPOSIÇÃO', 'FINADOS', 'PROPOSTA'];
+
+        // Dados Iniciais Fiéis
+        let dadosLocais = [
+            {
+                linha: "309",
+                vigencia: "31/10/2026",
+                tipo: "PROPOSTA",
+                dia: "Sáb",
+                mobili: "Denis - 26/10/2026",
+                terminais: "Denis - 26/10/2026",
+                avisos: "Denis - 21/10/2026",
+                agencia: "-",
+                imagens: "ok.png",
+                anotacoes: "COMENTÁRIO DISPONÍVEL",
+                status: "Ok",
+                pendencia: "Atualizado"
+            },
+            {
+                linha: "430",
+                vigencia: "31/10/2026",
+                tipo: "PROPOSTA",
+                dia: "Sáb",
+                mobili: "Denis - 26/10/2026",
+                terminais: "Denis - 26/10/2026",
+                avisos: "Denis - 21/10/2026",
+                agencia: "-",
+                imagens: "ok.png",
+                anotacoes: "",
+                status: "Ok",
+                pendencia: "Atualizado"
+            },
+            {
+                linha: "101",
+                vigencia: "01/11/2026",
+                tipo: "FINADOS",
+                dia: "Dom",
+                mobili: "Denis - 27/10/2026",
+                terminais: "-",
+                avisos: "Denis - 27/10/2026",
+                agencia: "-",
+                imagens: "-",
+                anotacoes: "ESPECIAL",
+                status: "Ok",
+                pendencia: "Atualizado"
+            },
+            {
+                linha: "108",
+                vigencia: "02/11/2026",
+                tipo: "AJUSTE EMERG.",
+                dia: "Útil",
+                mobili: "Denis - 28/10/2026",
+                terminais: "-",
+                avisos: "Denis - 28/10/2026",
+                agencia: "-",
+                imagens: "-",
+                anotacoes: "",
+                status: "Pendente",
+                pendencia: "Pendente"
+            },
+            {
+                linha: "314",
+                vigencia: "03/11/2026",
+                tipo: "CORREÇÃO",
+                dia: "Útil-Sáb",
+                mobili: "Denis - 28/10/2026",
+                terminais: "-",
+                avisos: "Denis - 28/10/2026",
+                agencia: "-",
+                imagens: "-",
+                anotacoes: "",
+                status: "Ok",
+                pendencia: "Atualizado"
             }
+        ];
+
+        // Estado dos Filtros Ativos
+        let filtroLinha = null;
+        let filtroDia = null;
+        let filtroTipo = null;
+
+        window.onload = () => {
+            renderizarFiltros();
+            carregarDados();
+            lucide.createIcons();
+        };
+
+        // Renderizar os Botões Verdes dos Filtros
+        function renderizarFiltros() {
+            // Linhas
+            const gridLinhas = document.getElementById('linesGrid');
+            gridLinhas.innerHTML = LISTA_LINHAS.map(linha => `
+                <button onclick="filtrarPorLinha('${linha}')" id="btn-linha-${linha}" class="btn-green-card py-1 text-xs">
+                    ${linha}
+                </button>
+            `).join('');
+
+            // Dias
+            const containerDias = document.getElementById('diasContainer');
+            containerDias.innerHTML = LISTA_DIAS.map(dia => `
+                <button onclick="filtrarPorDia('${dia}')" id="btn-dia-${dia}" class="btn-green-card py-1 px-2 text-left text-xs">
+                    ${dia}
+                </button>
+            `).join('');
+
+            // Tipos
+            const containerTipos = document.getElementById('tiposContainer');
+            containerTipos.innerHTML = LISTA_TIPOS.map(tipo => `
+                <button onclick="filtrarPorTipo('${tipo}')" id="btn-tipo-${tipo}" class="btn-green-card py-1 px-1 text-center text-[10px] truncate" title="${tipo}">
+                    ${tipo}
+                </button>
+            `).join('');
         }
 
-        async function adicionarLinha() {
-            const v1 = document.getElementById('col1').value;
-            const v2 = document.getElementById('col2').value;
-            const v3 = document.getElementById('col3').value;
-            const v4 = document.getElementById('col4').value;
-            const v5 = document.getElementById('col5').value;
+        // Carregar Dados da Nuvem via Apps Script
+        async function carregarDados() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            refreshIcon.classList.add('animate-spin');
 
-            if (!v1) {
-                alert('Preencha pelo menos o campo Item.');
-                return;
+            if (WEB_APP_URL && WEB_APP_URL !== 'SUA_URL_DO_APPS_SCRIPT_AQUI') {
+                try {
+                    const response = await fetch(WEB_APP_URL);
+                    const rawData = await response.json();
+                    
+                    if (Array.isArray(rawData) && rawData.length > 1) {
+                        dadosLocais = rawData.slice(1).map(row => ({
+                            linha: String(row[0] || ''),
+                            vigencia: String(row[1] || ''),
+                            tipo: String(row[2] || ''),
+                            dia: String(row[3] || ''),
+                            mobili: String(row[4] || ''),
+                            terminais: String(row[5] || ''),
+                            avisos: String(row[6] || ''),
+                            agencia: String(row[7] || ''),
+                            imagens: String(row[8] || ''),
+                            anotacoes: String(row[9] || ''),
+                            status: String(row[10] || ''),
+                            pendencia: String(row[11] || '')
+                        }));
+                    }
+                    document.getElementById('statusConexao').innerText = "Conectado Ao Google Sheets";
+                } catch (error) {
+                    console.warn("Usando dados de exemplo.", error);
+                    document.getElementById('statusConexao').innerText = "Modo Local / Exemplo";
+                }
+            } else {
+                document.getElementById('statusConexao').innerText = "Insira a URL do Apps Script";
             }
 
-            const payload = { col1: v1, col2: v2, col3: v3, col4: v4, col5: v5 };
+            refreshIcon.classList.remove('animate-spin');
+            atualizarTabelaEMetricas();
+        }
 
-            document.getElementById('statusNuvem').innerText = "Salvando...";
+        // Renderizar Tabela e Calcular Métricas das Caixas Superiores
+        function atualizarTabelaEMetricas() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
 
-            try {
-                await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+            // Filtragem dos dados
+            let filtrados = dadosLocais.filter(item => {
+                if (filtroLinha && item.linha !== filtroLinha) return false;
+                if (filtroDia && item.dia !== filtroDia) return false;
+                if (filtroTipo && item.tipo !== filtroTipo) return false;
+                return true;
+            });
+
+            if (filtrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="12" class="py-4 text-center text-gray-500 font-system-italic">Nenhum registro localizado.</td></tr>`;
+            } else {
+                filtrados.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-yellow-50/50 transition";
+                    
+                    tr.innerHTML = `
+                        <td class="font-bold text-black">${row.linha}</td>
+                        <td class="font-system-italic text-gray-800">${row.vigencia}</td>
+                        <td class="font-system-italic text-black">${row.tipo}</td>
+                        <td class="text-yellow-highlight font-bold">${row.dia}</td>
+                        <td class="font-system-italic text-gray-800">${row.mobili}</td>
+                        <td class="font-system-italic text-gray-800">${row.terminais}</td>
+                        <td class="font-system-italic text-gray-800">${row.avisos}</td>
+                        <td class="text-center">${row.agencia || '-'}</td>
+                        <td class="text-center">${row.imagens ? `<span class="text-emerald-700 font-bold">✓</span>` : '-'}</td>
+                        <td class="text-orange-600 font-bold text-[11px]">${row.anotacoes || ''}</td>
+                        <td class="font-bold text-black">${row.status}</td>
+                        <td class="font-system-italic ${row.pendencia === 'Atualizado' ? 'bg-green-100 text-black' : 'bg-red-100 text-red-900'}">${row.pendencia}</td>
+                    `;
+                    tbody.appendChild(tr);
                 });
-
-                alert('Salvo com sucesso na nuvem!');
-                
-                // Limpa os inputs
-                document.getElementById('col1').value = '';
-                document.getElementById('col2').value = '';
-                document.getElementById('col3').value = '';
-                document.getElementById('col4').value = '';
-                document.getElementById('col5').value = '';
-
-                // Recarrega os dados da planilha após 1 segundo
-                setTimeout(carregarDados, 1500);
-                document.getElementById('statusNuvem').innerText = "Conectado";
-            } catch (error) {
-                console.error("Erro ao salvar:", error);
-                alert('Erro ao salvar dados.');
-                document.getElementById('statusNuvem').innerText = "Erro";
             }
+
+            // Cálculo das Métricas
+            let tMob = 0, tTerm = 0, tAv = 0;
+            let rMob = 0, rTerm = 0, rAv = 0;
+
+            filtrados.forEach(d => {
+                if (d.mobili && d.mobili !== '-') tMob++;
+                if (d.terminais && d.terminais !== '-') tTerm++;
+                if (d.avisos && d.avisos !== '-') tAv++;
+
+                if (d.pendencia !== 'Atualizado') {
+                    if (d.mobili && d.mobili !== '-') rMob++;
+                    if (d.terminais && d.terminais !== '-') rTerm++;
+                    if (d.avisos && d.avisos !== '-') rAv++;
+                }
+            });
+
+            document.getElementById('totMobili').innerText = tMob;
+            document.getElementById('totTerminais').innerText = tTerm;
+            document.getElementById('totAvisos').innerText = tAv;
+            document.getElementById('totGeral').innerText = tMob + tTerm + tAv;
+
+            document.getElementById('restMobili').innerText = rMob;
+            document.getElementById('restTerminais').innerText = rTerm;
+            document.getElementById('restAvisos').innerText = rAv;
+            document.getElementById('restGeral').innerText = rMob + rTerm + rAv;
+
+            document.getElementById('countExibidos').innerText = filtrados.length;
+            document.getElementById('countTotal').innerText = dadosLocais.length;
+
+            // Texto de Filtros Ativos
+            let resumoFiltros = [];
+            if (filtroLinha) resumoFiltros.push(`Linha: ${filtroLinha}`);
+            if (filtroDia) resumoFiltros.push(`Dia: ${filtroDia}`);
+            if (filtroTipo) resumoFiltros.push(`Tipo: ${filtroTipo}`);
+            document.getElementById('filtrosAtivosTexto').innerText = resumoFiltros.length > 0 ? resumoFiltros.join(' | ') : 'Nenhum';
+        }
+
+        // Funções dos Filtros
+        function filtrarPorLinha(linha) {
+            filtroLinha = (filtroLinha === linha) ? null : linha;
+            document.querySelectorAll('#linesGrid button').forEach(b => b.classList.remove('active'));
+            if (filtroLinha) document.getElementById(`btn-linha-${linha}`)?.classList.add('active');
+            atualizarTabelaEMetricas();
+        }
+
+        function filtrarPorDia(dia) {
+            filtroDia = (filtroDia === dia) ? null : dia;
+            document.querySelectorAll('#diasContainer button').forEach(b => b.classList.remove('active'));
+            if (filtroDia) document.getElementById(`btn-dia-${dia}`)?.classList.add('active');
+            atualizarTabelaEMetricas();
+        }
+
+        function filtrarPorTipo(tipo) {
+            filtroTipo = (filtroTipo === tipo) ? null : tipo;
+            document.querySelectorAll('#tiposContainer button').forEach(b => b.classList.remove('active'));
+            if (filtroTipo) document.getElementById(`btn-tipo-${tipo}`)?.classList.add('active');
+            atualizarTabelaEMetricas();
+        }
+
+        function limparFiltroLinha() {
+            filtroLinha = null;
+            document.querySelectorAll('#linesGrid button').forEach(b => b.classList.remove('active'));
+            atualizarTabelaEMetricas();
+        }
+
+        function limparTodosFiltros() {
+            filtroLinha = null;
+            filtroDia = null;
+            filtroTipo = null;
+            document.querySelectorAll('.btn-green-card').forEach(b => b.classList.remove('active'));
+            atualizarTabelaEMetricas();
+        }
+
+        // Modal
+        function abrirModal() { document.getElementById('modalInsercao').classList.remove('hidden'); }
+        function fecharModal() { document.getElementById('modalInsercao').classList.add('hidden'); }
+
+        // Adicionar Linha (Envia para o Apps Script)
+        async function adicionarLinha(event) {
+            event.preventDefault();
+            const btnSalvar = document.getElementById('btnSalvar');
+            btnSalvar.disabled = true;
+            btnSalvar.innerText = 'SALVANDO...';
+
+            const payload = {
+                col1: document.getElementById('fLinha').value,
+                col2: document.getElementById('fVigencia').value,
+                col3: document.getElementById('fTipo').value,
+                col4: document.getElementById('fDia').value,
+                col5: document.getElementById('fMobili').value || '-',
+                col6: document.getElementById('fTerminais').value || '-',
+                col7: document.getElementById('fAvisos').value || '-',
+                col8: document.getElementById('fAgencia').value || '-',
+                col9: document.getElementById('fImagens').value || '-',
+                col10: document.getElementById('fAnotacoes').value || '',
+                col11: document.getElementById('fStatus').value,
+                col12: document.getElementById('fPendencia').value
+            };
+
+            dadosLocais.unshift({
+                linha: payload.col1,
+                vigencia: payload.col2,
+                tipo: payload.col3,
+                dia: payload.col4,
+                mobili: payload.col5,
+                terminais: payload.col6,
+                avisos: payload.col7,
+                agencia: payload.col8,
+                imagens: payload.col9,
+                anotacoes: payload.col10,
+                status: payload.col11,
+                pendencia: payload.col12
+            });
+
+            if (WEB_APP_URL && WEB_APP_URL !== 'SUA_URL_DO_APPS_SCRIPT_AQUI') {
+                try {
+                    await fetch(WEB_APP_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } catch (err) {
+                    console.error("Erro no envio:", err);
+                }
+            }
+
+            btnSalvar.disabled = false;
+            btnSalvar.innerText = 'SALVAR NO SHEETS';
+            document.getElementById('formNovoRegistro').reset();
+            fecharModal();
+            atualizarTabelaEMetricas();
         }
     </script>
 </body>
