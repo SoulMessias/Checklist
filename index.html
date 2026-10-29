@@ -30,7 +30,7 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             padding: 16px;
-            overflow-x: hidden; /* Remove rolagem lateral global */
+            overflow-x: hidden;
         }
 
         .container {
@@ -227,7 +227,7 @@
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             width: 100%;
-            overflow-x: auto; /* Permite scroll apenas dentro da tabela se a tela for muito pequena */
+            overflow-x: auto;
         }
 
         table {
@@ -329,12 +329,13 @@
             <h1>Painel Operacional</h1>
             
             <div class="header-actions">
-                <!-- Filtro de Período -->
+                <!-- Filtro de Período com Botão Limpar -->
                 <div class="date-filter-group">
                     <label>Início:</label>
                     <input type="date" id="dataInicio" onchange="renderizarTabela()">
                     <label>Fim:</label>
                     <input type="date" id="dataFim" onchange="renderizarTabela()">
+                    <button class="btn-outline btn btn-sm" onclick="limparFiltroData()" title="Limpar Período">✕ Limpar Data</button>
                 </div>
                 
                 <div class="status-badge" id="statusNuvem">Conectando...</div>
@@ -373,7 +374,7 @@
         <!-- Barra de Ações -->
         <div class="action-bar">
             <div>
-                <button class="btn-outline btn" onclick="limparFiltros()">Limpar Filtros</button>
+                <button class="btn-outline btn" onclick="limparFiltros()">Limpar Todos Filtros</button>
                 <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;"></span>
             </div>
             <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
@@ -416,7 +417,6 @@
                     <div class="form-group"><label>Linha</label><input type="text" id="fLinha" required></div>
                     <div class="form-group"><label>Vigência (Ex: 31/10/2026)</label><input type="text" id="fVigencia" placeholder="DD/MM/AAAA"></div>
                     
-                    <!-- Campo Tipo com opções predefinidas -->
                     <div class="form-group">
                         <label>Tipo</label>
                         <select id="fTipo">
@@ -429,7 +429,6 @@
                         </select>
                     </div>
 
-                    <!-- Campo Dia com opções predefinidas -->
                     <div class="form-group">
                         <label>Dia</label>
                         <select id="fDia">
@@ -479,15 +478,39 @@
             }
         }
 
-        // Converte texto da vigência (Ex: "31/10/2026") em um objeto de Data comparável
-        function parseData(dataStr) {
-            if (!dataStr) return null;
-            const str = dataStr.toString().trim();
-            const partes = str.split('/');
-            if (partes.length === 3) {
-                return new Date(partes[2], partes[1] - 1, partes[0]);
+        // Converte qualquer formato de data/texto para um objeto Date válido para filtros/ordenação
+        function parseData(valorRaw) {
+            if (!valorRaw) return null;
+            
+            // Se já vier formatado em dd/mm/aaaa
+            const str = valorRaw.toString().trim();
+            if (str.includes('/')) {
+                const partes = str.split('/');
+                if (partes.length === 3) {
+                    return new Date(partes[2], partes[1] - 1, partes[0]);
+                }
+            } else if (str.includes('-')) {
+                // Caso venha no formato YYYY-MM-DD
+                const partes = str.split('T')[0].split('-');
+                if (partes.length === 3) {
+                    return new Date(partes[0], partes[1] - 1, partes[2]);
+                }
+            } else if (!isNaN(str) && Number(str) > 30000) {
+                // Se for número de série de data do Excel/Google Sheets
+                return new Date((Number(str) - (25567 + 2)) * 86400 * 1000);
             }
             return null;
+        }
+
+        // Garante que a data sempre será exibida na tela no padrão estrito dd/mm/aaaa
+        function formatarDataExibicao(valorRaw) {
+            const dt = parseData(valorRaw);
+            if (!dt || isNaN(dt.getTime())) return valorRaw || '-';
+            
+            const dia = String(dt.getDate()).padStart(2, '0');
+            const mes = String(dt.getMonth() + 1).padStart(2, '0');
+            const ano = dt.getFullYear();
+            return `${dia}/${mes}/${ano}`;
         }
 
         function gerarFiltrosDinamicos() {
@@ -543,9 +566,13 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            const dInicio = document.getElementById('dataInicio').value ? new Date(document.getElementById('dataInicio').value) : null;
-            const dFim = document.getElementById('dataFim').value ? new Date(document.getElementById('dataFim').value) : null;
+            const inputInicio = document.getElementById('dataInicio').value;
+            const inputFim = document.getElementById('dataFim').value;
 
+            const dInicio = inputInicio ? new Date(inputInicio + "T00:00:00") : null;
+            const dFim = inputFim ? new Date(inputFim + "T23:59:59") : null;
+
+            // 1. Filtragem dos Dados
             let dadosExibidos = dadosGlobais.filter(item => {
                 const row = item.data;
                 
@@ -555,6 +582,8 @@
                     if (dtVigencia) {
                         if (dInicio && dtVigencia < dInicio) return false;
                         if (dFim && dtVigencia > dFim) return false;
+                    } else {
+                        return false; // Se não tem data válida, oculta se o filtro estiver ativo
                     }
                 }
 
@@ -568,19 +597,52 @@
                 return true;
             });
 
+            // 2. Ordenação Tripla: Vigência (crescente) -> Linha (crescente) -> Dia (crescente)
+            dadosExibidos.sort((a, b) => {
+                const rA = a.data;
+                const rB = b.data;
+
+                // 1º Critério: Vigência
+                const dtA = parseData(rA[1]) || new Date(8640000000000000);
+                const dtB = parseData(rB[1]) || new Date(8640000000000000);
+                if (dtA - dtB !== 0) return dtA - dtB;
+
+                // 2º Critério: Linha (Numérica ou Texto)
+                const linhaA = (rA[0] || '').toString().trim();
+                const linhaB = (rB[0] || '').toString().trim();
+                const compLinha = linhaA.localeCompare(linhaB, undefined, { numeric: true });
+                if (compLinha !== 0) return compLinha;
+
+                // 3º Critério: Dia
+                const diaA = (rA[3] || '').toString().trim();
+                const diaB = (rB[3] || '').toString().trim();
+                return diaA.localeCompare(diaB);
+            });
+
+            // 3. Renderização na Tela
             dadosExibidos.forEach((item) => {
                 const row = item.data;
                 const tr = document.createElement('tr');
                 
                 let tdContent = '';
-                for (let i = 0; i < 10; i++) {
+                
+                // Coluna 0: Linha
+                tdContent += `<td>${row[0] || '-'}</td>`;
+                
+                // Coluna 1: Vigência (Formatada em dd/mm/aaaa)
+                tdContent += `<td>${formatarDataExibicao(row[1])}</td>`;
+
+                // Colunas 2 até 9 (Tipo, Dia, Mobilibus, Terminais, Avisos, Agência, Anotações, Status)
+                for (let i = 2; i < 10; i++) {
                     tdContent += `<td>${row[i] || '-'}</td>`;
                 }
 
+                // Coluna 10: Pendência
                 const pendenciaVal = row[10] || 'Pendente';
                 const badgeClass = pendenciaVal.toLowerCase() === 'atualizado' ? 'badge-atualizado' : 'badge-pendente';
                 tdContent += `<td><span class="badge-status ${badgeClass}">${pendenciaVal}</span></td>`;
 
+                // Ações
                 tdContent += `
                     <td>
                         <button class="btn btn-outline btn-sm" onclick="editarRegistro(${item.rowIndex})">Editar</button>
@@ -609,10 +671,15 @@
             renderizarTabela();
         }
 
-        function limparFiltros() {
-            filtroAtivo = { tipo: null, valor: null };
+        function limparFiltroData() {
             document.getElementById('dataInicio').value = '';
             document.getElementById('dataFim').value = '';
+            renderizarTabela();
+        }
+
+        function limparFiltros() {
+            filtroAtivo = { tipo: null, valor: null };
+            limparFiltroData();
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('filtroAtivoLabel').innerText = '';
             renderizarTabela();
@@ -643,7 +710,7 @@
             document.getElementById('editRowIndex').value = rowIndex;
 
             document.getElementById('fLinha').value = r[0] || '';
-            document.getElementById('fVigencia').value = r[1] || '';
+            document.getElementById('fVigencia').value = formatarDataExibicao(r[1]);
             document.getElementById('fTipo').value = r[2] || '';
             document.getElementById('fDia').value = r[3] || '';
             document.getElementById('fMobilibus').value = r[4] || '';
