@@ -250,7 +250,6 @@
 
         tbody tr:hover { background: #f8fafc; }
 
-        /* Estilo para a coluna Anotações (Resumida e clicável) */
         .anotacao-cell {
             max-width: 180px;
             white-space: nowrap;
@@ -486,7 +485,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec';
+        const WEB_APP_URL = 'SUA_URL_DO_APPS_SCRIPT_AQUI';
 
         let dadosGlobais = [];
         let filtrosAtivos = {
@@ -516,6 +515,7 @@
             }
         }
 
+        // Converte data flexível para fins de ordenação e filtro de período
         function parseData(valorRaw) {
             if (!valorRaw) return null;
             const str = valorRaw.toString().trim();
@@ -538,6 +538,39 @@
             return null;
         }
 
+        // Formata a vigência exibida na tabela: limpa códigos ISO/série para DD/MM/AAAA, mantendo textos livres intactos
+        function formatVigencia(valorRaw) {
+            if (valorRaw === undefined || valorRaw === null) return '';
+            const str = valorRaw.toString().trim();
+            if (str === '' || str === '-') return '';
+
+            // Se for formato ISO de data (ex: 2023-06-15T03:00:00.000Z)
+            if (str.includes('T') && (str.endsWith('Z') || str.includes('+') || str.length >= 19)) {
+                const dt = new Date(str);
+                if (!isNaN(dt.getTime())) {
+                    const dia = String(dt.getDate()).padStart(2, '0');
+                    const mes = String(dt.getMonth() + 1).padStart(2, '0');
+                    const ano = dt.getFullYear();
+                    return `${dia}/${mes}/${ano}`;
+                }
+            }
+
+            // Se for número de série do Excel/Sheets
+            const dtNum = Number(str);
+            if (!isNaN(dtNum) && dtNum > 30000 && dtNum < 60000) {
+                const dt = new Date((dtNum - (25567 + 2)) * 86400 * 1000);
+                if (!isNaN(dt.getTime())) {
+                    const dia = String(dt.getDate()).padStart(2, '0');
+                    const mes = String(dt.getMonth() + 1).padStart(2, '0');
+                    const ano = dt.getFullYear();
+                    return `${dia}/${mes}/${ano}`;
+                }
+            }
+
+            // Caso contrário (texto livre ou já formatado), retorna exatamente como digitado
+            return str;
+        }
+
         function formatCell(val) {
             if (val === undefined || val === null) return '';
             const str = val.toString().trim();
@@ -545,7 +578,6 @@
             return str;
         }
 
-        // Funções do Pop-up de Anotação
         function mostrarNotaCompleta(texto) {
             document.getElementById('textoNotaCompleto').innerText = texto || 'Nenhuma anotação registrada.';
             document.getElementById('modalNotaOverlay').style.display = 'flex';
@@ -687,9 +719,9 @@
                 
                 let tdContent = '';
                 
-                // Colunas 0 a 7 (Linha, Vigência, Tipo, Dia, Mobilibus, Terminais, Avisos, Agência)
+                // Colunas
                 tdContent += `<td>${formatCell(row[0])}</td>`;
-                tdContent += `<td>${formatCell(row[1])}</td>`;
+                tdContent += `<td>${formatVigencia(row[1])}</td>`; // Vigência tratada dinamicamente
                 tdContent += `<td>${formatCell(row[2])}</td>`;
                 tdContent += `<td>${formatCell(row[3])}</td>`;
                 tdContent += `<td>${formatCell(row[4])}</td>`;
@@ -697,25 +729,21 @@
                 tdContent += `<td>${formatCell(row[6])}</td>`;
                 tdContent += `<td>${formatCell(row[7])}</td>`;
 
-                // Coluna 8: Anotações (Resumida visualmente e clicável para abrir o Pop-up)
+                // Coluna Anotações (Resumida visualmente e clicável para abrir o Pop-up)
                 const anotacaoVal = formatCell(row[8]);
                 if (anotacaoVal) {
-                    // Prepara o texto para ser injetado de forma segura no evento onclick do HTML
                     const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
                     tdContent += `<td class="anotacao-cell" onclick="mostrarNotaCompleta('${textoEscapado}')" title="Clique para ver o texto completo">${anotacaoVal}</td>`;
                 } else {
                     tdContent += `<td></td>`;
                 }
 
-                // Coluna 9: Status
                 tdContent += `<td>${formatCell(row[9])}</td>`;
 
-                // Coluna 10: Pendência
                 const pendenciaVal = row[10] || 'Pendente';
                 const badgeClass = pendenciaVal.toLowerCase() === 'atualizado' ? 'badge-atualizado' : 'badge-pendente';
                 tdContent += `<td><span class="badge-status ${badgeClass}">${pendenciaVal}</span></td>`;
 
-                // Ações
                 tdContent += `
                     <td>
                         <button class="btn btn-outline btn-sm" onclick="editarRegistro(${item.rowIndex})">Editar</button>
