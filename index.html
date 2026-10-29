@@ -106,7 +106,6 @@
             font-weight: 600;
         }
 
-        /* Grid Superior Otimizado para Não Estourar a Tela */
         .top-grid {
             display: grid;
             grid-template-columns: 1.8fr 1fr 1fr 2.2fr;
@@ -117,29 +116,30 @@
         .card-panel {
             background: var(--surface-color);
             border-radius: 12px;
-            padding: 10px;
+            padding: 14px; /* Aumentado o respiro interno */
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            min-width: 0; /* Essencial para evitar scroll horizontal inesperado */
+            min-width: 0;
         }
 
         .card-panel h3 {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 6px;
+            margin-bottom: 10px;
             font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
+        /* Altura ampliada dos quadros de filtros para mostrar muito mais conteúdo sem rolar */
         .lines-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
-            gap: 4px;
-            max-height: 120px;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 5px;
+            max-height: 200px;
             overflow-y: auto;
         }
 
@@ -147,8 +147,8 @@
             background: #f1f5f9;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 5px 2px;
-            font-size: 0.72rem;
+            padding: 7px 2px; /* Altura do botão levemente expandida para legibilidade */
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--text-main);
             cursor: pointer;
@@ -169,33 +169,33 @@
         .stack-list {
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            max-height: 120px;
+            gap: 6px;
+            max-height: 200px;
             overflow-y: auto;
         }
 
         .stack-list .filter-btn {
             text-align: left;
-            padding: 5px 8px;
+            padding: 7px 10px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        /* Container de Métricas com 2 Colunas */
+        /* Container de Métricas com mais altura e espaçamento */
         .metrics-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 5px;
+            gap: 8px;
             align-content: start;
-            max-height: 130px;
+            max-height: 200px;
             overflow-y: auto;
         }
 
         .metric-box {
             background: #f8fafc;
-            border-radius: 6px;
-            padding: 5px;
+            border-radius: 8px;
+            padding: 8px;
             border: 1px solid var(--border-color);
             text-align: center;
         }
@@ -205,14 +205,14 @@
         }
 
         .metric-box h4 {
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             color: var(--text-muted);
-            margin-bottom: 1px;
+            margin-bottom: 2px;
             text-transform: uppercase;
         }
 
         .metric-box .val {
-            font-size: 1rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--primary);
         }
@@ -698,7 +698,6 @@
                 if (tipoVal) tiposSet.add(tipoVal);
             });
 
-            // Geração estática dos botões com ordenação fixa por .sort()
             const containerLinhas = document.getElementById('filterLinhas');
             containerLinhas.innerHTML = '';
             Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})).forEach(linha => {
@@ -814,7 +813,6 @@
                     tr.classList.add('linha-selecionada');
                 }
                 
-                // Clique em qualquer célula seleciona a linha horizontalmente
                 tr.onclick = (e) => {
                     if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
                     document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
@@ -903,7 +901,6 @@
             renderizarTabela();
         }
 
-        /* Atualiza as métricas por coluna respeitando a regra do Status "Ok" */
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
             
@@ -916,7 +913,6 @@
                 const r = d.data;
                 const statusVal = formatCell(r[9]).toLowerCase();
 
-                // Se houver "ok" na coluna Status, ignora pendências dessa linha
                 if (statusVal === 'ok') return;
 
                 if (!formatCell(r[4])) pendMobi++;
