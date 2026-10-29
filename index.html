@@ -428,7 +428,7 @@
                 <input type="hidden" id="editRowIndex" value="">
                 <div class="form-grid">
                     <div class="form-group"><label>Linha</label><input type="text" id="fLinha" required></div>
-                    <div class="form-group"><label>Vigência</label><input type="text" id="fVigencia"></div>
+                    <div class="form-group"><label>Vigência</label><input type="text" id="fVigencia" placeholder="DD/MM/AAAA"></div>
                     
                     <div class="form-group">
                         <label>Tipo</label>
@@ -515,15 +515,15 @@
             }
         }
 
-        // Converte data flexível para fins de ordenação e filtro de período
+        // Converte data para fins de ordenação e filtro de período
         function parseData(valorRaw) {
             if (!valorRaw) return null;
             const str = valorRaw.toString().trim();
             if (str === '' || str === '-') return null;
             
-            if (str.includes('T') || (str.includes('-') && str.length >= 10)) {
-                const dt = new Date(str);
-                if (!isNaN(dt.getTime())) return dt;
+            const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (isoMatch) {
+                return new Date(isoMatch[1], isoMatch[2] - 1, isoMatch[3]);
             }
             if (str.includes('/')) {
                 const partes = str.split('/');
@@ -538,21 +538,16 @@
             return null;
         }
 
-        // Formata a vigência exibida na tabela: limpa códigos ISO/série para DD/MM/AAAA, mantendo textos livres intactos
+        // Formata especificamente a Vigência para DD/MM/AAAA se vier em formato ISO ou código de série
         function formatVigencia(valorRaw) {
             if (valorRaw === undefined || valorRaw === null) return '';
             const str = valorRaw.toString().trim();
             if (str === '' || str === '-') return '';
 
-            // Se for formato ISO de data (ex: 2023-06-15T03:00:00.000Z)
-            if (str.includes('T') && (str.endsWith('Z') || str.includes('+') || str.length >= 19)) {
-                const dt = new Date(str);
-                if (!isNaN(dt.getTime())) {
-                    const dia = String(dt.getDate()).padStart(2, '0');
-                    const mes = String(dt.getMonth() + 1).padStart(2, '0');
-                    const ano = dt.getFullYear();
-                    return `${dia}/${mes}/${ano}`;
-                }
+            // Se for formato ISO (ex: 2026-11-02T03:00:00.000Z)
+            const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (isoMatch) {
+                return `${isoMatch[3]}/${isoMatch[2]}/${isoMatch[1]}`;
             }
 
             // Se for número de série do Excel/Sheets
@@ -560,14 +555,13 @@
             if (!isNaN(dtNum) && dtNum > 30000 && dtNum < 60000) {
                 const dt = new Date((dtNum - (25567 + 2)) * 86400 * 1000);
                 if (!isNaN(dt.getTime())) {
-                    const dia = String(dt.getDate()).padStart(2, '0');
-                    const mes = String(dt.getMonth() + 1).padStart(2, '0');
-                    const ano = dt.getFullYear();
+                    const dia = String(dt.getUTCDate()).padStart(2, '0');
+                    const mes = String(dt.getUTCMonth() + 1).padStart(2, '0');
+                    const ano = dt.getUTCFullYear();
                     return `${dia}/${mes}/${ano}`;
                 }
             }
 
-            // Caso contrário (texto livre ou já formatado), retorna exatamente como digitado
             return str;
         }
 
@@ -719,9 +713,8 @@
                 
                 let tdContent = '';
                 
-                // Colunas
                 tdContent += `<td>${formatCell(row[0])}</td>`;
-                tdContent += `<td>${formatVigencia(row[1])}</td>`; // Vigência tratada dinamicamente
+                tdContent += `<td>${formatVigencia(row[1])}</td>`; // Vigência tratada e limpa para DD/MM/AAAA
                 tdContent += `<td>${formatCell(row[2])}</td>`;
                 tdContent += `<td>${formatCell(row[3])}</td>`;
                 tdContent += `<td>${formatCell(row[4])}</td>`;
@@ -729,7 +722,6 @@
                 tdContent += `<td>${formatCell(row[6])}</td>`;
                 tdContent += `<td>${formatCell(row[7])}</td>`;
 
-                // Coluna Anotações (Resumida visualmente e clicável para abrir o Pop-up)
                 const anotacaoVal = formatCell(row[8]);
                 if (anotacaoVal) {
                     const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
