@@ -29,15 +29,17 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding: 24px;
+            padding: 16px;
+            overflow-x: hidden; /* Remove rolagem lateral global */
         }
 
         .container {
-            max-width: 1400px;
+            width: 100%;
+            max-width: 100%;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
         }
 
         header {
@@ -45,23 +47,45 @@
             justify-content: space-between;
             align-items: center;
             background: var(--surface-color);
-            padding: 16px 24px;
-            border-radius: 16px;
+            padding: 12px 20px;
+            border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
         }
 
         h1 {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 700;
-            color: var(--text-main);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .date-filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .date-filter-group input {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 0.8rem;
+            outline: none;
         }
 
         .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             padding: 6px 12px;
             border-radius: 20px;
             background: var(--primary-light);
@@ -71,52 +95,49 @@
 
         .top-grid {
             display: grid;
-            grid-template-columns: 2.2fr 1fr 1fr 2fr;
-            gap: 16px;
+            grid-template-columns: 2fr 1fr 1fr 1.8fr;
+            gap: 12px;
         }
 
         .card-panel {
             background: var(--surface-color);
-            border-radius: 16px;
-            padding: 16px;
+            border-radius: 12px;
+            padding: 12px;
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .card-panel h3 {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             font-weight: 600;
         }
 
         .lines-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
-            gap: 6px;
-            max-height: 180px;
+            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+            gap: 4px;
+            max-height: 140px;
             overflow-y: auto;
-            padding-right: 4px;
         }
 
         .filter-btn {
             background: #f1f5f9;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 8px 4px;
-            font-size: 0.8rem;
+            border-radius: 6px;
+            padding: 6px 2px;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--text-main);
             cursor: pointer;
-            transition: all 0.2s;
             text-align: center;
         }
 
         .filter-btn:hover {
             background: var(--primary-light);
-            border-color: var(--primary-border);
             color: var(--primary);
         }
 
@@ -129,51 +150,44 @@
         .stack-list {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            max-height: 180px;
+            gap: 4px;
+            max-height: 140px;
             overflow-y: auto;
         }
 
         .stack-list .filter-btn {
             text-align: left;
-            padding: 8px 12px;
+            padding: 6px 8px;
         }
 
         .metrics-container {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
         }
 
         .metric-box {
             background: #f8fafc;
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 8px;
+            padding: 10px;
             border: 1px solid var(--border-color);
-        }
-
-        .metric-box h4 {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .metric-row {
-            display: flex;
-            justify-content: space-around;
             text-align: center;
         }
 
-        .metric-item .val {
-            font-size: 1.2rem;
+        .metric-box h4 {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .metric-box .val {
+            font-size: 1.4rem;
             font-weight: 700;
             color: var(--primary);
         }
 
-        .metric-item .lbl {
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
+        .metric-box .val.red {
+            color: var(--accent-red);
         }
 
         .action-bar {
@@ -181,8 +195,8 @@
             justify-content: space-between;
             align-items: center;
             background: var(--surface-color);
-            padding: 12px 20px;
-            border-radius: 12px;
+            padding: 10px 16px;
+            border-radius: 10px;
             border: 1px solid var(--border-color);
         }
 
@@ -190,15 +204,11 @@
             background: var(--primary);
             color: white;
             border: none;
-            padding: 10px 18px;
-            border-radius: 8px;
+            padding: 8px 14px;
+            border-radius: 6px;
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             cursor: pointer;
-            transition: background 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
         }
 
         .btn:hover { background: var(--primary-hover); }
@@ -209,53 +219,42 @@
             border: 1px solid var(--border-color);
         }
 
-        .btn-outline:hover {
-            background: #f1f5f9;
-            color: var(--text-main);
-        }
-
-        .btn-sm {
-            padding: 4px 8px;
-            font-size: 0.75rem;
-        }
+        .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
 
         .table-card {
             background: var(--surface-color);
-            border-radius: 16px;
+            border-radius: 12px;
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            overflow-x: auto;
+            width: 100%;
+            overflow-x: auto; /* Permite scroll apenas dentro da tabela se a tela for muito pequena */
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
-            white-space: nowrap;
+            font-size: 0.78rem;
+        }
+
+        th, td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
         }
 
         th {
             background: #f8fafc;
-            padding: 12px 16px;
-            text-align: left;
             font-weight: 600;
             color: var(--text-muted);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        td {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-main);
         }
 
         tbody tr:hover { background: #f8fafc; }
 
         .badge-status {
-            padding: 4px 8px;
-            border-radius: 6px;
+            padding: 2px 6px;
+            border-radius: 4px;
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
         }
 
         .badge-pendente { background: #fef2f2; color: #ef4444; }
@@ -274,26 +273,25 @@
 
         .modal {
             background: var(--surface-color);
-            border-radius: 20px;
-            padding: 24px;
+            border-radius: 16px;
+            padding: 20px;
             width: 100%;
-            max-width: 700px;
+            max-width: 600px;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 10px;
         }
 
         .form-group {
@@ -308,23 +306,19 @@
             color: var(--text-muted);
         }
 
-        .form-group input {
-            padding: 8px 12px;
-            border-radius: 8px;
+        .form-group input, .form-group select {
+            padding: 6px 10px;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
             outline: none;
-            font-size: 0.875rem;
-        }
-
-        .form-group input:focus {
-            border-color: var(--primary);
+            font-size: 0.8rem;
         }
 
         .modal-footer {
-            margin-top: 20px;
+            margin-top: 16px;
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
+            gap: 8px;
         }
     </style>
 </head>
@@ -332,11 +326,22 @@
 
     <div class="container">
         <header>
-            <h1>Painel de Controle Operacional</h1>
-            <div class="status-badge" id="statusNuvem">Conectando...</div>
+            <h1>Painel Operacional</h1>
+            
+            <div class="header-actions">
+                <!-- Filtro de Período -->
+                <div class="date-filter-group">
+                    <label>Início:</label>
+                    <input type="date" id="dataInicio" onchange="renderizarTabela()">
+                    <label>Fim:</label>
+                    <input type="date" id="dataFim" onchange="renderizarTabela()">
+                </div>
+                
+                <div class="status-badge" id="statusNuvem">Conectando...</div>
+            </div>
         </header>
 
-        <!-- Quadros Superiores / Filtros Dinâmicos -->
+        <!-- Quadros Superiores -->
         <div class="top-grid">
             <div class="card-panel">
                 <h3>Linhas de Ônibus</h3>
@@ -355,16 +360,12 @@
 
             <div class="card-panel metrics-container">
                 <div class="metric-box">
-                    <h4>Alterações Totais</h4>
-                    <div class="metric-row">
-                        <div class="metric-item"><div class="val" id="mTotGeral">0</div><div class="lbl">Total</div></div>
-                    </div>
+                    <h4>Alterações no Período</h4>
+                    <div class="val" id="mTotGeral">0</div>
                 </div>
                 <div class="metric-box">
-                    <h4>Alterações Restantes</h4>
-                    <div class="metric-row">
-                        <div class="metric-item"><div class="val" id="mRestGeral">0</div><div class="lbl">Pendentes</div></div>
-                    </div>
+                    <h4>Pendências no Período</h4>
+                    <div class="val red" id="mRestGeral">0</div>
                 </div>
             </div>
         </div>
@@ -373,7 +374,7 @@
         <div class="action-bar">
             <div>
                 <button class="btn-outline btn" onclick="limparFiltros()">Limpar Filtros</button>
-                <span id="filtroAtivoLabel" style="font-size:0.8rem; color:var(--text-muted); margin-left:10px;"></span>
+                <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;"></span>
             </div>
             <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
         </div>
@@ -402,7 +403,7 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal de Preenchimento -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -413,9 +414,34 @@
                 <input type="hidden" id="editRowIndex" value="">
                 <div class="form-grid">
                     <div class="form-group"><label>Linha</label><input type="text" id="fLinha" required></div>
-                    <div class="form-group"><label>Vigência</label><input type="text" id="fVigencia"></div>
-                    <div class="form-group"><label>Tipo</label><input type="text" id="fTipo"></div>
-                    <div class="form-group"><label>Dia</label><input type="text" id="fDia"></div>
+                    <div class="form-group"><label>Vigência (Ex: 31/10/2026)</label><input type="text" id="fVigencia" placeholder="DD/MM/AAAA"></div>
+                    
+                    <!-- Campo Tipo com opções predefinidas -->
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="fTipo">
+                            <option value="">Selecione...</option>
+                            <option value="Ajuste Emergencial">Ajuste Emergencial</option>
+                            <option value="Correção">Correção</option>
+                            <option value="Exposição">Exposição</option>
+                            <option value="Finados">Finados</option>
+                            <option value="Proposta">Proposta</option>
+                        </select>
+                    </div>
+
+                    <!-- Campo Dia com opções predefinidas -->
+                    <div class="form-group">
+                        <label>Dia</label>
+                        <select id="fDia">
+                            <option value="">Selecione...</option>
+                            <option value="Útil">Útil</option>
+                            <option value="Sáb">Sáb</option>
+                            <option value="Dom">Dom</option>
+                            <option value="Útil e Sáb">Útil e Sáb</option>
+                            <option value="Útil, Sáb e Dom">Útil, Sáb e Dom</option>
+                        </select>
+                    </div>
+
                     <div class="form-group"><label>Mobilibus</label><input type="text" id="fMobilibus"></div>
                     <div class="form-group"><label>Terminais</label><input type="text" id="fTerminais"></div>
                     <div class="form-group"><label>Avisos</label><input type="text" id="fAvisos"></div>
@@ -432,7 +458,6 @@
     </div>
 
     <script>
-        // COLE A SUA NOVA URL DO APPS SCRIPT AQUI ENTRE AS ASPAS:
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec';
 
         let dadosGlobais = [];
@@ -451,9 +476,18 @@
             } catch (err) {
                 console.error(err);
                 document.getElementById('statusNuvem').innerText = "Erro de Sincronização";
-                document.getElementById('statusNuvem').style.background = "#fef2f2";
-                document.getElementById('statusNuvem').style.color = "#ef4444";
             }
+        }
+
+        // Converte texto da vigência (Ex: "31/10/2026") em um objeto de Data comparável
+        function parseData(dataStr) {
+            if (!dataStr) return null;
+            const str = dataStr.toString().trim();
+            const partes = str.split('/');
+            if (partes.length === 3) {
+                return new Date(partes[2], partes[1] - 1, partes[0]);
+            }
+            return null;
         }
 
         function gerarFiltrosDinamicos() {
@@ -509,17 +543,30 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            let dadosExibidos = dadosGlobais;
+            const dInicio = document.getElementById('dataInicio').value ? new Date(document.getElementById('dataInicio').value) : null;
+            const dFim = document.getElementById('dataFim').value ? new Date(document.getElementById('dataFim').value) : null;
 
-            if (filtroAtivo.tipo && filtroAtivo.valor) {
-                dadosExibidos = dadosGlobais.filter(item => {
-                    const row = item.data;
+            let dadosExibidos = dadosGlobais.filter(item => {
+                const row = item.data;
+                
+                // Filtro de Data
+                if (dInicio || dFim) {
+                    const dtVigencia = parseData(row[1]);
+                    if (dtVigencia) {
+                        if (dInicio && dtVigencia < dInicio) return false;
+                        if (dFim && dtVigencia > dFim) return false;
+                    }
+                }
+
+                // Filtros dos Quadros
+                if (filtroAtivo.tipo && filtroAtivo.valor) {
                     if (filtroAtivo.tipo === 'linha') return (row[0] || '').toString().trim() === filtroAtivo.valor.toString().trim();
                     if (filtroAtivo.tipo === 'dia') return (row[3] || '').toString().trim() === filtroAtivo.valor.toString().trim();
                     if (filtroAtivo.tipo === 'tipo') return (row[2] || '').toString().trim() === filtroAtivo.valor.toString().trim();
-                    return true;
-                });
-            }
+                }
+
+                return true;
+            });
 
             dadosExibidos.forEach((item) => {
                 const row = item.data;
@@ -564,6 +611,8 @@
 
         function limparFiltros() {
             filtroAtivo = { tipo: null, valor: null };
+            document.getElementById('dataInicio').value = '';
+            document.getElementById('dataFim').value = '';
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('filtroAtivoLabel').innerText = '';
             renderizarTabela();
@@ -648,7 +697,6 @@
             } catch (err) {
                 console.error("Erro ao salvar:", err);
                 alert("Erro ao salvar dados na nuvem.");
-                document.getElementById('statusNuvem').innerText = "Erro ao Salvar";
             }
         }
     </script>
