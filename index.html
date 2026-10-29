@@ -250,6 +250,21 @@
 
         tbody tr:hover { background: #f8fafc; }
 
+        /* Estilo para a coluna Anotações (Resumida e clicável) */
+        .anotacao-cell {
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            color: #0284c7;
+            text-decoration: underline dotted;
+        }
+        .anotacao-cell:hover {
+            color: #0369a1;
+            background-color: #f0f9ff;
+        }
+
         .badge-status {
             padding: 2px 6px;
             border-radius: 4px;
@@ -403,7 +418,7 @@
         </div>
     </div>
 
-    <!-- Modal de Preenchimento -->
+    <!-- Modal de Preenchimento / Edição -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -455,9 +470,23 @@
         </div>
     </div>
 
+    <!-- Modal Pop-up para Visualização Completa da Anotação -->
+    <div class="modal-overlay" id="modalNotaOverlay">
+        <div class="modal" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2>Texto Completo da Anotação</h2>
+                <button class="btn-outline btn btn-sm" onclick="fecharModalNota()">✕</button>
+            </div>
+            <div id="textoNotaCompleto" style="font-size: 0.85rem; line-height: 1.6; word-break: break-word; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); max-height: 250px; overflow-y: auto; white-space: pre-wrap;">
+            </div>
+            <div class="modal-footer" style="margin-top: 16px;">
+                <button type="button" class="btn" onclick="fecharModalNota()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec
-';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec';
 
         let dadosGlobais = [];
         let filtrosAtivos = {
@@ -487,7 +516,6 @@
             }
         }
 
-        // Converte data flexível estritamente para fins de ordenação e filtro de período
         function parseData(valorRaw) {
             if (!valorRaw) return null;
             const str = valorRaw.toString().trim();
@@ -510,12 +538,21 @@
             return null;
         }
 
-        // Garante que células vazias ou com apenas um hífen fiquem em branco
         function formatCell(val) {
             if (val === undefined || val === null) return '';
             const str = val.toString().trim();
-            if (str === '' || str === '-') return '';
+            if (str === '-') return '';
             return str;
+        }
+
+        // Funções do Pop-up de Anotação
+        function mostrarNotaCompleta(texto) {
+            document.getElementById('textoNotaCompleto').innerText = texto || 'Nenhuma anotação registrada.';
+            document.getElementById('modalNotaOverlay').style.display = 'flex';
+        }
+
+        function fecharModalNota() {
+            document.getElementById('modalNotaOverlay').style.display = 'none';
         }
 
         function gerarFiltrosDinamicos() {
@@ -621,7 +658,6 @@
                 const rA = a.data;
                 const rB = b.data;
 
-                // 1º Critério: Vigência (do mais novo para o mais velho -> Descendente)
                 const dtA = parseData(rA[1]);
                 const dtB = parseData(rB[1]);
                 if (dtA && dtB) {
@@ -633,13 +669,11 @@
                     if (compVig !== 0) return compVig;
                 }
 
-                // 2º Critério: Linha (Crescente numérica/alfabética)
                 const linhaA = formatCell(rA[0]);
                 const linhaB = formatCell(rB[0]);
                 const compLinha = linhaA.localeCompare(linhaB, undefined, { numeric: true });
                 if (compLinha !== 0) return compLinha;
 
-                // 3º Critério: Dia (Alfabética)
                 const diaA = formatCell(rA[3]);
                 const diaB = formatCell(rB[3]);
                 return diaA.localeCompare(diaB, undefined, { sensitivity: 'base' });
@@ -653,22 +687,35 @@
                 
                 let tdContent = '';
                 
-                // Linha (Coluna 0)
+                // Colunas 0 a 7 (Linha, Vigência, Tipo, Dia, Mobilibus, Terminais, Avisos, Agência)
                 tdContent += `<td>${formatCell(row[0])}</td>`;
-                
-                // Vigência (Coluna 1) - Exatamente como está no banco de dados
                 tdContent += `<td>${formatCell(row[1])}</td>`;
+                tdContent += `<td>${formatCell(row[2])}</td>`;
+                tdContent += `<td>${formatCell(row[3])}</td>`;
+                tdContent += `<td>${formatCell(row[4])}</td>`;
+                tdContent += `<td>${formatCell(row[5])}</td>`;
+                tdContent += `<td>${formatCell(row[6])}</td>`;
+                tdContent += `<td>${formatCell(row[7])}</td>`;
 
-                // Colunas 2 até 9 (Tipo, Dia, Mobilibus, Terminais, Avisos, Agência, Anotações, Status)
-                for (let i = 2; i < 10; i++) {
-                    tdContent += `<td>${formatCell(row[i])}</td>`;
+                // Coluna 8: Anotações (Resumida visualmente e clicável para abrir o Pop-up)
+                const anotacaoVal = formatCell(row[8]);
+                if (anotacaoVal) {
+                    // Prepara o texto para ser injetado de forma segura no evento onclick do HTML
+                    const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
+                    tdContent += `<td class="anotacao-cell" onclick="mostrarNotaCompleta('${textoEscapado}')" title="Clique para ver o texto completo">${anotacaoVal}</td>`;
+                } else {
+                    tdContent += `<td></td>`;
                 }
 
-                // Pendência (Coluna 10)
+                // Coluna 9: Status
+                tdContent += `<td>${formatCell(row[9])}</td>`;
+
+                // Coluna 10: Pendência
                 const pendenciaVal = row[10] || 'Pendente';
                 const badgeClass = pendenciaVal.toLowerCase() === 'atualizado' ? 'badge-atualizado' : 'badge-pendente';
                 tdContent += `<td><span class="badge-status ${badgeClass}">${pendenciaVal}</span></td>`;
 
+                // Ações
                 tdContent += `
                     <td>
                         <button class="btn btn-outline btn-sm" onclick="editarRegistro(${item.rowIndex})">Editar</button>
