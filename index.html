@@ -106,21 +106,21 @@
             font-weight: 600;
         }
 
-        /* Grid Superior Ajustada para Encaixe Perfeito sem Rolagem Horizontal */
+        /* Grid Superior Original */
         .top-grid {
             display: grid;
-            grid-template-columns: 1.8fr 1fr 1fr 2fr;
-            gap: 10px;
+            grid-template-columns: 2fr 1fr 1fr 1.8fr;
+            gap: 12px;
             width: 100%;
         }
 
         .card-panel {
             background: var(--surface-color);
             border-radius: 12px;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            min-width: 0; /* Impede que elementos estoureem o grid */
+            min-width: 0;
         }
 
         .card-panel h3 {
@@ -128,18 +128,15 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .lines-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
             gap: 4px;
-            max-height: 110px;
+            max-height: 120px;
             overflow-y: auto;
         }
 
@@ -147,8 +144,8 @@
             background: #f1f5f9;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 5px 2px;
-            font-size: 0.72rem;
+            padding: 6px 2px;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--text-main);
             cursor: pointer;
@@ -170,49 +167,37 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
-            max-height: 110px;
+            max-height: 120px;
             overflow-y: auto;
         }
 
         .stack-list .filter-btn {
             text-align: left;
-            padding: 5px 8px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            padding: 6px 8px;
         }
 
-        /* Container de Métricas Compacto e Alinhado */
         .metrics-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 5px;
-            align-content: start;
-            max-height: 110px;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .metric-box {
             background: #f8fafc;
-            border-radius: 6px;
-            padding: 5px;
+            border-radius: 8px;
+            padding: 8px;
             border: 1px solid var(--border-color);
             text-align: center;
         }
 
-        .metric-box.full-width {
-            grid-column: span 2;
-        }
-
         .metric-box h4 {
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
-            margin-bottom: 1px;
-            text-transform: uppercase;
+            margin-bottom: 2px;
         }
 
         .metric-box .val {
-            font-size: 1rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--primary);
         }
@@ -421,7 +406,7 @@
                 </div>
             </header>
 
-            <!-- Quadros Superiores Compactos e Proporcionais -->
+            <!-- Quadros Superiores Originais -->
             <div class="top-grid">
                 <div class="card-panel">
                     <h3>Linhas de Ônibus</h3>
@@ -438,27 +423,14 @@
                     <div class="stack-list" id="filterTipo"></div>
                 </div>
 
-                <!-- Painel de Métricas -->
                 <div class="card-panel metrics-container">
-                    <div class="metric-box full-width">
+                    <div class="metric-box">
                         <h4 id="labelMetricaTotais">Alterações Totais</h4>
                         <div class="val" id="mTotGeral">0</div>
                     </div>
                     <div class="metric-box">
-                        <h4>Mobilibus</h4>
-                        <div class="val red" id="mPendMobi">0</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>Terminais</h4>
-                        <div class="val red" id="mPendTerm">0</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>Avisos</h4>
-                        <div class="val red" id="mPendAvis">0</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>Agência/Telão</h4>
-                        <div class="val red" id="mPendAgen">0</div>
+                        <h4>Pendências no Período</h4>
+                        <div class="val red" id="mRestGeral">0</div>
                     </div>
                 </div>
             </div>
@@ -904,27 +876,16 @@
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
             
-            let pendMobi = 0;
-            let pendTerm = 0;
-            let pendAvis = 0;
-            let pendAgen = 0;
-
-            dados.forEach(d => {
+            const pendentesCount = dados.filter(d => {
                 const r = d.data;
-                const statusVal = formatCell(r[9]).toLowerCase();
+                const mobi = formatCell(r[4]);
+                const term = formatCell(r[5]);
+                const avis = formatCell(r[6]);
+                const agen = formatCell(r[7]);
+                return (!mobi || !term || !avis || !agen);
+            }).length;
 
-                if (statusVal === 'ok') return;
-
-                if (!formatCell(r[4])) pendMobi++;
-                if (!formatCell(r[5])) pendTerm++;
-                if (!formatCell(r[6])) pendAvis++;
-                if (!formatCell(r[7])) pendAgen++;
-            });
-
-            document.getElementById('mPendMobi').innerText = pendMobi;
-            document.getElementById('mPendTerm').innerText = pendTerm;
-            document.getElementById('mPendAvis').innerText = pendAvis;
-            document.getElementById('mPendAgen').innerText = pendAgen;
+            document.getElementById('mRestGeral').innerText = pendentesCount;
         }
 
         function abrirModal() {
