@@ -456,11 +456,10 @@
     </div>
 
     <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec
-';
+        // COLE A SUA URL DO APPS SCRIPT AQUI ENTRE AS ASPAS:
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec';
 
         let dadosGlobais = [];
-        // Suporte a múltiplos filtros simultâneos por categoria usando Sets
         let filtrosAtivos = {
             linha: new Set(),
             dia: new Set(),
@@ -468,6 +467,10 @@
         };
 
         async function carregarDados() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar informações da planilha, por favor aguarde...</td></tr>`;
+            document.getElementById('statusNuvem').innerText = "A sincronizar...";
+
             try {
                 const resp = await fetch(WEB_APP_URL);
                 const data = await resp.json();
@@ -478,12 +481,12 @@
                 renderizarTabela();
                 document.getElementById('statusNuvem').innerText = "Conectado ao Google Sheets";
             } catch (err) {
-                console.error(err);
+                console.error("Erro detalhado:", err);
                 document.getElementById('statusNuvem').innerText = "Erro de Sincronização";
+                tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da nuvem. Verifique a consola (F12).</td></tr>`;
             }
         }
 
-        // Função auxiliar apenas para ler a data para ordenação/comparação sem alterar o texto original exibido
         function parseData(valorRaw) {
             if (!valorRaw) return null;
             const str = valorRaw.toString().trim();
@@ -564,7 +567,6 @@
             const dInicio = inputInicio ? new Date(inputInicio + "T00:00:00") : null;
             const dFim = inputFim ? new Date(inputFim + "T23:59:59") : null;
 
-            // Rótulo dinâmico da métrica
             const labelMetrica = document.getElementById('labelMetricaTotais');
             if (inputInicio || inputFim) {
                 labelMetrica.innerText = "Alterações por período";
@@ -572,11 +574,9 @@
                 labelMetrica.innerText = "Alterações Totais";
             }
 
-            // 1. Filtragem com suporte a múltipla seleção nos conjuntos (Sets)
             let dadosExibidos = dadosGlobais.filter(item => {
                 const row = item.data;
                 
-                // Filtro de Período de Data
                 if (dInicio || dFim) {
                     const dtVigencia = parseData(row[1]);
                     if (dtVigencia) {
@@ -587,17 +587,14 @@
                     }
                 }
 
-                // Filtro de Linhas (se houver alguma selecionada)
                 if (filtrosAtivos.linha.size > 0) {
                     if (!filtrosAtivos.linha.has((row[0] || '').toString().trim())) return false;
                 }
 
-                // Filtro de Dia (se houver algum selecionado)
                 if (filtrosAtivos.dia.size > 0) {
                     if (!filtrosAtivos.dia.has((row[3] || '').toString().trim())) return false;
                 }
 
-                // Filtro de Tipo (se houver algum selecionado)
                 if (filtrosAtivos.tipo.size > 0) {
                     if (!filtrosAtivos.tipo.has((row[2] || '').toString().trim())) return false;
                 }
@@ -605,32 +602,27 @@
                 return true;
             });
 
-            // 2. Ordenação: Vigência (do mais novo para o mais velho) -> Linha (crescente) -> Dia (alfabética)
+            // Ordenação: Vigência (do mais novo para o mais velho) -> Linha (crescente) -> Dia (alfabética)
             dadosExibidos.sort((a, b) => {
                 const rA = a.data;
                 const rB = b.data;
 
-                // 1º Critério: Vigência (descendente - mais novo para mais velho)
                 const dtA = parseData(rA[1]) || new Date(0);
                 const dtB = parseData(rB[1]) || new Date(0);
                 if (dtB - dtA !== 0) return dtB - dtA;
 
-                // 2º Critério: Linha (crescente)
                 const linhaA = (rA[0] || '').toString().trim();
                 const linhaB = (rB[0] || '').toString().trim();
                 const compLinha = linhaA.localeCompare(linhaB, undefined, { numeric: true });
                 if (compLinha !== 0) return compLinha;
 
-                // 3º Critério: Dia (alfabética)
                 const diaA = (rA[3] || '').toString().trim();
                 const diaB = (rB[3] || '').toString().trim();
                 return diaA.localeCompare(diaB);
             });
 
-            // Atualiza texto explicativo dos filtros ativos na barra de ações
             atualizarTextoFiltrosAtivos();
 
-            // 3. Renderização (exibindo dados exatamente como estão no banco, sem hífens para vazios)
             dadosExibidos.forEach((item) => {
                 const row = item.data;
                 const tr = document.createElement('tr');
@@ -640,10 +632,10 @@
                 // Linha (Coluna 0)
                 tdContent += `<td>${row[0] !== undefined && row[0] !== null ? row[0] : ''}</td>`;
                 
-                // Vigência (Coluna 1) - Exibida exatamente como veio do banco de dados
+                // Vigência (Coluna 1) - Exibida exatamente como está no banco de dados
                 tdContent += `<td>${row[1] !== undefined && row[1] !== null ? row[1] : ''}</td>`;
 
-                // Colunas 2 até 9 (Tipo, Dia, Mobilibus, Terminais, Avisos, Agência, Anotações, Status)
+                // Colunas 2 até 9 (Tipo, Dia, Mobilibus, Terminais, Avisos, Agência, Anotações, Status) - Em branco se vazias
                 for (let i = 2; i < 10; i++) {
                     const val = (row[i] !== undefined && row[i] !== null) ? row[i] : '';
                     tdContent += `<td>${val}</td>`;
@@ -654,7 +646,6 @@
                 const badgeClass = pendenciaVal.toLowerCase() === 'atualizado' ? 'badge-atualizado' : 'badge-pendente';
                 tdContent += `<td><span class="badge-status ${badgeClass}">${pendenciaVal}</span></td>`;
 
-                // Ações
                 tdContent += `
                     <td>
                         <button class="btn btn-outline btn-sm" onclick="editarRegistro(${item.rowIndex})">Editar</button>
@@ -668,7 +659,6 @@
             atualizarMetricas(dadosExibidos);
         }
 
-        // Gerencia seleção múltipla de filtros (com ou sem Ctrl)
         function toggleFiltro(tipo, valor, elemento, event) {
             const set = filtrosAtivos[tipo];
             
@@ -685,7 +675,7 @@
 
         function atualizarTextoFiltrosAtivos() {
             let partes = [];
-            if (filtrosAtivos.linha.size > 0) partes.appendText ? partes.push(`Linhas: ${Array.from(filtrosAtivos.linha).join(', ')}`) : partes.push(`Linhas: ${Array.from(filtrosAtivos.linha).join(', ')}`);
+            if (filtrosAtivos.linha.size > 0) partes.push(`Linhas: ${Array.from(filtrosAtivos.linha).join(', ')}`);
             if (filtrosAtivos.tipo.size > 0) partes.push(`Tipos: ${Array.from(filtrosAtivos.tipo).join(', ')}`);
             if (filtrosAtivos.dia.size > 0) partes.push(`Dias: ${Array.from(filtrosAtivos.dia).join(', ')}`);
             
