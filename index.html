@@ -251,7 +251,7 @@
 
         th, td {
             padding: 8px 10px;
-            text-align: center; /* Todas as colunas centralizadas */
+            text-align: center;
             border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
         }
@@ -262,9 +262,18 @@
             color: var(--text-muted);
         }
 
-        tbody tr:hover { background: #f8fafc; }
+        /* Efeito Hover e Seleção Horizontal da Linha */
+        tbody tr {
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        tbody tr:hover { 
+            background: #f1f5f9; 
+        }
+        tbody tr.linha-selecionada {
+            background-color: #cbd5e1 !important;
+        }
 
-        /* Animação para destacar a linha editada */
         tr.linha-focada {
             animation: highlightFade 3s ease-out forwards;
         }
@@ -274,7 +283,6 @@
             100% { background-color: transparent; }
         }
 
-        /* Novo Destaque para Anotações (Badge Elegante) */
         .anotacao-badge {
             display: inline-flex;
             align-items: center;
@@ -378,7 +386,7 @@
 <body onload="carregarDados()">
 
     <div class="container">
-        <!-- ÁREA CONGELADA NO TOPO DA TELA -->
+        <!-- ÁREA CONGELADA NO TOPO -->
         <div class="sticky-top-area">
             <header>
                 <h1>Painel Operacional</h1>
@@ -470,8 +478,6 @@
                 <input type="hidden" id="editRowIndex" value="">
                 <div class="form-grid">
                     <div class="form-group"><label>Linha</label><input type="text" id="fLinha" required></div>
-                    
-                    <!-- Campo Vigência Padronizado com Seletor de Data -->
                     <div class="form-group"><label>Vigência</label><input type="date" id="fVigencia"></div>
                     
                     <div class="form-group">
@@ -513,7 +519,7 @@
         </div>
     </div>
 
-    <!-- Modal Pop-up para Visualização Completa da Anotação -->
+    <!-- Modal Pop-up para Anotações -->
     <div class="modal-overlay" id="modalNotaOverlay">
         <div class="modal" style="max-width: 450px;">
             <div class="modal-header">
@@ -538,7 +544,6 @@
             tipo: new Set()
         };
 
-        // Guarda o identificador da linha salva recentemente para direcionar o foco
         let ultimaLinhaSalvaId = null;
 
         async function carregarDados() {
@@ -558,7 +563,6 @@
                 renderizarTabela();
                 document.getElementById('statusNuvem').innerText = "Conectado ao Google Sheets";
 
-                // Se houver registro recente salvo, rola a tela até ele e aplica o destaque
                 if (ultimaLinhaSalvaId !== null) {
                     setTimeout(() => {
                         const trAlvo = document.getElementById(`row-${ultimaLinhaSalvaId}`);
@@ -598,7 +602,6 @@
             return null;
         }
 
-        // Converte qualquer entrada em formato YYYY-MM-DD para preencher o input do tipo Date no modal
         function formatToInputDate(valorRaw) {
             const dt = parseData(valorRaw);
             if (!dt || isNaN(dt.getTime())) return '';
@@ -664,7 +667,7 @@
                 if (tipoVal) tiposSet.add(tipoVal);
             });
 
-            // Linhas
+            // Ordem estática garantida por .sort()
             const containerLinhas = document.getElementById('filterLinhas');
             containerLinhas.innerHTML = '';
             Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})).forEach(linha => {
@@ -676,7 +679,6 @@
                 containerLinhas.appendChild(btn);
             });
 
-            // Dia
             const containerDia = document.getElementById('filterDia');
             containerDia.innerHTML = '';
             Array.from(diasSet).sort((a, b) => a.localeCompare(b)).forEach(dia => {
@@ -688,7 +690,6 @@
                 containerDia.appendChild(btn);
             });
 
-            // Tipo
             const containerTipo = document.getElementById('filterTipo');
             containerTipo.innerHTML = '';
             Array.from(tiposSet).sort((a, b) => a.localeCompare(b)).forEach(tipo => {
@@ -746,7 +747,6 @@
                 return true;
             });
 
-            // Ordenação: Vigência (do mais novo para o mais velho) -> Linha (crescente) -> Dia (alfabética)
             dadosExibidos.sort((a, b) => {
                 const rA = a.data;
                 const rB = b.data;
@@ -777,8 +777,15 @@
             dadosExibidos.forEach((item) => {
                 const row = item.data;
                 const tr = document.createElement('tr');
-                tr.id = `row-${item.rowIndex}`; // Atribui ID para viabilizar o foco
+                tr.id = `row-${item.rowIndex}`;
                 
+                // Evento de seleção horizontal ao clicar em qualquer lugar da linha
+                tr.onclick = (e) => {
+                    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                    document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
+                    tr.classList.add('linha-selecionada');
+                };
+
                 let tdContent = '';
                 
                 tdContent += `<td>${formatCell(row[0])}</td>`;
@@ -790,7 +797,6 @@
                 tdContent += `<td>${formatCell(row[6])}</td>`;
                 tdContent += `<td>${formatCell(row[7])}</td>`;
 
-                // Coluna Anotações (Novo Destaque Elegante)
                 const anotacaoVal = formatCell(row[8]);
                 if (anotacaoVal) {
                     const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
@@ -863,7 +869,19 @@
 
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
-            document.getElementById('mRestGeral').innerText = dados.filter(d => (d.data[10] || '').toString().toLowerCase() === 'pendente').length;
+            
+            // Contagem de quantas linhas faltam informações baseando-se nas colunas operacionais (Mobilibus, Terminais, Avisos, Agência/Telão e Status)
+            const pendentesCount = dados.filter(d => {
+                const r = d.data;
+                const mobi = formatCell(r[4]);
+                const term = formatCell(r[5]);
+                const avis = formatCell(r[6]);
+                const agen = formatCell(r[7]);
+                const stat = formatCell(r[9]);
+                return (!mobi || !term || !avis || !agen || !stat);
+            }).length;
+
+            document.getElementById('mRestGeral').innerText = pendentesCount;
         }
 
         function abrirModal() {
@@ -886,7 +904,7 @@
             document.getElementById('editRowIndex').value = rowIndex;
 
             document.getElementById('fLinha').value = r[0] || '';
-            document.getElementById('fVigencia').value = formatToInputDate(r[1]); // Preenche a data formatada no seletor
+            document.getElementById('fVigencia').value = formatToInputDate(r[1]);
             document.getElementById('fTipo').value = r[2] || '';
             document.getElementById('fDia').value = r[3] || '';
             document.getElementById('fMobilibus').value = r[4] || '';
@@ -912,7 +930,6 @@
             const ehVazio = (val) => !val || val === '-';
             const pendenciaCalculada = (ehVazio(mobi) || ehVazio(term) || ehVazio(avis) || ehVazio(agen) || ehVazio(stat)) ? 'Pendente' : 'Atualizado';
 
-            // Garante que o valor da vigência seja convertido para o padrão legível antes de ir para o Google Sheets
             const vigenciaInput = document.getElementById('fVigencia').value;
             let vigenciaFormatada = vigenciaInput;
             if (vigenciaInput && vigenciaInput.includes('-')) {
@@ -935,7 +952,6 @@
                 col11: pendenciaCalculada
             };
 
-            // Guarda a linha editada ou define 2 se for uma nova linha no topo
             ultimaLinhaSalvaId = targetRow ? parseInt(targetRow) : 2;
 
             document.getElementById('statusNuvem').innerText = "Salvando...";
