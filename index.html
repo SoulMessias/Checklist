@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Controle de Linhas</title>
+    <title>Painel de Controle Operacional</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -17,7 +17,6 @@
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --accent-red: #ef4444;
-            --accent-amber: #f59e0b;
         }
 
         * {
@@ -259,15 +258,8 @@
             font-size: 0.75rem;
         }
 
-        .badge-pendente {
-            background: #fef2f2;
-            color: #ef4444;
-        }
-
-        .badge-atualizado {
-            background: #ecfdf5;
-            color: #059669;
-        }
+        .badge-pendente { background: #fef2f2; color: #ef4444; }
+        .badge-atualizado { background: #ecfdf5; color: #059669; }
 
         .modal-overlay {
             position: fixed;
@@ -341,53 +333,37 @@
     <div class="container">
         <header>
             <h1>Painel de Controle Operacional</h1>
-            <div class="status-badge" id="statusNuvem">Conectado ao Google Sheets</div>
+            <div class="status-badge" id="statusNuvem">Conectando...</div>
         </header>
 
-        <!-- Quadros Superiores / Filtros -->
+        <!-- Quadros Superiores / Filtros Dinâmicos -->
         <div class="top-grid">
-            <!-- QUADRO 1: LINHAS (GERADO DINAMICAMENTE) -->
             <div class="card-panel">
                 <h3>Linhas de Ônibus</h3>
-                <div class="lines-grid" id="filterLinhas">
-                    <!-- Preenchido via JS conforme dados da planilha -->
-                </div>
+                <div class="lines-grid" id="filterLinhas"></div>
             </div>
 
-            <!-- QUADRO 2: TIPO DE DIA (GERADO DINAMICAMENTE) -->
             <div class="card-panel">
                 <h3>Tipo de Dia</h3>
-                <div class="stack-list" id="filterDia">
-                    <!-- Preenchido via JS conforme dados da planilha -->
-                </div>
+                <div class="stack-list" id="filterDia"></div>
             </div>
 
-            <!-- QUADRO 3: TIPO (GERADO DINAMICAMENTE) -->
             <div class="card-panel">
                 <h3>Tipo de Alteração</h3>
-                <div class="stack-list" id="filterTipo">
-                    <!-- Preenchido via JS conforme dados da planilha -->
-                </div>
+                <div class="stack-list" id="filterTipo"></div>
             </div>
 
-            <!-- QUADRO 4: MÉTRICAS -->
             <div class="card-panel metrics-container">
                 <div class="metric-box">
                     <h4>Alterações Totais</h4>
                     <div class="metric-row">
-                        <div class="metric-item"><div class="val" id="mTotMobili">0</div><div class="lbl">Mobili</div></div>
-                        <div class="metric-item"><div class="val" id="mTotTerm">0</div><div class="lbl">Terminais</div></div>
-                        <div class="metric-item"><div class="val" id="mTotAvisos">0</div><div class="lbl">Avisos</div></div>
                         <div class="metric-item"><div class="val" id="mTotGeral">0</div><div class="lbl">Total</div></div>
                     </div>
                 </div>
                 <div class="metric-box">
                     <h4>Alterações Restantes</h4>
                     <div class="metric-row">
-                        <div class="metric-item"><div class="val" id="mRestMobili">0</div><div class="lbl">Mobili</div></div>
-                        <div class="metric-item"><div class="val" id="mRestTerm">0</div><div class="lbl">Terminais</div></div>
-                        <div class="metric-item"><div class="val" id="mRestAvisos">0</div><div class="lbl">Avisos</div></div>
-                        <div class="metric-item"><div class="val" id="mRestGeral">0</div><div class="lbl">Total</div></div>
+                        <div class="metric-item"><div class="val" id="mRestGeral">0</div><div class="lbl">Pendentes</div></div>
                     </div>
                 </div>
             </div>
@@ -402,7 +378,7 @@
             <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
         </div>
 
-        <!-- Tabela (Sem a coluna Imagens) -->
+        <!-- Tabela -->
         <div class="table-card">
             <table>
                 <thead>
@@ -421,14 +397,12 @@
                         <th>AÇÕES</th>
                     </tr>
                 </thead>
-                <tbody id="tableBody">
-                    <!-- Linhas injetadas dinamicamente -->
-                </tbody>
+                <tbody id="tableBody"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- Modal de Formulário -->
+    <!-- Modal -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -458,7 +432,8 @@
     </div>
 
     <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyw8SmxPICzpGnt4VXYAGGENclDdmpmUP-CsrcikfpCvjYJ7WHanhyzLZ-d1g7bNhtTPw/exec';
+        // COLE A SUA NOVA URL DO APPS SCRIPT AQUI ENTRE AS ASPAS:
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec';
 
         let dadosGlobais = [];
         let filtroAtivo = { tipo: null, valor: null };
@@ -468,7 +443,6 @@
                 const resp = await fetch(WEB_APP_URL);
                 const data = await resp.json();
                 
-                // Mapeia pulando o cabeçalho
                 dadosGlobais = data.slice(1).map((row, index) => ({ rowIndex: index + 2, data: row }));
                 
                 gerarFiltrosDinamicos();
@@ -482,7 +456,6 @@
             }
         }
 
-        // Gera os filtros lendo apenas o que realmente existe na planilha
         function gerarFiltrosDinamicos() {
             const linhasSet = new Set();
             const diasSet = new Set();
@@ -495,7 +468,7 @@
                 if (r[2]) tiposSet.add(r[2].toString().trim());
             });
 
-            // Container Linhas
+            // Linhas
             const containerLinhas = document.getElementById('filterLinhas');
             containerLinhas.innerHTML = '';
             Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})).forEach(linha => {
@@ -507,7 +480,7 @@
                 containerLinhas.appendChild(btn);
             });
 
-            // Container Dia
+            // Dia
             const containerDia = document.getElementById('filterDia');
             containerDia.innerHTML = '';
             Array.from(diasSet).sort().forEach(dia => {
@@ -519,7 +492,7 @@
                 containerDia.appendChild(btn);
             });
 
-            // Container Tipo
+            // Tipo
             const containerTipo = document.getElementById('filterTipo');
             containerTipo.innerHTML = '';
             Array.from(tiposSet).sort().forEach(tipo => {
@@ -553,17 +526,14 @@
                 const tr = document.createElement('tr');
                 
                 let tdContent = '';
-                // 10 colunas normais (Linha até Status, pulando Imagens)
                 for (let i = 0; i < 10; i++) {
                     tdContent += `<td>${row[i] || '-'}</td>`;
                 }
 
-                // Coluna Pendência (Índice 10)
                 const pendenciaVal = row[10] || 'Pendente';
                 const badgeClass = pendenciaVal.toLowerCase() === 'atualizado' ? 'badge-atualizado' : 'badge-pendente';
                 tdContent += `<td><span class="badge-status ${badgeClass}">${pendenciaVal}</span></td>`;
 
-                // Coluna Ações
                 tdContent += `
                     <td>
                         <button class="btn btn-outline btn-sm" onclick="editarRegistro(${item.rowIndex})">Editar</button>
@@ -646,7 +616,6 @@
             const agen = document.getElementById('fAgencia').value.trim();
             const stat = document.getElementById('fStatus').value.trim();
 
-            // Regra para definir se fica Pendente ou Atualizado
             const ehVazio = (val) => !val || val === '-';
             const pendenciaCalculada = (ehVazio(mobi) || ehVazio(term) || ehVazio(avis) || ehVazio(agen) || ehVazio(stat)) ? 'Pendente' : 'Atualizado';
 
@@ -670,16 +639,16 @@
             try {
                 await fetch(WEB_APP_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
 
                 fecharModal();
                 setTimeout(carregarDados, 1500);
             } catch (err) {
-                console.error(err);
-                alert("Erro ao salvar dados.");
+                console.error("Erro ao salvar:", err);
+                alert("Erro ao salvar dados na nuvem.");
+                document.getElementById('statusNuvem').innerText = "Erro ao Salvar";
             }
         }
     </script>
