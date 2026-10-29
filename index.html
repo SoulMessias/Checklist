@@ -3,708 +3,645 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Operacional - Monitoramento de Linhas</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Painel de Controle de Linhas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap');
-        
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #ffffff;
-            color: #000000;
+        :root {
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --primary: #059669;
+            --primary-hover: #047857;
+            --primary-light: #ecfdf5;
+            --primary-border: #a7f3d0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
             margin: 0;
-            padding: 12px;
-            user-select: none;
+            padding: 0;
         }
 
-        /* Cor Verde Oficial da Imagem (#0e5c28) */
-        .bg-system-green {
-            background-color: #0e5c28;
-        }
-        .text-system-green {
-            color: #0e5c28;
-        }
-        .border-system-green {
-            border-color: #0e5c28;
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 24px;
         }
 
-        /* Tipografia em itálico idêntica ao sistema da imagem */
-        .font-system-italic {
-            font-style: italic;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface-color);
+            padding: 16px 24px;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 1.25rem;
             font-weight: 700;
+            color: var(--text-main);
         }
 
-        /* Estilo dos Botões de Linha (Cards Verdes) */
-        .btn-green-card {
-            background-color: #0e5c28;
-            color: #ffffff;
-            font-style: italic;
-            font-weight: 700;
-            border-radius: 4px;
-            border: 1px solid #0a441d;
-            transition: all 0.15s ease-in-out;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
-        .btn-green-card:hover {
-            background-color: #147a37;
-            transform: translateY(-1px);
-        }
-        .btn-green-card.active {
-            background-color: #eab308 !important; /* Destaque amarelo quando ativo */
-            color: #000000 !important;
-            border-color: #ca8a04 !important;
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
         }
 
-        /* Scrollbar customizada idêntica à imagem */
-        .custom-scroll::-webkit-scrollbar {
-            width: 12px;
-        }
-        .custom-scroll::-webkit-scrollbar-track {
-            background: #e5e5e5;
-            border-left: 1px solid #ccc;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #737373;
-            border-radius: 0px;
+        .top-grid {
+            display: grid;
+            grid-template-columns: 2.2fr 1fr 1fr 2fr;
+            gap: 16px;
         }
 
-        /* Tabela Estilo Planilha com Borda Dupla / Nítida */
-        .table-grid-system {
-            border-collapse: collapse;
-            width: 100%;
+        .card-panel {
+            background: var(--surface-color);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        .table-grid-system th, .table-grid-system td {
-            border: 1px solid #000000;
-            padding: 6px 8px;
+
+        .card-panel h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        /* Quadro 1: Linhas */
+        .lines-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+            gap: 6px;
+            max-height: 180px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        /* Estilo dos Filtros */
+        .filter-btn {
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s;
             text-align: center;
-            font-size: 13px;
         }
 
-        .text-yellow-highlight {
-            color: #eab308;
-            font-weight: bold;
+        .filter-btn:hover {
+            background: var(--primary-light);
+            border-color: var(--primary-border);
+            color: var(--primary);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Quadro 2 e 3: Tipo de Dia e Tipos */
+        .stack-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .stack-list .filter-btn {
+            text-align: left;
+            padding: 8px 12px;
+        }
+
+        /* Resumo Métricas */
+        .metrics-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .metric-box {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-box h4 {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .metric-item .val {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-item .lbl {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* Barra de Ações / Adicionar e Limpar */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface-color);
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover { background: var(--primary-hover); }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+            color: var(--text-main);
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+        }
+
+        .btn-danger { background: var(--accent-red); }
+        .btn-danger:hover { background: #dc2626; }
+
+        /* Tabela Modernizada */
+        .table-card {
+            background: var(--surface-color);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        tbody tr:hover { background: #f8fafc; }
+
+        /* Modal / Form de Inserção e Edição */
+        .modal-overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--surface-color);
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            outline: none;
+            font-size: 0.875rem;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
     </style>
 </head>
-<body class="min-h-screen">
+<body onload="carregarDados()">
 
-    <div class="max-w-[1700px] mx-auto space-y-3">
-        
-        <!-- BARRA SUPERIOR DE AÇÕES & SINCRONIZAÇÃO -->
-        <div class="flex justify-between items-center bg-gray-100 p-2.5 rounded border border-gray-300">
-            <div class="flex items-center gap-3">
-                <span class="font-system-italic text-lg text-system-green flex items-center gap-2">
-                    <i data-lucide="bus" class="w-5 h-5"></i> MONITORAMENTO DE LINHAS E ALTERAÇÕES
-                </span>
-                <span id="statusConexao" class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
-                    Sincronizado
-                </span>
-            </div>
-            <div class="flex items-center gap-2">
-                <button onclick="abrirModal()" class="bg-system-green hover:bg-emerald-800 text-white font-system-italic text-xs px-3 py-1.5 rounded flex items-center gap-1.5 shadow transition">
-                    <i data-lucide="plus-circle" class="w-4 h-4"></i> ADICIONAR REGISTRO
-                </button>
-                <button onclick="carregarDados()" class="bg-white hover:bg-gray-50 text-gray-800 font-bold text-xs px-3 py-1.5 rounded border border-gray-400 flex items-center gap-1.5 shadow-sm transition">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5" id="refreshIcon"></i> RECARREGAR
-                </button>
-            </div>
-        </div>
+    <div class="container">
+        <header>
+            <h1>Painel de Controle Operacional</h1>
+            <div class="status-badge" id="statusNuvem">Conectado ao Google Sheets</div>
+        </header>
 
-        <!-- ESTRUTURA DOS PAINÉIS SUPERIORES (LAYOUT EXATO DA IMAGEM) -->
-        <div class="grid grid-cols-1 xl:grid-cols-12 gap-3">
-            
-            <!-- PAINEL 1: GRADE DE LINHAS (SCROLLÁVEL) -->
-            <div class="xl:col-span-4 border border-gray-400 p-2 rounded bg-gray-50">
-                <div class="flex justify-between items-center mb-1 px-1">
-                    <span class="text-[11px] font-bold text-gray-600 uppercase">Linhas de Ônibus</span>
-                    <button onclick="limparFiltroLinha()" class="text-[11px] text-system-green font-bold hover:underline">Limpar Seleção</button>
-                </div>
-                <div class="grid grid-cols-7 gap-1 h-[210px] overflow-y-auto pr-1 custom-scroll bg-gray-200/50 p-1.5 border border-gray-300 rounded" id="linesGrid">
+        <!-- Quadros Superiores / Filtros -->
+        <div class="top-grid">
+            <!-- QUADRO 1: LINHAS -->
+            <div class="card-panel">
+                <h3>Linhas de Ônibus</h3>
+                <div class="lines-grid" id="filterLinhas">
                     <!-- Gerado via JavaScript -->
                 </div>
             </div>
 
-            <!-- PAINEL 2: DIAS DA SEMANA & TIPOS -->
-            <div class="xl:col-span-2 grid grid-cols-2 gap-2">
-                
-                <!-- Coluna Dias -->
-                <div class="border border-dashed border-gray-400 p-1.5 rounded bg-white flex flex-col gap-1 justify-between" id="diasContainer">
-                    <!-- Botões de Dias gerados via JS -->
+            <!-- QUADRO 2: TIPO DE DIA -->
+            <div class="card-panel">
+                <h3>Tipo de Dia</h3>
+                <div class="stack-list" id="filterDia">
+                    <button class="filter-btn" onclick="filtrar('dia', 'Dom', this)">Dom</button>
+                    <button class="filter-btn" onclick="filtrar('dia', 'Sáb', this)">Sáb</button>
+                    <button class="filter-btn" onclick="filtrar('dia', 'Útil', this)">Útil</button>
+                    <button class="filter-btn" onclick="filtrar('dia', 'Útil-Sab', this)">Útil-Sab</button>
+                    <button class="filter-btn" onclick="filtrar('dia', 'Útil-Sáb-Dom', this)">Útil-Sáb-Dom</button>
                 </div>
-
-                <!-- Coluna Tipos -->
-                <div class="border border-dashed border-gray-400 p-1.5 rounded bg-white flex flex-col gap-1 justify-between" id="tiposContainer">
-                    <!-- Botões de Tipos gerados via JS -->
-                </div>
-
             </div>
 
-            <!-- PAINEL 3: TABELAS DE RESUMO (ALTERAÇÕES TOTAIS E RESTANTES) -->
-            <div class="xl:col-span-4 flex flex-col gap-2 justify-between">
-                
-                <!-- TABELA: ALTERAÇÕES TOTAIS -->
-                <div>
-                    <table class="table-grid-system bg-white">
-                        <thead>
-                            <tr class="bg-gray-50">
-                                <th colspan="4" class="font-system-italic text-sm text-black py-1">ALTERAÇÕES TOTAIS</th>
-                            </tr>
-                            <tr class="bg-gray-100 font-system-italic text-[11px] text-black uppercase">
-                                <th class="w-1/4">MOBILIBUS</th>
-                                <th class="w-1/4">TERMINAIS</th>
-                                <th class="w-1/4">AVISOS</th>
-                                <th class="w-1/4">TOTAL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="font-bold text-lg text-red-600">
-                                <td id="totMobili">0</td>
-                                <td id="totTerminais">0</td>
-                                <td id="totAvisos">0</td>
-                                <td id="totGeral">0</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- QUADRO 3: TIPO -->
+            <div class="card-panel">
+                <h3>Tipo de Alteração</h3>
+                <div class="stack-list" id="filterTipo">
+                    <button class="filter-btn" onclick="filtrar('tipo', 'AJUSTE EMERG.', this)">Ajuste Emerg.</button>
+                    <button class="filter-btn" onclick="filtrar('tipo', 'CORREÇÃO', this)">Correção</button>
+                    <button class="filter-btn" onclick="filtrar('tipo', 'EXPOSIÇÃO', this)">Exposição</button>
+                    <button class="filter-btn" onclick="filtrar('tipo', 'FINADOS', this)">Finados</button>
+                    <button class="filter-btn" onclick="filtrar('tipo', 'PROPOSTA', this)">Proposta</button>
                 </div>
-
-                <!-- TABELA: ALTERAÇÕES RESTANTES -->
-                <div>
-                    <table class="table-grid-system bg-white">
-                        <thead>
-                            <tr class="bg-gray-50">
-                                <th colspan="4" class="font-system-italic text-sm text-black py-1">ALTERAÇÕES RESANTES</th>
-                            </tr>
-                            <tr class="bg-gray-100 font-system-italic text-[11px] text-black uppercase">
-                                <th class="w-1/4">MOBILIBUS</th>
-                                <th class="w-1/4">TERMINAIS</th>
-                                <th class="w-1/4">AVISOS</th>
-                                <th class="w-1/4">TOTAL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="font-bold text-lg text-red-600">
-                                <td id="restMobili">0</td>
-                                <td id="restTerminais">0</td>
-                                <td id="restAvisos">0</td>
-                                <td id="restGeral">0</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
             </div>
 
-            <!-- PAINEL 4: PERÍODO VIGÊNCIA & LIMPEZA DE FILTROS -->
-            <div class="xl:col-span-2 border border-black p-3 rounded bg-white flex flex-col justify-between items-center text-center">
-                
-                <div class="w-full">
-                    <div class="flex justify-around text-[10px] font-system-italic text-gray-700 border-b border-gray-300 pb-1 mb-2">
-                        <span>INICIO</span>
-                        <span>FIM</span>
-                    </div>
-                    <div class="font-bold text-xs text-black tracking-tight bg-gray-50 p-1.5 border border-gray-300 rounded">
-                        26/10/2026 &nbsp;&nbsp; 07/11/2026
+            <!-- QUADRO 4: MÉTRICAS -->
+            <div class="card-panel metrics-container">
+                <div class="metric-box">
+                    <h4>Alterações Totais</h4>
+                    <div class="metric-row">
+                        <div class="metric-item"><div class="val" id="mTotMobili">0</div><div class="lbl">Mobili</div></div>
+                        <div class="metric-item"><div class="val" id="mTotTerm">0</div><div class="lbl">Terminais</div></div>
+                        <div class="metric-item"><div class="val" id="mTotAvisos">0</div><div class="lbl">Avisos</div></div>
+                        <div class="metric-item"><div class="val" id="mTotGeral">0</div><div class="lbl">Total</div></div>
                     </div>
                 </div>
-
-                <!-- Ícones / Ações Fiéis -->
-                <div class="flex items-center justify-center gap-4 my-2">
-                    <button onclick="limparTodosFiltros()" title="Limpar Filtros" class="p-2 hover:bg-yellow-50 rounded-full transition">
-                        <i data-lucide="filter" class="w-8 h-8 text-yellow-500"></i>
-                    </button>
-                    <button onclick="carregarDados()" title="Sincronizar" class="p-2 hover:bg-green-50 rounded-full transition">
-                        <i data-lucide="refresh-cw" class="w-8 h-8 text-system-green"></i>
-                    </button>
+                <div class="metric-box">
+                    <h4>Alterações Restantes</h4>
+                    <div class="metric-row">
+                        <div class="metric-item"><div class="val" id="mRestMobili">0</div><div class="lbl">Mobili</div></div>
+                        <div class="metric-item"><div class="val" id="mRestTerm">0</div><div class="lbl">Terminais</div></div>
+                        <div class="metric-item"><div class="val" id="mRestAvisos">0</div><div class="lbl">Avisos</div></div>
+                        <div class="metric-item"><div class="val" id="mRestGeral">0</div><div class="lbl">Total</div></div>
+                    </div>
                 </div>
-
-                <div class="w-full text-[10px] font-bold text-gray-500 uppercase">
-                    Filtros Ativos: <span id="filtrosAtivosTexto" class="text-system-green font-bold">Nenhum</span>
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- TABELA PRINCIPAL (12 CABEÇALHOS DO SISTEMA) -->
-        <div class="border border-black rounded overflow-hidden shadow-sm bg-white mt-3">
-            <div class="overflow-x-auto">
-                <table class="w-full table-grid-system text-left" id="mainTable">
-                    <thead>
-                        <tr class="bg-system-green text-white font-system-italic text-xs tracking-wider uppercase">
-                            <th class="border-r border-emerald-900 py-2.5">LINHA</th>
-                            <th class="border-r border-emerald-900 py-2.5">VIGÊNCIA</th>
-                            <th class="border-r border-emerald-900 py-2.5">TIPO</th>
-                            <th class="border-r border-emerald-900 py-2.5">DIA</th>
-                            <th class="border-r border-emerald-900 py-2.5">MOBILIBUS</th>
-                            <th class="border-r border-emerald-900 py-2.5">TERMINAIS</th>
-                            <th class="border-r border-emerald-900 py-2.5">AVISOS</th>
-                            <th class="border-r border-emerald-900 py-2.5">AGÊNCIA/TELÃO</th>
-                            <th class="border-r border-emerald-900 py-2.5">IMAGENS</th>
-                            <th class="border-r border-emerald-900 py-2.5">ANOTAÇÕES</th>
-                            <th class="border-r border-emerald-900 py-2.5">STATUS</th>
-                            <th class="py-2.5">PENDÊNCIA</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody" class="font-bold text-xs text-black">
-                        <!-- Conteúdo inserido dinamicamente -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="p-2 bg-gray-100 border-t border-gray-300 text-xs text-gray-600 flex justify-between items-center font-medium">
-                <span>Registros Exibidos: <b id="countExibidos" class="text-black">0</b> de <b id="countTotal" class="text-black">0</b></span>
-                <span>Servidor: Google Apps Script API</span>
             </div>
         </div>
 
+        <!-- Barra de Ações -->
+        <div class="action-bar">
+            <div>
+                <button class="btn-outline btn" onclick="limparFiltros()">Limpar Filtros</button>
+                <span id="filtroAtivoLabel" style="font-size:0.8rem; color:var(--text-muted); margin-left:10px;"></span>
+            </div>
+            <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
+        </div>
+
+        <!-- Tabela -->
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>LINHA</th>
+                        <th>VIGÊNCIA</th>
+                        <th>TIPO</th>
+                        <th>DIA</th>
+                        <th>MOBILIBUS</th>
+                        <th>TERMINAIS</th>
+                        <th>AVISOS</th>
+                        <th>AGÊNCIA/TELÃO</th>
+                        <th>IMAGENS</th>
+                        <th>ANOTAÇÕES</th>
+                        <th>STATUS</th>
+                        <th>PENDÊNCIA</th>
+                        <th>AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Linhas injetadas dinamicamente -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- MODAL DE INSERÇÃO DE NOVOS REGISTROS (12 CAMPOS) -->
-    <div id="modalInsercao" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white w-full max-w-2xl rounded-lg shadow-2xl overflow-hidden border border-gray-400">
-            
-            <div class="bg-system-green text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="font-system-italic text-base flex items-center gap-2">
-                    <i data-lucide="plus-circle" class="w-5 h-5"></i> ADICIONAR NOVO REGISTRO
-                </h3>
-                <button onclick="fecharModal()" class="hover:bg-emerald-800 p-1 rounded transition">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+    <!-- Modal de Formulário (Inserção e Edição) -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Adicionar Informação</h2>
+                <button class="btn-outline btn btn-sm" onclick="fecharModal()">✕</button>
             </div>
-
-            <form id="formNovoRegistro" onsubmit="adicionarLinha(event)" class="p-5 space-y-3">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">1. Linha</label>
-                        <input type="text" id="fLinha" required placeholder="Ex: 309" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">2. Vigência</label>
-                        <input type="text" id="fVigencia" required placeholder="Ex: 31/10/2026" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">3. Tipo</label>
-                        <select id="fTipo" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
-                            <option value="PROPOSTA">PROPOSTA</option>
-                            <option value="AJUSTE EMERG.">AJUSTE EMERG.</option>
-                            <option value="CORREÇÃO">CORREÇÃO</option>
-                            <option value="EXPOSIÇÃO">EXPOSIÇÃO</option>
-                            <option value="FINADOS">FINADOS</option>
-                            <option value="-">-</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">4. Dia</label>
-                        <select id="fDia" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
-                            <option value="Sáb">Sáb</option>
-                            <option value="Dom">Dom</option>
-                            <option value="Útil">Útil</option>
-                            <option value="Útil-Sáb">Útil-Sáb</option>
-                            <option value="Útil-Sáb-Dom">Útil-Sáb-Dom</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">5. Mobilibus</label>
-                        <input type="text" id="fMobili" placeholder="Ex: Denis - 26/10/2026" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">6. Terminais</label>
-                        <input type="text" id="fTerminais" placeholder="Ex: Denis - 26/10/2026" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">7. Avisos</label>
-                        <input type="text" id="fAvisos" placeholder="Ex: Denis - 21/10/2026" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">8. Agência/Telão</label>
-                        <input type="text" id="fAgencia" placeholder="Ex: -" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">9. Imagens</label>
-                        <input type="text" id="fImagens" placeholder="Ex: ok.png" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">10. Anotações</label>
-                        <input type="text" id="fAnotacoes" placeholder="Ex: COMENTÁRIO DISPONÍVEL" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">11. Status</label>
-                        <select id="fStatus" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
-                            <option value="Ok">Ok</option>
-                            <option value="Pendente">Pendente</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">12. Pendência</label>
-                        <input type="text" id="fPendencia" value="Atualizado" placeholder="Ex: Atualizado" class="w-full border border-gray-300 rounded p-1.5 text-xs focus:ring-1 focus:ring-green-700 outline-none">
-                    </div>
-
+            <form id="dataForm" onsubmit="salvarRegistro(event)">
+                <input type="hidden" id="editRowIndex" value="">
+                <div class="form-grid">
+                    <div class="form-group"><label>Linha</label><input type="text" id="fLinha" required></div>
+                    <div class="form-group"><label>Vigência</label><input type="text" id="fVigencia"></div>
+                    <div class="form-group"><label>Tipo</label><input type="text" id="fTipo"></div>
+                    <div class="form-group"><label>Dia</label><input type="text" id="fDia"></div>
+                    <div class="form-group"><label>Mobilibus</label><input type="text" id="fMobilibus"></div>
+                    <div class="form-group"><label>Terminais</label><input type="text" id="fTerminais"></div>
+                    <div class="form-group"><label>Avisos</label><input type="text" id="fAvisos"></div>
+                    <div class="form-group"><label>Agência/Telão</label><input type="text" id="fAgencia"></div>
+                    <div class="form-group"><label>Imagens</label><input type="text" id="fImagens"></div>
+                    <div class="form-group"><label>Anotações</label><input type="text" id="fAnotacoes"></div>
+                    <div class="form-group"><label>Status</label><input type="text" id="fStatus"></div>
+                    <div class="form-group"><label>Pendência</label><input type="text" id="fPendencia"></div>
                 </div>
-
-                <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
-                    <button type="button" onclick="fecharModal()" class="px-3 py-1.5 border border-gray-300 rounded text-gray-700 font-bold text-xs hover:bg-gray-100 transition">Cancelar</button>
-                    <button type="submit" id="btnSalvar" class="px-4 py-1.5 bg-system-green text-white font-system-italic text-xs rounded hover:bg-emerald-800 transition">
-                        SALVAR NO SHEETS
-                    </button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
+                    <button type="submit" class="btn">Salvar na Nuvem</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- SCRIPT DE LOGICA E SINCRONIZAÇÃO -->
     <script>
-        // URL da sua API do Google Apps Script
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyw8SmxPICzpGnt4VXYAGGENclDdmpmUP-CsrcikfpCvjYJ7WHanhyzLZ-d1g7bNhtTPw/exec';
 
-        // Lista de Linhas idêntica à imagem
-        const LISTA_LINHAS = [
-            '91', '92', '96', '97', '99', '100', '101',
-            '102', '103', '104', '106', '107', '108', '109',
-            '110', '111', '112', '113', '114', '121', '200',
-            '301', '302', '303', '305', '306', '307', '308',
-            '309', '310', '311', '312', '313', '314', '315',
-            '317', '319', '351', '360', '400', '401', '402', '430'
+        let dadosGlobais = [];
+        let filtroAtivo = { tipo: null, valor: null };
+
+        // Lista de linhas predefinidas para o Quadro 1
+        const listaLinhas = [
+            91, 92, 96, 97, 99, 100, 101, 102, 103, 104, 106, 107, 108, 109,
+            110, 111, 112, 113, 114, 121, 200, 301, 302, 303, 305, 306, 307,
+            308, 309, 310, 311, 312, 313, 314, 315, 317, 319, 351, 360, 400, 401, 402, 430
         ];
 
-        const LISTA_DIAS = ['Dom', 'Sáb', 'Útil', 'Útil-Sáb', 'Útil-Sáb-Dom'];
-        const LISTA_TIPOS = ['-', 'AJUSTE EMERG.', 'CORREÇÃO', 'EXPOSIÇÃO', 'FINADOS', 'PROPOSTA'];
-
-        // Dados Iniciais Fiéis
-        let dadosLocais = [
-            {
-                linha: "309",
-                vigencia: "31/10/2026",
-                tipo: "PROPOSTA",
-                dia: "Sáb",
-                mobili: "Denis - 26/10/2026",
-                terminais: "Denis - 26/10/2026",
-                avisos: "Denis - 21/10/2026",
-                agencia: "-",
-                imagens: "ok.png",
-                anotacoes: "COMENTÁRIO DISPONÍVEL",
-                status: "Ok",
-                pendencia: "Atualizado"
-            },
-            {
-                linha: "430",
-                vigencia: "31/10/2026",
-                tipo: "PROPOSTA",
-                dia: "Sáb",
-                mobili: "Denis - 26/10/2026",
-                terminais: "Denis - 26/10/2026",
-                avisos: "Denis - 21/10/2026",
-                agencia: "-",
-                imagens: "ok.png",
-                anotacoes: "",
-                status: "Ok",
-                pendencia: "Atualizado"
-            },
-            {
-                linha: "101",
-                vigencia: "01/11/2026",
-                tipo: "FINADOS",
-                dia: "Dom",
-                mobili: "Denis - 27/10/2026",
-                terminais: "-",
-                avisos: "Denis - 27/10/2026",
-                agencia: "-",
-                imagens: "-",
-                anotacoes: "ESPECIAL",
-                status: "Ok",
-                pendencia: "Atualizado"
-            },
-            {
-                linha: "108",
-                vigencia: "02/11/2026",
-                tipo: "AJUSTE EMERG.",
-                dia: "Útil",
-                mobili: "Denis - 28/10/2026",
-                terminais: "-",
-                avisos: "Denis - 28/10/2026",
-                agencia: "-",
-                imagens: "-",
-                anotacoes: "",
-                status: "Pendente",
-                pendencia: "Pendente"
-            },
-            {
-                linha: "314",
-                vigencia: "03/11/2026",
-                tipo: "CORREÇÃO",
-                dia: "Útil-Sáb",
-                mobili: "Denis - 28/10/2026",
-                terminais: "-",
-                avisos: "Denis - 28/10/2026",
-                agencia: "-",
-                imagens: "-",
-                anotacoes: "",
-                status: "Ok",
-                pendencia: "Atualizado"
-            }
-        ];
-
-        // Estado dos Filtros Ativos
-        let filtroLinha = null;
-        let filtroDia = null;
-        let filtroTipo = null;
-
-        window.onload = () => {
-            renderizarFiltros();
-            carregarDados();
-            lucide.createIcons();
-        };
-
-        // Renderizar os Botões Verdes dos Filtros
-        function renderizarFiltros() {
-            // Linhas
-            const gridLinhas = document.getElementById('linesGrid');
-            gridLinhas.innerHTML = LISTA_LINHAS.map(linha => `
-                <button onclick="filtrarPorLinha('${linha}')" id="btn-linha-${linha}" class="btn-green-card py-1 text-xs">
-                    ${linha}
-                </button>
-            `).join('');
-
-            // Dias
-            const containerDias = document.getElementById('diasContainer');
-            containerDias.innerHTML = LISTA_DIAS.map(dia => `
-                <button onclick="filtrarPorDia('${dia}')" id="btn-dia-${dia}" class="btn-green-card py-1 px-2 text-left text-xs">
-                    ${dia}
-                </button>
-            `).join('');
-
-            // Tipos
-            const containerTipos = document.getElementById('tiposContainer');
-            containerTipos.innerHTML = LISTA_TIPOS.map(tipo => `
-                <button onclick="filtrarPorTipo('${tipo}')" id="btn-tipo-${tipo}" class="btn-green-card py-1 px-1 text-center text-[10px] truncate" title="${tipo}">
-                    ${tipo}
-                </button>
-            `).join('');
+        function inicializarQuadroLinhas() {
+            const container = document.getElementById('filterLinhas');
+            container.innerHTML = '';
+            listaLinhas.forEach(linha => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.innerText = linha;
+                btn.onclick = () => filtrar('linha', linha.toString(), btn);
+                container.appendChild(btn);
+            });
         }
 
-        // Carregar Dados da Nuvem via Apps Script
         async function carregarDados() {
-            const refreshIcon = document.getElementById('refreshIcon');
-            refreshIcon.classList.add('animate-spin');
-
-            if (WEB_APP_URL && WEB_APP_URL !== 'SUA_URL_DO_APPS_SCRIPT_AQUI') {
-                try {
-                    const response = await fetch(WEB_APP_URL);
-                    const rawData = await response.json();
-                    
-                    if (Array.isArray(rawData) && rawData.length > 1) {
-                        dadosLocais = rawData.slice(1).map(row => ({
-                            linha: String(row[0] || ''),
-                            vigencia: String(row[1] || ''),
-                            tipo: String(row[2] || ''),
-                            dia: String(row[3] || ''),
-                            mobili: String(row[4] || ''),
-                            terminais: String(row[5] || ''),
-                            avisos: String(row[6] || ''),
-                            agencia: String(row[7] || ''),
-                            imagens: String(row[8] || ''),
-                            anotacoes: String(row[9] || ''),
-                            status: String(row[10] || ''),
-                            pendencia: String(row[11] || '')
-                        }));
-                    }
-                    document.getElementById('statusConexao').innerText = "Conectado Ao Google Sheets";
-                } catch (error) {
-                    console.warn("Usando dados de exemplo.", error);
-                    document.getElementById('statusConexao').innerText = "Modo Local / Exemplo";
-                }
-            } else {
-                document.getElementById('statusConexao').innerText = "Insira a URL do Apps Script";
+            inicializarQuadroLinhas();
+            try {
+                const resp = await fetch(WEB_APP_URL);
+                const data = await resp.json();
+                
+                // Remove a primeira linha (cabeçalho)
+                dadosGlobais = data.slice(1).map((row, index) => ({ rowIndex: index + 2, data: row }));
+                renderizarTabela();
+                document.getElementById('statusNuvem').innerText = "Conectado ao Google Sheets";
+            } catch (err) {
+                console.error(err);
+                document.getElementById('statusNuvem').innerText = "Erro de Sincronização";
+                document.getElementById('statusNuvem').style.background = "#fef2f2";
+                document.getElementById('statusNuvem').style.color = "#ef4444";
             }
-
-            refreshIcon.classList.remove('animate-spin');
-            atualizarTabelaEMetricas();
         }
 
-        // Renderizar Tabela e Calcular Métricas das Caixas Superiores
-        function atualizarTabelaEMetricas() {
+        function renderizarTabela() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            // Filtragem dos dados
-            let filtrados = dadosLocais.filter(item => {
-                if (filtroLinha && item.linha !== filtroLinha) return false;
-                if (filtroDia && item.dia !== filtroDia) return false;
-                if (filtroTipo && item.tipo !== filtroTipo) return false;
-                return true;
-            });
+            let dadosExibidos = dadosGlobais;
 
-            if (filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="12" class="py-4 text-center text-gray-500 font-system-italic">Nenhum registro localizado.</td></tr>`;
-            } else {
-                filtrados.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-yellow-50/50 transition";
-                    
-                    tr.innerHTML = `
-                        <td class="font-bold text-black">${row.linha}</td>
-                        <td class="font-system-italic text-gray-800">${row.vigencia}</td>
-                        <td class="font-system-italic text-black">${row.tipo}</td>
-                        <td class="text-yellow-highlight font-bold">${row.dia}</td>
-                        <td class="font-system-italic text-gray-800">${row.mobili}</td>
-                        <td class="font-system-italic text-gray-800">${row.terminais}</td>
-                        <td class="font-system-italic text-gray-800">${row.avisos}</td>
-                        <td class="text-center">${row.agencia || '-'}</td>
-                        <td class="text-center">${row.imagens ? `<span class="text-emerald-700 font-bold">✓</span>` : '-'}</td>
-                        <td class="text-orange-600 font-bold text-[11px]">${row.anotacoes || ''}</td>
-                        <td class="font-bold text-black">${row.status}</td>
-                        <td class="font-system-italic ${row.pendencia === 'Atualizado' ? 'bg-green-100 text-black' : 'bg-red-100 text-red-900'}">${row.pendencia}</td>
-                    `;
-                    tbody.appendChild(tr);
+            // Aplicação dos Filtros Cruzados
+            if (filtroAtivo.tipo && filtroAtivo.valor) {
+                dadosExibidos = dadosGlobais.filter(item => {
+                    const row = item.data;
+                    if (filtroAtivo.tipo === 'linha') return (row[0] || '').toString().trim() === filtroAtivo.valor.toString().trim();
+                    if (filtroAtivo.tipo === 'dia') return (row[3] || '').toString().toLowerCase().includes(filtroAtivo.valor.toLowerCase());
+                    if (filtroAtivo.tipo === 'tipo') return (row[2] || '').toString().toLowerCase().includes(filtroAtivo.valor.toLowerCase());
+                    return true;
                 });
             }
 
-            // Cálculo das Métricas
-            let tMob = 0, tTerm = 0, tAv = 0;
-            let rMob = 0, rTerm = 0, rAv = 0;
-
-            filtrados.forEach(d => {
-                if (d.mobili && d.mobili !== '-') tMob++;
-                if (d.terminais && d.terminais !== '-') tTerm++;
-                if (d.avisos && d.avisos !== '-') tAv++;
-
-                if (d.pendencia !== 'Atualizado') {
-                    if (d.mobili && d.mobili !== '-') rMob++;
-                    if (d.terminais && d.terminais !== '-') rTerm++;
-                    if (d.avisos && d.avisos !== '-') rAv++;
+            dadosExibidos.forEach((item) => {
+                const row = item.data;
+                const tr = document.createElement('tr');
+                
+                let tdContent = '';
+                for (let i = 0; i < 12; i++) {
+                    tdContent += `<td>${row[i] || '-'}</td>`;
                 }
+
+                // Botões de Ação (Editar e Excluir)
+                tdContent += `
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="editarRegistro(${item.rowIndex})">Editar</button>
+                    </td>
+                `;
+
+                tr.innerHTML = tdContent;
+                tbody.appendChild(tr);
             });
 
-            document.getElementById('totMobili').innerText = tMob;
-            document.getElementById('totTerminais').innerText = tTerm;
-            document.getElementById('totAvisos').innerText = tAv;
-            document.getElementById('totGeral').innerText = tMob + tTerm + tAv;
-
-            document.getElementById('restMobili').innerText = rMob;
-            document.getElementById('restTerminais').innerText = rTerm;
-            document.getElementById('restAvisos').innerText = rAv;
-            document.getElementById('restGeral').innerText = rMob + rTerm + rAv;
-
-            document.getElementById('countExibidos').innerText = filtrados.length;
-            document.getElementById('countTotal').innerText = dadosLocais.length;
-
-            // Texto de Filtros Ativos
-            let resumoFiltros = [];
-            if (filtroLinha) resumoFiltros.push(`Linha: ${filtroLinha}`);
-            if (filtroDia) resumoFiltros.push(`Dia: ${filtroDia}`);
-            if (filtroTipo) resumoFiltros.push(`Tipo: ${filtroTipo}`);
-            document.getElementById('filtrosAtivosTexto').innerText = resumoFiltros.length > 0 ? resumoFiltros.join(' | ') : 'Nenhum';
+            atualizarMetricas(dadosExibidos);
         }
 
-        // Funções dos Filtros
-        function filtrarPorLinha(linha) {
-            filtroLinha = (filtroLinha === linha) ? null : linha;
-            document.querySelectorAll('#linesGrid button').forEach(b => b.classList.remove('active'));
-            if (filtroLinha) document.getElementById(`btn-linha-${linha}`)?.classList.add('active');
-            atualizarTabelaEMetricas();
+        function filtrar(tipo, valor, elemento) {
+            // Remove classe ativa de todos
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            
+            if (filtroAtivo.tipo === tipo && filtroAtivo.valor === valor) {
+                // Desativa se clicar no mesmo
+                filtroAtivo = { tipo: null, valor: null };
+                document.getElementById('filtroAtivoLabel').innerText = '';
+            } else {
+                filtroAtivo = { tipo, valor };
+                elemento.classList.add('active');
+                document.getElementById('filtroAtivoLabel').innerText = `Filtro: ${tipo.toUpperCase()} = ${valor}`;
+            }
+
+            renderizarTabela();
         }
 
-        function filtrarPorDia(dia) {
-            filtroDia = (filtroDia === dia) ? null : dia;
-            document.querySelectorAll('#diasContainer button').forEach(b => b.classList.remove('active'));
-            if (filtroDia) document.getElementById(`btn-dia-${dia}`)?.classList.add('active');
-            atualizarTabelaEMetricas();
+        function limparFiltros() {
+            filtroAtivo = { tipo: null, valor: null };
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('filtroAtivoLabel').innerText = '';
+            renderizarTabela();
         }
 
-        function filtrarPorTipo(tipo) {
-            filtroTipo = (filtroTipo === tipo) ? null : tipo;
-            document.querySelectorAll('#tiposContainer button').forEach(b => b.classList.remove('active'));
-            if (filtroTipo) document.getElementById(`btn-tipo-${tipo}`)?.classList.add('active');
-            atualizarTabelaEMetricas();
+        function atualizarMetricas(dados) {
+            document.getElementById('mTotGeral').innerText = dados.length;
+            document.getElementById('mRestGeral').innerText = dados.filter(d => (d.data[11] || '').toString().toLowerCase() !== 'ok').length;
         }
 
-        function limparFiltroLinha() {
-            filtroLinha = null;
-            document.querySelectorAll('#linesGrid button').forEach(b => b.classList.remove('active'));
-            atualizarTabelaEMetricas();
+        // Modal e Formulário
+        function abrirModal() {
+            document.getElementById('modalTitle').innerText = 'Adicionar Nova Linha';
+            document.getElementById('editRowIndex').value = '';
+            document.getElementById('dataForm').reset();
+            document.getElementById('modalOverlay').style.display = 'flex';
         }
 
-        function limparTodosFiltros() {
-            filtroLinha = null;
-            filtroDia = null;
-            filtroTipo = null;
-            document.querySelectorAll('.btn-green-card').forEach(b => b.classList.remove('active'));
-            atualizarTabelaEMetricas();
+        function fecharModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
         }
 
-        // Modal
-        function abrirModal() { document.getElementById('modalInsercao').classList.remove('hidden'); }
-        function fecharModal() { document.getElementById('modalInsercao').classList.add('hidden'); }
+        function editarRegistro(rowIndex) {
+            const registro = dadosGlobais.find(d => d.rowIndex === rowIndex);
+            if (!registro) return;
 
-        // Adicionar Linha (Envia para o Apps Script)
-        async function adicionarLinha(event) {
+            const r = registro.data;
+            document.getElementById('modalTitle').innerText = `Editar Linha (Linha ${rowIndex})`;
+            document.getElementById('editRowIndex').value = rowIndex;
+
+            document.getElementById('fLinha').value = r[0] || '';
+            document.getElementById('fVigencia').value = r[1] || '';
+            document.getElementById('fTipo').value = r[2] || '';
+            document.getElementById('fDia').value = r[3] || '';
+            document.getElementById('fMobilibus').value = r[4] || '';
+            document.getElementById('fTerminais').value = r[5] || '';
+            document.getElementById('fAvisos').value = r[6] || '';
+            document.getElementById('fAgencia').value = r[7] || '';
+            document.getElementById('fImagens').value = r[8] || '';
+            document.getElementById('fAnotacoes').value = r[9] || '';
+            document.getElementById('fStatus').value = r[10] || '';
+            document.getElementById('fPendencia').value = r[11] || '';
+
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        async function salvarRegistro(event) {
             event.preventDefault();
-            const btnSalvar = document.getElementById('btnSalvar');
-            btnSalvar.disabled = true;
-            btnSalvar.innerText = 'SALVANDO...';
 
             const payload = {
+                rowIndex: document.getElementById('editRowIndex').value,
                 col1: document.getElementById('fLinha').value,
                 col2: document.getElementById('fVigencia').value,
                 col3: document.getElementById('fTipo').value,
                 col4: document.getElementById('fDia').value,
-                col5: document.getElementById('fMobili').value || '-',
-                col6: document.getElementById('fTerminais').value || '-',
-                col7: document.getElementById('fAvisos').value || '-',
-                col8: document.getElementById('fAgencia').value || '-',
-                col9: document.getElementById('fImagens').value || '-',
-                col10: document.getElementById('fAnotacoes').value || '',
+                col5: document.getElementById('fMobilibus').value,
+                col6: document.getElementById('fTerminais').value,
+                col7: document.getElementById('fAvisos').value,
+                col8: document.getElementById('fAgencia').value,
+                col9: document.getElementById('fImagens').value,
+                col10: document.getElementById('fAnotacoes').value,
                 col11: document.getElementById('fStatus').value,
                 col12: document.getElementById('fPendencia').value
             };
 
-            dadosLocais.unshift({
-                linha: payload.col1,
-                vigencia: payload.col2,
-                tipo: payload.col3,
-                dia: payload.col4,
-                mobili: payload.col5,
-                terminais: payload.col6,
-                avisos: payload.col7,
-                agencia: payload.col8,
-                imagens: payload.col9,
-                anotacoes: payload.col10,
-                status: payload.col11,
-                pendencia: payload.col12
-            });
+            document.getElementById('statusNuvem').innerText = "Salvando...";
 
-            if (WEB_APP_URL && WEB_APP_URL !== 'SUA_URL_DO_APPS_SCRIPT_AQUI') {
-                try {
-                    await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                } catch (err) {
-                    console.error("Erro no envio:", err);
-                }
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                fecharModal();
+                setTimeout(carregarDados, 1500);
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao salvar dados.");
             }
-
-            btnSalvar.disabled = false;
-            btnSalvar.innerText = 'SALVAR NO SHEETS';
-            document.getElementById('formNovoRegistro').reset();
-            fecharModal();
-            atualizarTabelaEMetricas();
         }
     </script>
 </body>
