@@ -106,35 +106,38 @@
             font-weight: 600;
         }
 
-        /* Grid Superior Original */
+        /* Grid Superior Otimizado para Não Estourar a Tela */
         .top-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1.8fr;
-            gap: 12px;
+            grid-template-columns: 1.8fr 1fr 1fr 2.2fr;
+            gap: 10px;
             width: 100%;
         }
 
         .card-panel {
             background: var(--surface-color);
             border-radius: 12px;
-            padding: 12px;
+            padding: 10px;
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            min-width: 0;
+            min-width: 0; /* Essencial para evitar scroll horizontal inesperado */
         }
 
         .card-panel h3 {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .lines-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
             gap: 4px;
             max-height: 120px;
             overflow-y: auto;
@@ -144,8 +147,8 @@
             background: #f1f5f9;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 6px 2px;
-            font-size: 0.75rem;
+            padding: 5px 2px;
+            font-size: 0.72rem;
             font-weight: 600;
             color: var(--text-main);
             cursor: pointer;
@@ -173,31 +176,43 @@
 
         .stack-list .filter-btn {
             text-align: left;
-            padding: 6px 8px;
+            padding: 5px 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
+        /* Container de Métricas com 2 Colunas */
         .metrics-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+            align-content: start;
+            max-height: 130px;
+            overflow-y: auto;
         }
 
         .metric-box {
             background: #f8fafc;
-            border-radius: 8px;
-            padding: 8px;
+            border-radius: 6px;
+            padding: 5px;
             border: 1px solid var(--border-color);
             text-align: center;
         }
 
+        .metric-box.full-width {
+            grid-column: span 2;
+        }
+
         .metric-box h4 {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             color: var(--text-muted);
-            margin-bottom: 2px;
+            margin-bottom: 1px;
+            text-transform: uppercase;
         }
 
         .metric-box .val {
-            font-size: 1.3rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--primary);
         }
@@ -406,7 +421,7 @@
                 </div>
             </header>
 
-            <!-- Quadros Superiores Originais -->
+            <!-- Quadros Superiores -->
             <div class="top-grid">
                 <div class="card-panel">
                     <h3>Linhas de Ônibus</h3>
@@ -423,14 +438,27 @@
                     <div class="stack-list" id="filterTipo"></div>
                 </div>
 
+                <!-- Painel de Métricas Separadas -->
                 <div class="card-panel metrics-container">
-                    <div class="metric-box">
+                    <div class="metric-box full-width">
                         <h4 id="labelMetricaTotais">Alterações Totais</h4>
                         <div class="val" id="mTotGeral">0</div>
                     </div>
                     <div class="metric-box">
-                        <h4>Pendências no Período</h4>
-                        <div class="val red" id="mRestGeral">0</div>
+                        <h4>Mobilibus</h4>
+                        <div class="val red" id="mPendMobi">0</div>
+                    </div>
+                    <div class="metric-box">
+                        <h4>Terminais</h4>
+                        <div class="val red" id="mPendTerm">0</div>
+                    </div>
+                    <div class="metric-box">
+                        <h4>Avisos</h4>
+                        <div class="val red" id="mPendAvis">0</div>
+                    </div>
+                    <div class="metric-box">
+                        <h4>Agência/Telão</h4>
+                        <div class="val red" id="mPendAgen">0</div>
                     </div>
                 </div>
             </div>
@@ -670,6 +698,7 @@
                 if (tipoVal) tiposSet.add(tipoVal);
             });
 
+            // Geração estática dos botões com ordenação fixa por .sort()
             const containerLinhas = document.getElementById('filterLinhas');
             containerLinhas.innerHTML = '';
             Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})).forEach(linha => {
@@ -785,6 +814,7 @@
                     tr.classList.add('linha-selecionada');
                 }
                 
+                // Clique em qualquer célula seleciona a linha horizontalmente
                 tr.onclick = (e) => {
                     if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
                     document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
@@ -873,19 +903,32 @@
             renderizarTabela();
         }
 
+        /* Atualiza as métricas por coluna respeitando a regra do Status "Ok" */
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
             
-            const pendentesCount = dados.filter(d => {
-                const r = d.data;
-                const mobi = formatCell(r[4]);
-                const term = formatCell(r[5]);
-                const avis = formatCell(r[6]);
-                const agen = formatCell(r[7]);
-                return (!mobi || !term || !avis || !agen);
-            }).length;
+            let pendMobi = 0;
+            let pendTerm = 0;
+            let pendAvis = 0;
+            let pendAgen = 0;
 
-            document.getElementById('mRestGeral').innerText = pendentesCount;
+            dados.forEach(d => {
+                const r = d.data;
+                const statusVal = formatCell(r[9]).toLowerCase();
+
+                // Se houver "ok" na coluna Status, ignora pendências dessa linha
+                if (statusVal === 'ok') return;
+
+                if (!formatCell(r[4])) pendMobi++;
+                if (!formatCell(r[5])) pendTerm++;
+                if (!formatCell(r[6])) pendAvis++;
+                if (!formatCell(r[7])) pendAgen++;
+            });
+
+            document.getElementById('mPendMobi').innerText = pendMobi;
+            document.getElementById('mPendTerm').innerText = pendTerm;
+            document.getElementById('mPendAvis').innerText = pendAvis;
+            document.getElementById('mPendAgen').innerText = pendAgen;
         }
 
         function abrirModal() {
