@@ -42,6 +42,19 @@
             gap: 16px;
         }
 
+        /* Área do Topo Congelada (Sticky Header) */
+        .sticky-top-area {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+        }
+
         header {
             display: flex;
             justify-content: space-between;
@@ -120,7 +133,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
             gap: 4px;
-            max-height: 140px;
+            max-height: 120px;
             overflow-y: auto;
         }
 
@@ -151,7 +164,7 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
-            max-height: 140px;
+            max-height: 120px;
             overflow-y: auto;
         }
 
@@ -169,7 +182,7 @@
         .metric-box {
             background: #f8fafc;
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px;
             border: 1px solid var(--border-color);
             text-align: center;
         }
@@ -177,11 +190,11 @@
         .metric-box h4 {
             font-size: 0.7rem;
             color: var(--text-muted);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .metric-box .val {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--primary);
         }
@@ -238,8 +251,9 @@
 
         th, td {
             padding: 8px 10px;
-            text-align: left;
+            text-align: center; /* Todas as colunas centralizadas */
             border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
         }
 
         th {
@@ -250,18 +264,41 @@
 
         tbody tr:hover { background: #f8fafc; }
 
-        .anotacao-cell {
-            max-width: 180px;
+        /* Animação para destacar a linha editada */
+        tr.linha-focada {
+            animation: highlightFade 3s ease-out forwards;
+        }
+
+        @keyframes highlightFade {
+            0% { background-color: #a7f3d0; }
+            100% { background-color: transparent; }
+        }
+
+        /* Novo Destaque para Anotações (Badge Elegante) */
+        .anotacao-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            max-width: 160px;
+            padding: 4px 10px;
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            cursor: pointer;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            cursor: pointer;
-            color: #0284c7;
-            text-decoration: underline dotted;
+            transition: all 0.2s ease;
         }
-        .anotacao-cell:hover {
-            color: #0369a1;
-            background-color: #f0f9ff;
+
+        .anotacao-badge:hover {
+            background-color: #dcfce7;
+            border-color: #86efac;
+            transform: translateY(-1px);
         }
 
         .badge-status {
@@ -269,6 +306,7 @@
             border-radius: 4px;
             font-weight: 600;
             font-size: 0.7rem;
+            display: inline-block;
         }
 
         .badge-pendente { background: #fef2f2; color: #ef4444; }
@@ -312,6 +350,7 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            text-align: left;
         }
 
         .form-group label {
@@ -339,58 +378,61 @@
 <body onload="carregarDados()">
 
     <div class="container">
-        <header>
-            <h1>Painel Operacional</h1>
-            
-            <div class="header-actions">
-                <div class="date-filter-group">
-                    <label>Início:</label>
-                    <input type="date" id="dataInicio" onchange="renderizarTabela()">
-                    <label>Fim:</label>
-                    <input type="date" id="dataFim" onchange="renderizarTabela()">
-                    <button class="btn-outline btn btn-sm" onclick="limparFiltroData()" title="Limpar Período">✕ Limpar Data</button>
-                </div>
+        <!-- ÁREA CONGELADA NO TOPO DA TELA -->
+        <div class="sticky-top-area">
+            <header>
+                <h1>Painel Operacional</h1>
                 
-                <div class="status-badge" id="statusNuvem">Conectando...</div>
-            </div>
-        </header>
-
-        <!-- Quadros Superiores -->
-        <div class="top-grid">
-            <div class="card-panel">
-                <h3>Linhas de Ônibus</h3>
-                <div class="lines-grid" id="filterLinhas"></div>
-            </div>
-
-            <div class="card-panel">
-                <h3>Tipo de Dia</h3>
-                <div class="stack-list" id="filterDia"></div>
-            </div>
-
-            <div class="card-panel">
-                <h3>Tipo de Alteração</h3>
-                <div class="stack-list" id="filterTipo"></div>
-            </div>
-
-            <div class="card-panel metrics-container">
-                <div class="metric-box">
-                    <h4 id="labelMetricaTotais">Alterações Totais</h4>
-                    <div class="val" id="mTotGeral">0</div>
+                <div class="header-actions">
+                    <div class="date-filter-group">
+                        <label>Início:</label>
+                        <input type="date" id="dataInicio" onchange="renderizarTabela()">
+                        <label>Fim:</label>
+                        <input type="date" id="dataFim" onchange="renderizarTabela()">
+                        <button class="btn-outline btn btn-sm" onclick="limparFiltroData()" title="Limpar Período">✕ Limpar Data</button>
+                    </div>
+                    
+                    <div class="status-badge" id="statusNuvem">Conectando...</div>
                 </div>
-                <div class="metric-box">
-                    <h4>Pendências no Período</h4>
-                    <div class="val red" id="mRestGeral">0</div>
+            </header>
+
+            <!-- Quadros Superiores -->
+            <div class="top-grid">
+                <div class="card-panel">
+                    <h3>Linhas de Ônibus</h3>
+                    <div class="lines-grid" id="filterLinhas"></div>
+                </div>
+
+                <div class="card-panel">
+                    <h3>Tipo de Dia</h3>
+                    <div class="stack-list" id="filterDia"></div>
+                </div>
+
+                <div class="card-panel">
+                    <h3>Tipo de Alteração</h3>
+                    <div class="stack-list" id="filterTipo"></div>
+                </div>
+
+                <div class="card-panel metrics-container">
+                    <div class="metric-box">
+                        <h4 id="labelMetricaTotais">Alterações Totais</h4>
+                        <div class="val" id="mTotGeral">0</div>
+                    </div>
+                    <div class="metric-box">
+                        <h4>Pendências no Período</h4>
+                        <div class="val red" id="mRestGeral">0</div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Barra de Ações -->
-        <div class="action-bar">
-            <div>
-                <button class="btn-outline btn" onclick="limparFiltros()">Limpar Todos Filtros</button>
-                <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;"></span>
+            <!-- Barra de Ações -->
+            <div class="action-bar">
+                <div>
+                    <button class="btn-outline btn" onclick="limparFiltros()">Limpar Todos Filtros</button>
+                    <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;"></span>
+                </div>
+                <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
             </div>
-            <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
         </div>
 
         <!-- Tabela -->
@@ -428,7 +470,9 @@
                 <input type="hidden" id="editRowIndex" value="">
                 <div class="form-grid">
                     <div class="form-group"><label>Linha</label><input type="text" id="fLinha" required></div>
-                    <div class="form-group"><label>Vigência</label><input type="text" id="fVigencia" placeholder="DD/MM/AAAA"></div>
+                    
+                    <!-- Campo Vigência Padronizado com Seletor de Data -->
+                    <div class="form-group"><label>Vigência</label><input type="date" id="fVigencia"></div>
                     
                     <div class="form-group">
                         <label>Tipo</label>
@@ -476,7 +520,7 @@
                 <h2>Texto Completo da Anotação</h2>
                 <button class="btn-outline btn btn-sm" onclick="fecharModalNota()">✕</button>
             </div>
-            <div id="textoNotaCompleto" style="font-size: 0.85rem; line-height: 1.6; word-break: break-word; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); max-height: 250px; overflow-y: auto; white-space: pre-wrap;">
+            <div id="textoNotaCompleto" style="font-size: 0.85rem; line-height: 1.6; word-break: break-word; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); max-height: 250px; overflow-y: auto; white-space: pre-wrap; text-align: left;">
             </div>
             <div class="modal-footer" style="margin-top: 16px;">
                 <button type="button" class="btn" onclick="fecharModalNota()">Fechar</button>
@@ -485,7 +529,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec';
+        const WEB_APP_URL = 'SUA_URL_DO_APPS_SCRIPT_AQUI';
 
         let dadosGlobais = [];
         let filtrosAtivos = {
@@ -494,9 +538,14 @@
             tipo: new Set()
         };
 
+        // Guarda o identificador da linha salva recentemente para direcionar o foco
+        let ultimaLinhaSalvaId = null;
+
         async function carregarDados() {
             const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar informações da planilha, por favor aguarde...</td></tr>`;
+            if(dadosGlobais.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar informações da planilha, por favor aguarde...</td></tr>`;
+            }
             document.getElementById('statusNuvem').innerText = "A sincronizar...";
 
             try {
@@ -508,6 +557,18 @@
                 gerarFiltrosDinamicos();
                 renderizarTabela();
                 document.getElementById('statusNuvem').innerText = "Conectado ao Google Sheets";
+
+                // Se houver registro recente salvo, rola a tela até ele e aplica o destaque
+                if (ultimaLinhaSalvaId !== null) {
+                    setTimeout(() => {
+                        const trAlvo = document.getElementById(`row-${ultimaLinhaSalvaId}`);
+                        if (trAlvo) {
+                            trAlvo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            trAlvo.classList.add('linha-focada');
+                        }
+                        ultimaLinhaSalvaId = null;
+                    }, 300);
+                }
             } catch (err) {
                 console.error("Erro detalhado:", err);
                 document.getElementById('statusNuvem').innerText = "Erro de Sincronização";
@@ -515,7 +576,6 @@
             }
         }
 
-        // Converte data para fins de ordenação e filtro de período
         function parseData(valorRaw) {
             if (!valorRaw) return null;
             const str = valorRaw.toString().trim();
@@ -538,19 +598,26 @@
             return null;
         }
 
-        // Formata especificamente a Vigência para DD/MM/AAAA se vier em formato ISO ou código de série
+        // Converte qualquer entrada em formato YYYY-MM-DD para preencher o input do tipo Date no modal
+        function formatToInputDate(valorRaw) {
+            const dt = parseData(valorRaw);
+            if (!dt || isNaN(dt.getTime())) return '';
+            const ano = dt.getFullYear();
+            const mes = String(dt.getMonth() + 1).padStart(2, '0');
+            const dia = String(dt.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+        }
+
         function formatVigencia(valorRaw) {
             if (valorRaw === undefined || valorRaw === null) return '';
             const str = valorRaw.toString().trim();
             if (str === '' || str === '-') return '';
 
-            // Se for formato ISO (ex: 2026-11-02T03:00:00.000Z)
             const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
             if (isoMatch) {
                 return `${isoMatch[3]}/${isoMatch[2]}/${isoMatch[1]}`;
             }
 
-            // Se for número de série do Excel/Sheets
             const dtNum = Number(str);
             if (!isNaN(dtNum) && dtNum > 30000 && dtNum < 60000) {
                 const dt = new Date((dtNum - (25567 + 2)) * 86400 * 1000);
@@ -710,11 +777,12 @@
             dadosExibidos.forEach((item) => {
                 const row = item.data;
                 const tr = document.createElement('tr');
+                tr.id = `row-${item.rowIndex}`; // Atribui ID para viabilizar o foco
                 
                 let tdContent = '';
                 
                 tdContent += `<td>${formatCell(row[0])}</td>`;
-                tdContent += `<td>${formatVigencia(row[1])}</td>`; // Vigência tratada e limpa para DD/MM/AAAA
+                tdContent += `<td>${formatVigencia(row[1])}</td>`;
                 tdContent += `<td>${formatCell(row[2])}</td>`;
                 tdContent += `<td>${formatCell(row[3])}</td>`;
                 tdContent += `<td>${formatCell(row[4])}</td>`;
@@ -722,10 +790,15 @@
                 tdContent += `<td>${formatCell(row[6])}</td>`;
                 tdContent += `<td>${formatCell(row[7])}</td>`;
 
+                // Coluna Anotações (Novo Destaque Elegante)
                 const anotacaoVal = formatCell(row[8]);
                 if (anotacaoVal) {
                     const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
-                    tdContent += `<td class="anotacao-cell" onclick="mostrarNotaCompleta('${textoEscapado}')" title="Clique para ver o texto completo">${anotacaoVal}</td>`;
+                    tdContent += `<td>
+                        <div class="anotacao-badge" onclick="mostrarNotaCompleta('${textoEscapado}')" title="Clique para ler a anotação">
+                            📝 ${anotacaoVal}
+                        </div>
+                    </td>`;
                 } else {
                     tdContent += `<td></td>`;
                 }
@@ -813,7 +886,7 @@
             document.getElementById('editRowIndex').value = rowIndex;
 
             document.getElementById('fLinha').value = r[0] || '';
-            document.getElementById('fVigencia').value = r[1] || '';
+            document.getElementById('fVigencia').value = formatToInputDate(r[1]); // Preenche a data formatada no seletor
             document.getElementById('fTipo').value = r[2] || '';
             document.getElementById('fDia').value = r[3] || '';
             document.getElementById('fMobilibus').value = r[4] || '';
@@ -829,6 +902,7 @@
         async function salvarRegistro(event) {
             event.preventDefault();
 
+            const targetRow = document.getElementById('editRowIndex').value;
             const mobi = document.getElementById('fMobilibus').value.trim();
             const term = document.getElementById('fTerminais').value.trim();
             const avis = document.getElementById('fAvisos').value.trim();
@@ -838,10 +912,18 @@
             const ehVazio = (val) => !val || val === '-';
             const pendenciaCalculada = (ehVazio(mobi) || ehVazio(term) || ehVazio(avis) || ehVazio(agen) || ehVazio(stat)) ? 'Pendente' : 'Atualizado';
 
+            // Garante que o valor da vigência seja convertido para o padrão legível antes de ir para o Google Sheets
+            const vigenciaInput = document.getElementById('fVigencia').value;
+            let vigenciaFormatada = vigenciaInput;
+            if (vigenciaInput && vigenciaInput.includes('-')) {
+                const p = vigenciaInput.split('-');
+                vigenciaFormatada = `${p[2]}/${p[1]}/${p[0]}`;
+            }
+
             const payload = {
-                rowIndex: document.getElementById('editRowIndex').value,
+                rowIndex: targetRow,
                 col1: document.getElementById('fLinha').value,
-                col2: document.getElementById('fVigencia').value,
+                col2: vigenciaFormatada,
                 col3: document.getElementById('fTipo').value,
                 col4: document.getElementById('fDia').value,
                 col5: mobi,
@@ -852,6 +934,9 @@
                 col10: stat,
                 col11: pendenciaCalculada
             };
+
+            // Guarda a linha editada ou define 2 se for uma nova linha no topo
+            ultimaLinhaSalvaId = targetRow ? parseInt(targetRow) : 2;
 
             document.getElementById('statusNuvem').innerText = "Salvando...";
 
