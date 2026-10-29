@@ -262,17 +262,7 @@
             color: var(--text-muted);
         }
 
-        /* Efeito Hover e Seleção Horizontal da Linha */
-        tbody tr {
-            cursor: pointer;
-            transition: background-color 0.15s ease;
-        }
-        tbody tr:hover { 
-            background: #f1f5f9; 
-        }
-        tbody tr.linha-selecionada {
-            background-color: #cbd5e1 !important;
-        }
+        tbody tr:hover { background: #f8fafc; }
 
         tr.linha-focada {
             animation: highlightFade 3s ease-out forwards;
@@ -667,7 +657,6 @@
                 if (tipoVal) tiposSet.add(tipoVal);
             });
 
-            // Ordem estática garantida por .sort()
             const containerLinhas = document.getElementById('filterLinhas');
             containerLinhas.innerHTML = '';
             Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})).forEach(linha => {
@@ -779,13 +768,6 @@
                 const tr = document.createElement('tr');
                 tr.id = `row-${item.rowIndex}`;
                 
-                // Evento de seleção horizontal ao clicar em qualquer lugar da linha
-                tr.onclick = (e) => {
-                    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
-                    document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
-                    tr.classList.add('linha-selecionada');
-                };
-
                 let tdContent = '';
                 
                 tdContent += `<td>${formatCell(row[0])}</td>`;
@@ -869,19 +851,7 @@
 
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
-            
-            // Contagem de quantas linhas faltam informações baseando-se nas colunas operacionais (Mobilibus, Terminais, Avisos, Agência/Telão e Status)
-            const pendentesCount = dados.filter(d => {
-                const r = d.data;
-                const mobi = formatCell(r[4]);
-                const term = formatCell(r[5]);
-                const avis = formatCell(r[6]);
-                const agen = formatCell(r[7]);
-                const stat = formatCell(r[9]);
-                return (!mobi || !term || !avis || !agen || !stat);
-            }).length;
-
-            document.getElementById('mRestGeral').innerText = pendentesCount;
+            document.getElementById('mRestGeral').innerText = dados.filter(d => (d.data[10] || '').toString().toLowerCase() === 'pendente').length;
         }
 
         function abrirModal() {
