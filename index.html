@@ -106,18 +106,21 @@
             font-weight: 600;
         }
 
+        /* Grid Superior Ajustada para Encaixe Perfeito sem Rolagem Horizontal */
         .top-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 2fr;
-            gap: 12px;
+            grid-template-columns: 1.8fr 1fr 1fr 2fr;
+            gap: 10px;
+            width: 100%;
         }
 
         .card-panel {
             background: var(--surface-color);
             border-radius: 12px;
-            padding: 12px;
+            padding: 10px;
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            min-width: 0; /* Impede que elementos estoureem o grid */
         }
 
         .card-panel h3 {
@@ -125,15 +128,18 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .lines-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
             gap: 4px;
-            max-height: 120px;
+            max-height: 110px;
             overflow-y: auto;
         }
 
@@ -141,8 +147,8 @@
             background: #f1f5f9;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 6px 2px;
-            font-size: 0.75rem;
+            padding: 5px 2px;
+            font-size: 0.72rem;
             font-weight: 600;
             color: var(--text-main);
             cursor: pointer;
@@ -164,29 +170,32 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
-            max-height: 120px;
+            max-height: 110px;
             overflow-y: auto;
         }
 
         .stack-list .filter-btn {
             text-align: left;
-            padding: 6px 8px;
+            padding: 5px 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Container de Métricas em Grid de 2 colunas */
+        /* Container de Métricas Compacto e Alinhado */
         .metrics-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
+            gap: 5px;
             align-content: start;
-            max-height: 150px;
+            max-height: 110px;
             overflow-y: auto;
         }
 
         .metric-box {
             background: #f8fafc;
-            border-radius: 8px;
-            padding: 6px;
+            border-radius: 6px;
+            padding: 5px;
             border: 1px solid var(--border-color);
             text-align: center;
         }
@@ -196,14 +205,14 @@
         }
 
         .metric-box h4 {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: var(--text-muted);
             margin-bottom: 1px;
             text-transform: uppercase;
         }
 
         .metric-box .val {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--primary);
         }
@@ -412,7 +421,7 @@
                 </div>
             </header>
 
-            <!-- Quadros Superiores -->
+            <!-- Quadros Superiores Compactos e Proporcionais -->
             <div class="top-grid">
                 <div class="card-panel">
                     <h3>Linhas de Ônibus</h3>
@@ -429,7 +438,7 @@
                     <div class="stack-list" id="filterTipo"></div>
                 </div>
 
-                <!-- Painel de Métricas Separadas -->
+                <!-- Painel de Métricas -->
                 <div class="card-panel metrics-container">
                     <div class="metric-box full-width">
                         <h4 id="labelMetricaTotais">Alterações Totais</h4>
@@ -904,7 +913,6 @@
                 const r = d.data;
                 const statusVal = formatCell(r[9]).toLowerCase();
 
-                // Se o status for "ok", não conta as pendências desta linha
                 if (statusVal === 'ok') return;
 
                 if (!formatCell(r[4])) pendMobi++;
