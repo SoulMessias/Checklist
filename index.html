@@ -329,7 +329,6 @@
             <h1>Painel Operacional</h1>
             
             <div class="header-actions">
-                <!-- Filtro de Período com Botão Limpar -->
                 <div class="date-filter-group">
                     <label>Início:</label>
                     <input type="date" id="dataInicio" onchange="renderizarTabela()">
@@ -361,7 +360,7 @@
 
             <div class="card-panel metrics-container">
                 <div class="metric-box">
-                    <h4>Alterações no Período</h4>
+                    <h4 id="labelMetricaTotais">Alterações Totais</h4>
                     <div class="val" id="mTotGeral">0</div>
                 </div>
                 <div class="metric-box">
@@ -457,10 +456,16 @@
     </div>
 
     <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec
+';
 
         let dadosGlobais = [];
-        let filtroAtivo = { tipo: null, valor: null };
+        // Suporte a múltiplos filtros simultâneos por categoria usando Sets
+        let filtrosAtivos = {
+            linha: new Set(),
+            dia: new Set(),
+            tipo: new Set()
+        };
 
         async function carregarDados() {
             try {
@@ -478,39 +483,26 @@
             }
         }
 
-        // Converte qualquer formato de data/texto para um objeto Date válido para filtros/ordenação
+        // Função auxiliar apenas para ler a data para ordenação/comparação sem alterar o texto original exibido
         function parseData(valorRaw) {
             if (!valorRaw) return null;
-            
-            // Se já vier formatado em dd/mm/aaaa
             const str = valorRaw.toString().trim();
+            
+            if (str.includes('T') || (str.includes('-') && str.length >= 10)) {
+                const dt = new Date(str);
+                if (!isNaN(dt.getTime())) return dt;
+            }
             if (str.includes('/')) {
                 const partes = str.split('/');
                 if (partes.length === 3) {
                     return new Date(partes[2], partes[1] - 1, partes[0]);
                 }
-            } else if (str.includes('-')) {
-                // Caso venha no formato YYYY-MM-DD
-                const partes = str.split('T')[0].split('-');
-                if (partes.length === 3) {
-                    return new Date(partes[0], partes[1] - 1, partes[2]);
-                }
-            } else if (!isNaN(str) && Number(str) > 30000) {
-                // Se for número de série de data do Excel/Google Sheets
-                return new Date((Number(str) - (25567 + 2)) * 86400 * 1000);
+            }
+            const dtNum = Number(str);
+            if (!isNaN(dtNum) && dtNum > 30000) {
+                return new Date((dtNum - (25567 + 2)) * 86400 * 1000);
             }
             return null;
-        }
-
-        // Garante que a data sempre será exibida na tela no padrão estrito dd/mm/aaaa
-        function formatarDataExibicao(valorRaw) {
-            const dt = parseData(valorRaw);
-            if (!dt || isNaN(dt.getTime())) return valorRaw || '-';
-            
-            const dia = String(dt.getDate()).padStart(2, '0');
-            const mes = String(dt.getMonth() + 1).padStart(2, '0');
-            const ano = dt.getFullYear();
-            return `${dia}/${mes}/${ano}`;
         }
 
         function gerarFiltrosDinamicos() {
@@ -531,9 +523,9 @@
             Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})).forEach(linha => {
                 const btn = document.createElement('button');
                 btn.className = 'filter-btn';
+                if (filtrosAtivos.linha.has(linha)) btn.classList.add('active');
                 btn.innerText = linha;
-                if(filtroAtivo.tipo === 'linha' && filtroAtivo.valor === linha) btn.classList.add('active');
-                btn.onclick = () => filtrar('linha', linha, btn);
+                btn.onclick = (e) => toggleFiltro('linha', linha, btn, e);
                 containerLinhas.appendChild(btn);
             });
 
@@ -543,9 +535,9 @@
             Array.from(diasSet).sort().forEach(dia => {
                 const btn = document.createElement('button');
                 btn.className = 'filter-btn';
+                if (filtrosAtivos.dia.has(dia)) btn.classList.add('active');
                 btn.innerText = dia;
-                if(filtroAtivo.tipo === 'dia' && filtroAtivo.valor === dia) btn.classList.add('active');
-                btn.onclick = () => filtrar('dia', dia, btn);
+                btn.onclick = (e) => toggleFiltro('dia', dia, btn, e);
                 containerDia.appendChild(btn);
             });
 
@@ -555,9 +547,9 @@
             Array.from(tiposSet).sort().forEach(tipo => {
                 const btn = document.createElement('button');
                 btn.className = 'filter-btn';
+                if (filtrosAtivos.tipo.has(tipo)) btn.classList.add('active');
                 btn.innerText = tipo;
-                if(filtroAtivo.tipo === 'tipo' && filtroAtivo.valor === tipo) btn.classList.add('active');
-                btn.onclick = () => filtrar('tipo', tipo, btn);
+                btn.onclick = (e) => toggleFiltro('tipo', tipo, btn, e);
                 containerTipo.appendChild(btn);
             });
         }
@@ -572,72 +564,92 @@
             const dInicio = inputInicio ? new Date(inputInicio + "T00:00:00") : null;
             const dFim = inputFim ? new Date(inputFim + "T23:59:59") : null;
 
-            // 1. Filtragem dos Dados
+            // Rótulo dinâmico da métrica
+            const labelMetrica = document.getElementById('labelMetricaTotais');
+            if (inputInicio || inputFim) {
+                labelMetrica.innerText = "Alterações por período";
+            } else {
+                labelMetrica.innerText = "Alterações Totais";
+            }
+
+            // 1. Filtragem com suporte a múltipla seleção nos conjuntos (Sets)
             let dadosExibidos = dadosGlobais.filter(item => {
                 const row = item.data;
                 
-                // Filtro de Data
+                // Filtro de Período de Data
                 if (dInicio || dFim) {
                     const dtVigencia = parseData(row[1]);
                     if (dtVigencia) {
                         if (dInicio && dtVigencia < dInicio) return false;
                         if (dFim && dtVigencia > dFim) return false;
                     } else {
-                        return false; // Se não tem data válida, oculta se o filtro estiver ativo
+                        return false;
                     }
                 }
 
-                // Filtros dos Quadros
-                if (filtroAtivo.tipo && filtroAtivo.valor) {
-                    if (filtroAtivo.tipo === 'linha') return (row[0] || '').toString().trim() === filtroAtivo.valor.toString().trim();
-                    if (filtroAtivo.tipo === 'dia') return (row[3] || '').toString().trim() === filtroAtivo.valor.toString().trim();
-                    if (filtroAtivo.tipo === 'tipo') return (row[2] || '').toString().trim() === filtroAtivo.valor.toString().trim();
+                // Filtro de Linhas (se houver alguma selecionada)
+                if (filtrosAtivos.linha.size > 0) {
+                    if (!filtrosAtivos.linha.has((row[0] || '').toString().trim())) return false;
+                }
+
+                // Filtro de Dia (se houver algum selecionado)
+                if (filtrosAtivos.dia.size > 0) {
+                    if (!filtrosAtivos.dia.has((row[3] || '').toString().trim())) return false;
+                }
+
+                // Filtro de Tipo (se houver algum selecionado)
+                if (filtrosAtivos.tipo.size > 0) {
+                    if (!filtrosAtivos.tipo.has((row[2] || '').toString().trim())) return false;
                 }
 
                 return true;
             });
 
-            // 2. Ordenação Tripla: Vigência (crescente) -> Linha (crescente) -> Dia (crescente)
+            // 2. Ordenação: Vigência (do mais novo para o mais velho) -> Linha (crescente) -> Dia (alfabética)
             dadosExibidos.sort((a, b) => {
                 const rA = a.data;
                 const rB = b.data;
 
-                // 1º Critério: Vigência
-                const dtA = parseData(rA[1]) || new Date(8640000000000000);
-                const dtB = parseData(rB[1]) || new Date(8640000000000000);
-                if (dtA - dtB !== 0) return dtA - dtB;
+                // 1º Critério: Vigência (descendente - mais novo para mais velho)
+                const dtA = parseData(rA[1]) || new Date(0);
+                const dtB = parseData(rB[1]) || new Date(0);
+                if (dtB - dtA !== 0) return dtB - dtA;
 
-                // 2º Critério: Linha (Numérica ou Texto)
+                // 2º Critério: Linha (crescente)
                 const linhaA = (rA[0] || '').toString().trim();
                 const linhaB = (rB[0] || '').toString().trim();
                 const compLinha = linhaA.localeCompare(linhaB, undefined, { numeric: true });
                 if (compLinha !== 0) return compLinha;
 
-                // 3º Critério: Dia
+                // 3º Critério: Dia (alfabética)
                 const diaA = (rA[3] || '').toString().trim();
                 const diaB = (rB[3] || '').toString().trim();
                 return diaA.localeCompare(diaB);
             });
 
-            // 3. Renderização na Tela
+            // Atualiza texto explicativo dos filtros ativos na barra de ações
+            atualizarTextoFiltrosAtivos();
+
+            // 3. Renderização (exibindo dados exatamente como estão no banco, sem hífens para vazios)
             dadosExibidos.forEach((item) => {
                 const row = item.data;
                 const tr = document.createElement('tr');
                 
                 let tdContent = '';
                 
-                // Coluna 0: Linha
-                tdContent += `<td>${row[0] || '-'}</td>`;
+                // Linha (Coluna 0)
+                tdContent += `<td>${row[0] !== undefined && row[0] !== null ? row[0] : ''}</td>`;
                 
-                // Coluna 1: Vigência (Formatada em dd/mm/aaaa)
-                tdContent += `<td>${formatarDataExibicao(row[1])}</td>`;
+                // Vigência (Coluna 1) - Exibida exatamente como veio do banco de dados
+                tdContent += `<td>${row[1] !== undefined && row[1] !== null ? row[1] : ''}</td>`;
 
                 // Colunas 2 até 9 (Tipo, Dia, Mobilibus, Terminais, Avisos, Agência, Anotações, Status)
                 for (let i = 2; i < 10; i++) {
-                    tdContent += `<td>${row[i] || '-'}</td>`;
+                    const val = (row[i] !== undefined && row[i] !== null) ? row[i] : '';
+                    tdContent += `<td>${val}</td>`;
                 }
 
-                // Coluna 10: Pendência
+                // Pendência (Coluna 10)
                 const pendenciaVal = row[10] || 'Pendente';
                 const badgeClass = pendenciaVal.toLowerCase() === 'atualizado' ? 'badge-atualizado' : 'badge-pendente';
                 tdContent += `<td><span class="badge-status ${badgeClass}">${pendenciaVal}</span></td>`;
@@ -656,19 +668,28 @@
             atualizarMetricas(dadosExibidos);
         }
 
-        function filtrar(tipo, valor, elemento) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        // Gerencia seleção múltipla de filtros (com ou sem Ctrl)
+        function toggleFiltro(tipo, valor, elemento, event) {
+            const set = filtrosAtivos[tipo];
             
-            if (filtroAtivo.tipo === tipo && filtroAtivo.valor === valor) {
-                filtroAtivo = { tipo: null, valor: null };
-                document.getElementById('filtroAtivoLabel').innerText = '';
+            if (set.has(valor)) {
+                set.delete(valor);
+                elemento.classList.remove('active');
             } else {
-                filtroAtivo = { tipo, valor };
+                set.add(valor);
                 elemento.classList.add('active');
-                document.getElementById('filtroAtivoLabel').innerText = `Filtro: ${tipo.toUpperCase()} = ${valor}`;
             }
 
             renderizarTabela();
+        }
+
+        function atualizarTextoFiltrosAtivos() {
+            let partes = [];
+            if (filtrosAtivos.linha.size > 0) partes.appendText ? partes.push(`Linhas: ${Array.from(filtrosAtivos.linha).join(', ')}`) : partes.push(`Linhas: ${Array.from(filtrosAtivos.linha).join(', ')}`);
+            if (filtrosAtivos.tipo.size > 0) partes.push(`Tipos: ${Array.from(filtrosAtivos.tipo).join(', ')}`);
+            if (filtrosAtivos.dia.size > 0) partes.push(`Dias: ${Array.from(filtrosAtivos.dia).join(', ')}`);
+            
+            document.getElementById('filtroAtivoLabel').innerText = partes.join(' | ');
         }
 
         function limparFiltroData() {
@@ -678,7 +699,9 @@
         }
 
         function limparFiltros() {
-            filtroAtivo = { tipo: null, valor: null };
+            filtrosAtivos.linha.clear();
+            filtrosAtivos.dia.clear();
+            filtrosAtivos.tipo.clear();
             limparFiltroData();
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('filtroAtivoLabel').innerText = '';
@@ -710,7 +733,7 @@
             document.getElementById('editRowIndex').value = rowIndex;
 
             document.getElementById('fLinha').value = r[0] || '';
-            document.getElementById('fVigencia').value = formatarDataExibicao(r[1]);
+            document.getElementById('fVigencia').value = r[1] || '';
             document.getElementById('fTipo').value = r[2] || '';
             document.getElementById('fDia').value = r[3] || '';
             document.getElementById('fMobilibus').value = r[4] || '';
