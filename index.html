@@ -116,10 +116,12 @@
         .card-panel {
             background: var(--surface-color);
             border-radius: 12px;
-            padding: 14px; /* Aumentado o respiro interno */
+            padding: 16px; /* Preenchimento interno ainda maior para respiro */
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             min-width: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .card-panel h3 {
@@ -134,12 +136,12 @@
             text-overflow: ellipsis;
         }
 
-        /* Altura ampliada dos quadros de filtros para mostrar muito mais conteúdo sem rolar */
+        /* Altura ampliada dos quadros de filtros */
         .lines-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-            gap: 5px;
-            max-height: 200px;
+            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+            gap: 6px;
+            max-height: 250px;
             overflow-y: auto;
         }
 
@@ -147,7 +149,7 @@
             background: #f1f5f9;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 7px 2px; /* Altura do botão levemente expandida para legibilidade */
+            padding: 8px 2px;
             font-size: 0.75rem;
             font-weight: 600;
             color: var(--text-main);
@@ -170,34 +172,37 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
         }
 
         .stack-list .filter-btn {
             text-align: left;
-            padding: 7px 10px;
+            padding: 8px 10px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        /* Container de Métricas com mais altura e espaçamento */
+        /* Container de Métricas alinhado em altura e proporção com as demais segmentações */
         .metrics-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 8px;
-            align-content: start;
-            max-height: 200px;
+            align-content: stretch;
+            max-height: 250px;
             overflow-y: auto;
         }
 
         .metric-box {
             background: #f8fafc;
             border-radius: 8px;
-            padding: 8px;
+            padding: 10px; /* Preenchimento ampliado */
             border: 1px solid var(--border-color);
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .metric-box.full-width {
@@ -205,14 +210,14 @@
         }
 
         .metric-box h4 {
-            font-size: 0.65rem;
+            font-size: 0.7rem; /* Fonte levemente aumentada para legibilidade */
             color: var(--text-muted);
-            margin-bottom: 2px;
+            margin-bottom: 3px;
             text-transform: uppercase;
         }
 
         .metric-box .val {
-            font-size: 1.15rem;
+            font-size: 1.3rem; /* Fonte dos números aumentada */
             font-weight: 700;
             color: var(--primary);
         }
