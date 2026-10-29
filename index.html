@@ -414,7 +414,7 @@
                 <input type="hidden" id="editRowIndex" value="">
                 <div class="form-grid">
                     <div class="form-group"><label>Linha</label><input type="text" id="fLinha" required></div>
-                    <div class="form-group"><label>Vigência (Ex: 31/10/2026)</label><input type="text" id="fVigencia" placeholder="DD/MM/AAAA"></div>
+                    <div class="form-group"><label>Vigência</label><input type="text" id="fVigencia"></div>
                     
                     <div class="form-group">
                         <label>Tipo</label>
@@ -456,8 +456,8 @@
     </div>
 
     <script>
-        // COLE A SUA URL DO APPS SCRIPT AQUI ENTRE AS ASPAS:
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec
+';
 
         let dadosGlobais = [];
         let filtrosAtivos = {
@@ -483,13 +483,15 @@
             } catch (err) {
                 console.error("Erro detalhado:", err);
                 document.getElementById('statusNuvem').innerText = "Erro de Sincronização";
-                tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da nuvem. Verifique a consola (F12).</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da nuvem.</td></tr>`;
             }
         }
 
+        // Converte data flexível estritamente para fins de ordenação e filtro de período
         function parseData(valorRaw) {
             if (!valorRaw) return null;
             const str = valorRaw.toString().trim();
+            if (str === '' || str === '-') return null;
             
             if (str.includes('T') || (str.includes('-') && str.length >= 10)) {
                 const dt = new Date(str);
@@ -508,6 +510,14 @@
             return null;
         }
 
+        // Garante que células vazias ou com apenas um hífen fiquem em branco
+        function formatCell(val) {
+            if (val === undefined || val === null) return '';
+            const str = val.toString().trim();
+            if (str === '' || str === '-') return '';
+            return str;
+        }
+
         function gerarFiltrosDinamicos() {
             const linhasSet = new Set();
             const diasSet = new Set();
@@ -515,9 +525,13 @@
 
             dadosGlobais.forEach(item => {
                 const r = item.data;
-                if (r[0]) linhasSet.add(r[0].toString().trim());
-                if (r[3]) diasSet.add(r[3].toString().trim());
-                if (r[2]) tiposSet.add(r[2].toString().trim());
+                const linhaVal = formatCell(r[0]);
+                const diaVal = formatCell(r[3]);
+                const tipoVal = formatCell(r[2]);
+
+                if (linhaVal) linhasSet.add(linhaVal);
+                if (diaVal) diasSet.add(diaVal);
+                if (tipoVal) tiposSet.add(tipoVal);
             });
 
             // Linhas
@@ -535,7 +549,7 @@
             // Dia
             const containerDia = document.getElementById('filterDia');
             containerDia.innerHTML = '';
-            Array.from(diasSet).sort().forEach(dia => {
+            Array.from(diasSet).sort((a, b) => a.localeCompare(b)).forEach(dia => {
                 const btn = document.createElement('button');
                 btn.className = 'filter-btn';
                 if (filtrosAtivos.dia.has(dia)) btn.classList.add('active');
@@ -547,7 +561,7 @@
             // Tipo
             const containerTipo = document.getElementById('filterTipo');
             containerTipo.innerHTML = '';
-            Array.from(tiposSet).sort().forEach(tipo => {
+            Array.from(tiposSet).sort((a, b) => a.localeCompare(b)).forEach(tipo => {
                 const btn = document.createElement('button');
                 btn.className = 'filter-btn';
                 if (filtrosAtivos.tipo.has(tipo)) btn.classList.add('active');
@@ -588,15 +602,15 @@
                 }
 
                 if (filtrosAtivos.linha.size > 0) {
-                    if (!filtrosAtivos.linha.has((row[0] || '').toString().trim())) return false;
+                    if (!filtrosAtivos.linha.has(formatCell(row[0]))) return false;
                 }
 
                 if (filtrosAtivos.dia.size > 0) {
-                    if (!filtrosAtivos.dia.has((row[3] || '').toString().trim())) return false;
+                    if (!filtrosAtivos.dia.has(formatCell(row[3]))) return false;
                 }
 
                 if (filtrosAtivos.tipo.size > 0) {
-                    if (!filtrosAtivos.tipo.has((row[2] || '').toString().trim())) return false;
+                    if (!filtrosAtivos.tipo.has(formatCell(row[2]))) return false;
                 }
 
                 return true;
@@ -607,18 +621,28 @@
                 const rA = a.data;
                 const rB = b.data;
 
-                const dtA = parseData(rA[1]) || new Date(0);
-                const dtB = parseData(rB[1]) || new Date(0);
-                if (dtB - dtA !== 0) return dtB - dtA;
+                // 1º Critério: Vigência (do mais novo para o mais velho -> Descendente)
+                const dtA = parseData(rA[1]);
+                const dtB = parseData(rB[1]);
+                if (dtA && dtB) {
+                    if (dtB - dtA !== 0) return dtB - dtA;
+                } else {
+                    const strA = (rA[1] || '').toString();
+                    const strB = (rB[1] || '').toString();
+                    const compVig = strB.localeCompare(strA);
+                    if (compVig !== 0) return compVig;
+                }
 
-                const linhaA = (rA[0] || '').toString().trim();
-                const linhaB = (rB[0] || '').toString().trim();
+                // 2º Critério: Linha (Crescente numérica/alfabética)
+                const linhaA = formatCell(rA[0]);
+                const linhaB = formatCell(rB[0]);
                 const compLinha = linhaA.localeCompare(linhaB, undefined, { numeric: true });
                 if (compLinha !== 0) return compLinha;
 
-                const diaA = (rA[3] || '').toString().trim();
-                const diaB = (rB[3] || '').toString().trim();
-                return diaA.localeCompare(diaB);
+                // 3º Critério: Dia (Alfabética)
+                const diaA = formatCell(rA[3]);
+                const diaB = formatCell(rB[3]);
+                return diaA.localeCompare(diaB, undefined, { sensitivity: 'base' });
             });
 
             atualizarTextoFiltrosAtivos();
@@ -630,15 +654,14 @@
                 let tdContent = '';
                 
                 // Linha (Coluna 0)
-                tdContent += `<td>${row[0] !== undefined && row[0] !== null ? row[0] : ''}</td>`;
+                tdContent += `<td>${formatCell(row[0])}</td>`;
                 
-                // Vigência (Coluna 1) - Exibida exatamente como está no banco de dados
-                tdContent += `<td>${row[1] !== undefined && row[1] !== null ? row[1] : ''}</td>`;
+                // Vigência (Coluna 1) - Exatamente como está no banco de dados
+                tdContent += `<td>${formatCell(row[1])}</td>`;
 
-                // Colunas 2 até 9 (Tipo, Dia, Mobilibus, Terminais, Avisos, Agência, Anotações, Status) - Em branco se vazias
+                // Colunas 2 até 9 (Tipo, Dia, Mobilibus, Terminais, Avisos, Agência, Anotações, Status)
                 for (let i = 2; i < 10; i++) {
-                    const val = (row[i] !== undefined && row[i] !== null) ? row[i] : '';
-                    tdContent += `<td>${val}</td>`;
+                    tdContent += `<td>${formatCell(row[i])}</td>`;
                 }
 
                 // Pendência (Coluna 10)
