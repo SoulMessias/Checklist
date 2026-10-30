@@ -42,7 +42,7 @@
             gap: 16px;
         }
 
-        /* Área do Topo Congelada (Sticky Header) */
+        /* Área do Topo Congelada (Sticky Header abrangendo até o cabeçalho da tabela) */
         .sticky-top-area {
             position: sticky;
             top: 0;
@@ -281,10 +281,13 @@
             vertical-align: middle;
         }
 
-        th {
+        /* Cabeçalho da tabela fixo junto com o topo */
+        thead th {
+            position: sticky;
+            top: 0; /* O cálculo exato de posicionamento fixo acompanha a área do topo */
             background: #f8fafc;
-            font-weight: 600;
-            color: var(--text-muted);
+            z-index: 101;
+            box-shadow: inset 0 -1px 0 var(--border-color);
         }
 
         tbody tr {
@@ -425,8 +428,8 @@
 <body onload="carregarDados()">
 
     <div class="container">
-        <!-- ÁREA CONGELADA NO TOPO -->
-        <div class="sticky-top-area">
+        <!-- ÁREA CONGELADA NO TOPO (INCLUINDO O CABEÇALHO DA TABELA) -->
+        <div class="sticky-top-area" id="stickyTopArea">
             <header>
                 <h1>Painel Operacional</h1>
                 
@@ -498,28 +501,34 @@
                 </div>
                 <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
             </div>
+
+            <!-- CABEÇALHO DA TABELA UNIDO AO TOPO FIXO -->
+            <div class="table-card" style="box-shadow: none; border-radius: 0; border-left: none; border-right: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>LINHA</th>
+                            <th>VIGÊNCIA</th>
+                            <th>TIPO</th>
+                            <th>DIA</th>
+                            <th>MOBILIBUS</th>
+                            <th>TERMINAIS</th>
+                            <th>AVISOS</th>
+                            <th>AGÊNCIA/TELÃO</th>
+                            <th>IMAGEM</th>
+                            <th>ANOTAÇÕES</th>
+                            <th>STATUS</th>
+                            <th>PENDÊNCIA</th>
+                            <th>AÇÕES</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
 
-        <!-- Tabela -->
-        <div class="table-card">
+        <!-- Corpo da Tabela (rolável abaixo do cabeçalho fixo) -->
+        <div class="table-card" style="border-top: none; border-top-left-radius: 0; border-top-right-radius: 0;">
             <table>
-                <thead>
-                    <tr>
-                        <th>LINHA</th>
-                        <th>VIGÊNCIA</th>
-                        <th>TIPO</th>
-                        <th>DIA</th>
-                        <th>MOBILIBUS</th>
-                        <th>TERMINAIS</th>
-                        <th>AVISOS</th>
-                        <th>AGÊNCIA/TELÃO</th>
-                        <th>IMAGEM</th>
-                        <th>ANOTAÇÕES</th>
-                        <th>STATUS</th>
-                        <th>PENDÊNCIA</th>
-                        <th>AÇÕES</th>
-                    </tr>
-                </thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
@@ -568,7 +577,7 @@
                     <div class="form-group"><label>Agência/Telão</label><input type="text" id="fAgencia"></div>
                     <div class="form-group full-width"><label>Link / URL da Imagem</label><input type="url" id="fImagem" placeholder="https://exemplo.com/imagem.png"></div>
                     <div class="form-group"><label>Anotações</label><input type="text" id="fAnotacoes"></div>
-                    <div class="form-group"><label>Status</label><input type="text" id="fStatus"></div>
+                    <div class="form-group"><label>Status</label><input type="text" id="fStatus" placeholder="Ex: Ok"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
@@ -606,6 +615,19 @@
         let ultimaLinhaSalvaId = null;
         let linhaSelecionadaId = null;
 
+        // Ajusta dinamicamente a posição do cabeçalho fixo abaixo do topo
+        function atualizarPosicaoCabecalhoTabela() {
+            const stickyArea = document.getElementById('stickyTopArea');
+            const thElement = document.querySelector('thead th');
+            if(stickyArea && thElement) {
+                const alturaTopo = stickyArea.offsetHeight;
+                // Deixa o th colado logo abaixo da barra de ações do topo fixo
+                thElement.style.top = (alturaTopo - document.querySelector('.sticky-top-area .table-card').offsetHeight) + 'px';
+            }
+        }
+
+        window.addEventListener('resize', atualizarPosicaoCabecalhoTabela);
+
         async function carregarDados() {
             const tbody = document.getElementById('tableBody');
             if(dadosGlobais.length === 0) {
@@ -622,6 +644,8 @@
                 gerarFiltrosDinamicos();
                 renderizarTabela();
                 document.getElementById('statusNuvem').innerText = "Conectado ao Google Sheets";
+
+                setTimeout(atualizarPosicaoCabecalhoTabela, 100);
 
                 if (ultimaLinhaSalvaId !== null) {
                     setTimeout(() => {
@@ -759,6 +783,8 @@
                 btn.onclick = (e) => toggleFiltro('tipo', tipo, btn, e);
                 containerTipo.appendChild(btn);
             });
+
+            setTimeout(atualizarPosicaoCabecalhoTabela, 50);
         }
 
         function renderizarTabela() {
@@ -860,7 +886,6 @@
                 tdContent += `<td>${formatCell(row[6])}</td>`;
                 tdContent += `<td>${formatCell(row[7])}</td>`;
 
-                // Coluna Imagem (col[8] da planilha mapeada para índice 8)
                 const imgVal = formatCell(row[8]);
                 if (imgVal) {
                     tdContent += `<td><a href="${imgVal}" target="_blank" class="img-link">🖼️ Ver Imagem</a></td>`;
@@ -868,7 +893,6 @@
                     tdContent += `<td></td>`;
                 }
 
-                // Coluna Anotações (col[9] da planilha)
                 const anotacaoVal = formatCell(row[9]);
                 if (anotacaoVal) {
                     const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
@@ -881,11 +905,12 @@
                     tdContent += `<td></td>`;
                 }
 
-                // Coluna Status (col[10]) e Pendência (col[11])
                 tdContent += `<td>${formatCell(row[10])}</td>`;
 
-                const pendenciaVal = row[11] || 'Pendente';
-                const badgeClass = pendenciaVal.toLowerCase() === 'atualizado' ? 'badge-atualizado' : 'badge-pendente';
+                // A nova regra aplicada na exibição (Status "Ok" -> Atualizado, senão Pendente)
+                const statusStr = formatCell(row[10]).toLowerCase();
+                const pendenciaVal = (statusStr === 'ok') ? 'Atualizado' : 'Pendente';
+                const badgeClass = (pendenciaVal === 'Atualizado') ? 'badge-atualizado' : 'badge-pendente';
                 tdContent += `<td><span class="badge-status ${badgeClass}">${pendenciaVal}</span></td>`;
 
                 tdContent += `
@@ -950,7 +975,7 @@
 
             dados.forEach(d => {
                 const r = d.data;
-                const statusVal = formatCell(r[10]).toLowerCase(); // Status está na coluna 10
+                const statusVal = formatCell(r[10]).toLowerCase();
 
                 if (statusVal === 'ok') return;
 
@@ -1004,14 +1029,10 @@
             event.preventDefault();
 
             const targetRow = document.getElementById('editRowIndex').value;
-            const mobi = document.getElementById('fMobilibus').value.trim();
-            const term = document.getElementById('fTerminais').value.trim();
-            const avis = document.getElementById('fAvisos').value.trim();
-            const agen = document.getElementById('fAgencia').value.trim();
             const stat = document.getElementById('fStatus').value.trim();
 
-            const ehVazio = (val) => !val || val === '-';
-            const pendenciaCalculada = (ehVazio(mobi) || ehVazio(term) || ehVazio(avis) || ehVazio(agen) || ehVazio(stat)) ? 'Pendente' : 'Atualizado';
+            // Regra aplicada ao salvar: Se status for "Ok", pendência é "Atualizado", caso contrário "Pendente"
+            const pendenciaCalculada = (stat.toLowerCase() === 'ok') ? 'Atualizado' : 'Pendente';
 
             const vigenciaInput = document.getElementById('fVigencia').value;
             let vigenciaFormatada = vigenciaInput;
@@ -1026,10 +1047,10 @@
                 col2: vigenciaFormatada,
                 col3: document.getElementById('fTipo').value,
                 col4: document.getElementById('fDia').value,
-                col5: mobi,
-                col6: term,
-                col7: avis,
-                col8: agen,
+                col5: document.getElementById('fMobilibus').value.trim(),
+                col6: document.getElementById('fTerminais').value.trim(),
+                col7: document.getElementById('fAvisos').value.trim(),
+                col8: document.getElementById('fAgencia').value.trim(),
                 col9: document.getElementById('fImagem').value.trim(),
                 col10: document.getElementById('fAnotacoes').value,
                 col11: stat,
