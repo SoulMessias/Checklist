@@ -42,7 +42,7 @@
             gap: 16px;
         }
 
-        /* Área do Topo Congelada (Sticky Header abrangendo até o cabeçalho da tabela) */
+        /* Área do Topo Fixa (Sticky Header) */
         .sticky-top-area {
             position: sticky;
             top: 0;
@@ -156,6 +156,9 @@
             color: var(--text-main);
             cursor: pointer;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .filter-btn:hover {
@@ -178,9 +181,11 @@
             overflow-y: auto;
         }
 
+        /* Alinhamento centralizado perfeito nos botões de Tipo de Alteração / Dia */
         .stack-list .filter-btn {
-            text-align: left;
-            padding: 8px 10px;
+            text-align: center;
+            justify-content: center;
+            padding: 8px 12px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -238,6 +243,12 @@
             border: 1px solid var(--border-color);
         }
 
+        .action-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .btn {
             background: var(--primary);
             color: white;
@@ -259,6 +270,7 @@
 
         .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
 
+        /* Estrutura unificada da Tabela com colunas de tamanhos fixos idênticos entre Head e Body */
         .table-card {
             background: var(--surface-color);
             border-radius: 12px;
@@ -272,6 +284,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.78rem;
+            table-layout: fixed; /* Impede desalinhamento entre colunas */
         }
 
         th, td {
@@ -279,14 +292,34 @@
             text-align: center;
             border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        /* Cabeçalho da tabela fixo junto com o topo */
+        /* Larguras estritas correspondentes para cada uma das 13 colunas */
+        th:nth-child(1), td:nth-child(1) { width: 7%; }   /* LINHA */
+        th:nth-child(2), td:nth-child(2) { width: 9%; }   /* VIGÊNCIA */
+        th:nth-child(3), td:nth-child(3) { width: 11%; }  /* TIPO */
+        th:nth-child(4), td:nth-child(4) { width: 8%; }   /* DIA */
+        th:nth-child(5), td:nth-child(5) { width: 8%; }   /* MOBILIBUS */
+        th:nth-child(6), td:nth-child(6) { width: 8%; }   /* TERMINAIS */
+        th:nth-child(7), td:nth-child(7) { width: 8%; }   /* AVISOS */
+        th:nth-child(8), td:nth-child(8) { width: 9%; }   /* AGÊNCIA/TELÃO */
+        th:nth-child(9), td:nth-child(9) { width: 8%; }   /* IMAGEM */
+        th:nth-child(10), td:nth-child(10) { width: 10%; }/* ANOTAÇÕES */
+        th:nth-child(11), td:nth-child(11) { width: 8%; } /* STATUS */
+        th:nth-child(12), td:nth-child(12) { width: 9%; } /* PENDÊNCIA */
+        th:nth-child(13), td:nth-child(13) { width: 7%; } /* AÇÕES */
+
+        /* Cabeçalho da tabela fixo colado abaixo da barra de ações */
         thead th {
             position: sticky;
-            top: 0; /* O cálculo exato de posicionamento fixo acompanha a área do topo */
+            top: 142px; /* Ajustado dinamicamente via JS caso necessário */
             background: #f8fafc;
             z-index: 101;
+            font-weight: 600;
+            color: var(--text-muted);
             box-shadow: inset 0 -1px 0 var(--border-color);
         }
 
@@ -315,8 +348,8 @@
             align-items: center;
             justify-content: center;
             gap: 4px;
-            max-width: 160px;
-            padding: 4px 10px;
+            width: 100%;
+            padding: 4px 8px;
             background-color: #f0fdf4;
             color: #166534;
             border: 1px solid #bbf7d0;
@@ -343,7 +376,9 @@
             font-size: 0.75rem;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 4px;
+            width: 100%;
         }
         .img-link:hover { text-decoration: underline; }
 
@@ -428,7 +463,7 @@
 <body onload="carregarDados()">
 
     <div class="container">
-        <!-- ÁREA CONGELADA NO TOPO (INCLUINDO O CABEÇALHO DA TABELA) -->
+        <!-- ÁREA DO TOPO FIXA (STIKY HEADER COMPLETO) -->
         <div class="sticky-top-area" id="stickyTopArea">
             <header>
                 <h1>Painel Operacional</h1>
@@ -463,7 +498,7 @@
                     <div class="stack-list" id="filterTipo"></div>
                 </div>
 
-                <!-- Painel de Métricas Separadas -->
+                <!-- Painel de Métricas -->
                 <div class="card-panel metrics-container-wrapper">
                     <div class="card-panel" style="border: none; box-shadow: none; padding: 0; height: 100%; display: flex; flex-direction: column;">
                         <h3>Resumo de Pendências</h3>
@@ -493,42 +528,37 @@
                 </div>
             </div>
 
-            <!-- Barra de Ações -->
+            <!-- Barra de Ações com Botão de Selecionar Pendentes -->
             <div class="action-bar">
-                <div>
+                <div class="action-bar-left">
                     <button class="btn-outline btn" onclick="limparFiltros()">Limpar Todos Filtros</button>
+                    <button class="btn-outline btn" onclick="selecionarPendentes()">Selecionar Pendentes</button>
                     <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;"></span>
                 </div>
                 <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
             </div>
-
-            <!-- CABEÇALHO DA TABELA UNIDO AO TOPO FIXO -->
-            <div class="table-card" style="box-shadow: none; border-radius: 0; border-left: none; border-right: none;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>LINHA</th>
-                            <th>VIGÊNCIA</th>
-                            <th>TIPO</th>
-                            <th>DIA</th>
-                            <th>MOBILIBUS</th>
-                            <th>TERMINAIS</th>
-                            <th>AVISOS</th>
-                            <th>AGÊNCIA/TELÃO</th>
-                            <th>IMAGEM</th>
-                            <th>ANOTAÇÕES</th>
-                            <th>STATUS</th>
-                            <th>PENDÊNCIA</th>
-                            <th>AÇÕES</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
         </div>
 
-        <!-- Corpo da Tabela (rolável abaixo do cabeçalho fixo) -->
-        <div class="table-card" style="border-top: none; border-top-left-radius: 0; border-top-right-radius: 0;">
+        <!-- Tabela Unificada com Cabeçalho e Corpo Alinhados -->
+        <div class="table-card">
             <table>
+                <thead>
+                    <tr>
+                        <th>LINHA</th>
+                        <th>VIGÊNCIA</th>
+                        <th>TIPO</th>
+                        <th>DIA</th>
+                        <th>MOBILIBUS</th>
+                        <th>TERMINAIS</th>
+                        <th>AVISOS</th>
+                        <th>AGÊNCIA/TELÃO</th>
+                        <th>IMAGEM</th>
+                        <th>ANOTAÇÕES</th>
+                        <th>STATUS</th>
+                        <th>PENDÊNCIA</th>
+                        <th>AÇÕES</th>
+                    </tr>
+                </thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
@@ -615,14 +645,13 @@
         let ultimaLinhaSalvaId = null;
         let linhaSelecionadaId = null;
 
-        // Ajusta dinamicamente a posição do cabeçalho fixo abaixo do topo
+        // Atualiza dinamicamente a altura em que o cabeçalho fixo da tabela fica posicionado
         function atualizarPosicaoCabecalhoTabela() {
             const stickyArea = document.getElementById('stickyTopArea');
             const thElement = document.querySelector('thead th');
             if(stickyArea && thElement) {
                 const alturaTopo = stickyArea.offsetHeight;
-                // Deixa o th colado logo abaixo da barra de ações do topo fixo
-                thElement.style.top = (alturaTopo - document.querySelector('.sticky-top-area .table-card').offsetHeight) + 'px';
+                thElement.style.top = (alturaTopo - 40) + 'px';
             }
         }
 
@@ -907,7 +936,6 @@
 
                 tdContent += `<td>${formatCell(row[10])}</td>`;
 
-                // A nova regra aplicada na exibição (Status "Ok" -> Atualizado, senão Pendente)
                 const statusStr = formatCell(row[10]).toLowerCase();
                 const pendenciaVal = (statusStr === 'ok') ? 'Atualizado' : 'Pendente';
                 const badgeClass = (pendenciaVal === 'Atualizado') ? 'badge-atualizado' : 'badge-pendente';
@@ -924,6 +952,28 @@
             });
 
             atualizarMetricas(dadosExibidos);
+        }
+
+        // Função do novo botão "Selecionar Pendentes"
+        function selecionarPendentes() {
+            const linhasTabela = document.querySelectorAll('#tableBody tr');
+            let primeiraEncontrada = null;
+
+            linhasTabela.forEach(tr => {
+                const badgePendencia = tr.querySelector('.badge-pendente');
+                if (badgePendencia) {
+                    tr.classList.add('linha-selecionada');
+                    if (!primeiraEncontrada) {
+                        primeiraEncontrada = tr;
+                    }
+                } else {
+                    tr.classList.remove('linha-selecionada');
+                }
+            });
+
+            if (primeiraEncontrada) {
+                primeiraEncontrada.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
 
         function toggleFiltro(tipo, valor, elemento, event) {
@@ -1031,7 +1081,6 @@
             const targetRow = document.getElementById('editRowIndex').value;
             const stat = document.getElementById('fStatus').value.trim();
 
-            // Regra aplicada ao salvar: Se status for "Ok", pendência é "Atualizado", caso contrário "Pendente"
             const pendenciaCalculada = (stat.toLowerCase() === 'ok') ? 'Atualizado' : 'Pendente';
 
             const vigenciaInput = document.getElementById('fVigencia').value;
