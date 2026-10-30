@@ -156,6 +156,9 @@
             color: var(--text-main);
             cursor: pointer;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .filter-btn:hover {
@@ -178,9 +181,11 @@
             overflow-y: auto;
         }
 
+        /* Centralização perfeita horizontal e vertical dos botões do Tipo de Alteração e Tipo de Dia */
         .stack-list .filter-btn {
-            text-align: left;
-            padding: 8px 10px;
+            text-align: center;
+            justify-content: center;
+            padding: 8px 12px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -259,6 +264,7 @@
 
         .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
 
+        /* Tabela unificada com larguras simétricas estritas para garantir o alinhamento perfeito do cabeçalho */
         .table-card {
             background: var(--surface-color);
             border-radius: 12px;
@@ -272,6 +278,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.78rem;
+            table-layout: fixed; /* Força o alinhamento simétrico entre th e td */
         }
 
         th, td {
@@ -279,14 +286,34 @@
             text-align: center;
             border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
+
+        /* Larguras idênticas definidas estritamente para cabeçalho e corpo */
+        th:nth-child(1), td:nth-child(1) { width: 7%; }   /* LINHA */
+        th:nth-child(2), td:nth-child(2) { width: 9%; }   /* VIGÊNCIA */
+        th:nth-child(3), td:nth-child(3) { width: 11%; }  /* TIPO */
+        th:nth-child(4), td:nth-child(4) { width: 8%; }   /* DIA */
+        th:nth-child(5), td:nth-child(5) { width: 8%; }   /* MOBILIBUS */
+        th:nth-child(6), td:nth-child(6) { width: 8%; }   /* TERMINAIS */
+        th:nth-child(7), td:nth-child(7) { width: 8%; }   /* AVISOS */
+        th:nth-child(8), td:nth-child(8) { width: 9%; }   /* AGÊNCIA/TELÃO */
+        th:nth-child(9), td:nth-child(9) { width: 8%; }   /* IMAGEM */
+        th:nth-child(10), td:nth-child(10) { width: 10%; }/* ANOTAÇÕES */
+        th:nth-child(11), td:nth-child(11) { width: 8%; } /* STATUS */
+        th:nth-child(12), td:nth-child(12) { width: 9%; } /* PENDÊNCIA */
+        th:nth-child(13), td:nth-child(13) { width: 7%; } /* AÇÕES */
 
         /* Cabeçalho da tabela fixo junto com o topo */
         thead th {
             position: sticky;
-            top: 0; /* O cálculo exato de posicionamento fixo acompanha a área do topo */
+            top: 0;
             background: #f8fafc;
             z-index: 101;
+            font-weight: 600;
+            color: var(--text-muted);
             box-shadow: inset 0 -1px 0 var(--border-color);
         }
 
@@ -315,8 +342,8 @@
             align-items: center;
             justify-content: center;
             gap: 4px;
-            max-width: 160px;
-            padding: 4px 10px;
+            width: 100%;
+            padding: 4px 8px;
             background-color: #f0fdf4;
             color: #166534;
             border: 1px solid #bbf7d0;
@@ -343,7 +370,9 @@
             font-size: 0.75rem;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 4px;
+            width: 100%;
         }
         .img-link:hover { text-decoration: underline; }
 
@@ -493,16 +522,17 @@
                 </div>
             </div>
 
-            <!-- Barra de Ações -->
+            <!-- Barra de Ações com o novo botão "Filtrar Pendentes" -->
             <div class="action-bar">
-                <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
                     <button class="btn-outline btn" onclick="limparFiltros()">Limpar Todos Filtros</button>
+                    <button class="btn-outline btn" onclick="filtrarPendentesToggle()" id="btnFiltrarPendentes">Filtrar Pendentes</button>
                     <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;"></span>
                 </div>
                 <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
             </div>
 
-            <!-- CABEÇALHO DA TABELA UNIDO AO TOPO FIXO -->
+            <!-- CABEÇALHO DA TABELA UNIDO AO TOPO FIXO (Mantido na mesma caixa estrutural e alinhado) -->
             <div class="table-card" style="box-shadow: none; border-radius: 0; border-left: none; border-right: none;">
                 <table>
                     <thead>
@@ -611,6 +641,7 @@
             dia: new Set(),
             tipo: new Set()
         };
+        let apenasPendentesAtivo = false;
 
         let ultimaLinhaSalvaId = null;
         let linhaSelecionadaId = null;
@@ -621,7 +652,6 @@
             const thElement = document.querySelector('thead th');
             if(stickyArea && thElement) {
                 const alturaTopo = stickyArea.offsetHeight;
-                // Deixa o th colado logo abaixo da barra de ações do topo fixo
                 thElement.style.top = (alturaTopo - document.querySelector('.sticky-top-area .table-card').offsetHeight) + 'px';
             }
         }
@@ -829,6 +859,12 @@
                     if (!filtrosAtivos.tipo.has(formatCell(row[2]))) return false;
                 }
 
+                if (apenasPendentesAtivo) {
+                    const statusStr = formatCell(row[10]).toLowerCase();
+                    const pendenciaVal = (statusStr === 'ok') ? 'Atualizado' : 'Pendente';
+                    if (pendenciaVal !== 'Pendente') return false;
+                }
+
                 return true;
             });
 
@@ -907,7 +943,6 @@
 
                 tdContent += `<td>${formatCell(row[10])}</td>`;
 
-                // A nova regra aplicada na exibição (Status "Ok" -> Atualizado, senão Pendente)
                 const statusStr = formatCell(row[10]).toLowerCase();
                 const pendenciaVal = (statusStr === 'ok') ? 'Atualizado' : 'Pendente';
                 const badgeClass = (pendenciaVal === 'Atualizado') ? 'badge-atualizado' : 'badge-pendente';
@@ -926,6 +961,23 @@
             atualizarMetricas(dadosExibidos);
         }
 
+        function filtrarPendentesToggle() {
+            apenasPendentesAtivo = !apenasPendentesAtivo;
+            const btn = document.getElementById('btnFiltrarPendentes');
+            
+            if (apenasPendentesAtivo) {
+                btn.classList.add('active');
+                btn.style.backgroundColor = 'var(--primary)';
+                btn.style.color = 'white';
+            } else {
+                btn.classList.remove('active');
+                btn.style.backgroundColor = 'transparent';
+                btn.style.color = 'var(--text-muted)';
+            }
+
+            renderizarTabela();
+        }
+
         function toggleFiltro(tipo, valor, elemento, event) {
             const set = filtrosAtivos[tipo];
             
@@ -942,6 +994,7 @@
 
         function atualizarTextoFiltrosAtivos() {
             let partes = [];
+            if (apenasPendentesAtivo) partes.push('Apenas Pendentes');
             if (filtrosAtivos.linha.size > 0) partes.push(`Linhas: ${Array.from(filtrosAtivos.linha).join(', ')}`);
             if (filtrosAtivos.tipo.size > 0) partes.push(`Tipos: ${Array.from(filtrosAtivos.tipo).join(', ')}`);
             if (filtrosAtivos.dia.size > 0) partes.push(`Dias: ${Array.from(filtrosAtivos.dia).join(', ')}`);
@@ -959,6 +1012,13 @@
             filtrosAtivos.linha.clear();
             filtrosAtivos.dia.clear();
             filtrosAtivos.tipo.clear();
+            apenasPendentesAtivo = false;
+            
+            const btnPendentes = document.getElementById('btnFiltrarPendentes');
+            btnPendentes.classList.remove('active');
+            btnPendentes.style.backgroundColor = 'transparent';
+            btnPendentes.style.color = 'var(--text-muted)';
+
             limparFiltroData();
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('filtroAtivoLabel').innerText = '';
@@ -1031,7 +1091,6 @@
             const targetRow = document.getElementById('editRowIndex').value;
             const stat = document.getElementById('fStatus').value.trim();
 
-            // Regra aplicada ao salvar: Se status for "Ok", pendência é "Atualizado", caso contrário "Pendente"
             const pendenciaCalculada = (stat.toLowerCase() === 'ok') ? 'Atualizado' : 'Pendente';
 
             const vigenciaInput = document.getElementById('fVigencia').value;
