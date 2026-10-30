@@ -42,7 +42,7 @@
             gap: 16px;
         }
 
-        /* Área do Topo Congelada com fundo sólido cobrindo perfeitamente o scroll da borda externa */
+        /* Área do Topo Congelada */
         .sticky-top-area {
             position: sticky;
             top: 0;
@@ -181,7 +181,7 @@
             overflow-y: auto;
         }
 
-        /* Alinhamento à esquerda para o Tipo de Dia conforme solicitado */
+        /* Alinhamento à esquerda para o Tipo de Dia */
         #filterDia .filter-btn {
             text-align: left;
             justify-content: flex-start;
@@ -195,7 +195,7 @@
             padding: 8px 12px;
         }
 
-        /* Resumo de Pendências Sofisticado mantendo a exata estrutura de caixas */
+        /* Resumo de Pendências */
         .metrics-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -254,6 +254,10 @@
             color: var(--accent-red);
         }
 
+        .metric-box .val.green {
+            color: var(--primary);
+        }
+
         .action-bar {
             display: flex;
             justify-content: space-between;
@@ -285,7 +289,7 @@
 
         .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
 
-        /* Tabela unificada com larguras simétricas estritas para alinhamento perfeito */
+        /* Tabela */
         .table-card {
             background: var(--surface-color);
             border-radius: 12px;
@@ -312,7 +316,7 @@
             white-space: nowrap;
         }
 
-        /* Larguras simétricas idênticas para cabeçalho e dados */
+        /* Larguras simétricas idênticas */
         th:nth-child(1), td:nth-child(1) { width: 7%; }   /* LINHA */
         th:nth-child(2), td:nth-child(2) { width: 9%; }   /* VIGÊNCIA */
         th:nth-child(3), td:nth-child(3) { width: 11%; }  /* TIPO */
@@ -327,7 +331,6 @@
         th:nth-child(12), td:nth-child(12) { width: 9%; } /* PENDÊNCIA */
         th:nth-child(13), td:nth-child(13) { width: 7%; } /* AÇÕES */
 
-        /* Cabeçalho da tabela fixo logo abaixo */
         thead th {
             position: sticky;
             top: 0;
@@ -478,7 +481,7 @@
 <body onload="carregarDados()">
 
     <div class="container">
-        <!-- ÁREA CONGELADA NO TOPO (INCLUINDO O CABEÇALHO DA TABELA) -->
+        <!-- ÁREA CONGELADA NO TOPO -->
         <div class="sticky-top-area" id="stickyTopArea">
             <header>
                 <h1>Painel Operacional</h1>
@@ -513,7 +516,7 @@
                     <div class="stack-list" id="filterTipo"></div>
                 </div>
 
-                <!-- Painel de Métricas Sofisticado -->
+                <!-- Painel de Métricas -->
                 <div class="card-panel metrics-container-wrapper">
                     <div class="card-panel" style="border: none; box-shadow: none; padding: 0; height: 100%; display: flex; flex-direction: column;">
                         <h3>Resumo de Pendências</h3>
@@ -524,19 +527,19 @@
                             </div>
                             <div class="metric-box">
                                 <h4>Mobilibus</h4>
-                                <div class="val red" id="mPendMobi">0</div>
+                                <div class="val" id="mPendMobi">0</div>
                             </div>
                             <div class="metric-box">
                                 <h4>Terminais</h4>
-                                <div class="val red" id="mPendTerm">0</div>
+                                <div class="val" id="mPendTerm">0</div>
                             </div>
                             <div class="metric-box">
                                 <h4>Avisos</h4>
-                                <div class="val red" id="mPendAvis">0</div>
+                                <div class="val" id="mPendAvis">0</div>
                             </div>
                             <div class="metric-box">
                                 <h4>Agência/Telão</h4>
-                                <div class="val red" id="mPendAgen">0</div>
+                                <div class="val" id="mPendAgen">0</div>
                             </div>
                         </div>
                     </div>
@@ -577,7 +580,7 @@
             </div>
         </div>
 
-        <!-- Corpo da Tabela (rolável abaixo do cabeçalho fixo) -->
+        <!-- Corpo da Tabela -->
         <div class="table-card" style="border-top: none; border-top-left-radius: 0; border-top-right-radius: 0;">
             <table>
                 <tbody id="tableBody"></tbody>
@@ -745,34 +748,38 @@
             return `${ano}-${mes}-${dia}`;
         }
 
+        // Formatação estrita para dd/mm/aaaa quando houver apenas data pura na célula
         function formatVigencia(valorRaw) {
             if (valorRaw === undefined || valorRaw === null) return '';
             const str = valorRaw.toString().trim();
-            if (str === '' || str === '-') return '';
+            if (str === '' || str === '-') return str;
 
-            const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-            if (isoMatch) {
-                return `${isoMatch[3]}/${isoMatch[2]}/${isoMatch[1]}`;
-            }
-
-            const dtNum = Number(str);
-            if (!isNaN(dtNum) && dtNum > 30000 && dtNum < 60000) {
-                const dt = new Date((dtNum - (25567 + 2)) * 86400 * 1000);
-                if (!isNaN(dt.getTime())) {
-                    const dia = String(dt.getUTCDate()).padStart(2, '0');
-                    const mes = String(dt.getUTCMonth() + 1).padStart(2, '0');
-                    const ano = dt.getUTCFullYear();
-                    return `${dia}/${mes}/${ano}`;
-                }
+            const dt = parseData(str);
+            if (dt && !isNaN(dt.getTime())) {
+                const dia = String(dt.getDate()).padStart(2, '0');
+                const mes = String(dt.getMonth() + 1).padStart(2, '0');
+                const ano = dt.getFullYear();
+                return `${dia}/${mes}/${ano}`;
             }
 
             return str;
         }
 
-        // Mantém os hífens e valores originais sem remover nada
+        // Formatação universal de célula contendo data pura ou texto com hífens mantidos
         function formatCell(val) {
             if (val === undefined || val === null) return '';
-            return val.toString().trim();
+            const str = val.toString().trim();
+            
+            // Se for uma data pura sem texto ao redor, padroniza como dd/mm/aaaa
+            const dt = parseData(str);
+            if (dt && !isNaN(dt.getTime()) && /^\d{4}-\d{2}-\d{2}$|^\d{1,2}\/\d{1,2}\/\d{4}$|^\d{5,}$/.test(str)) {
+                const dia = String(dt.getDate()).padStart(2, '0');
+                const mes = String(dt.getMonth() + 1).padStart(2, '0');
+                const ano = dt.getFullYear();
+                return `${dia}/${mes}/${ano}`;
+            }
+
+            return str;
         }
 
         function mostrarNotaCompleta(texto) {
@@ -942,7 +949,7 @@
                 tdContent += `<td>${formatCell(row[7])}</td>`;
 
                 const imgVal = formatCell(row[8]);
-                if (imgVal && imgVal !== '-') {
+                if (imgVal && imgVal !== '-' && imgVal.startsWith('http')) {
                     tdContent += `<td><a href="${imgVal}" target="_blank" class="img-link">🖼️ Ver Imagem</a></td>`;
                 } else {
                     tdContent += `<td>${imgVal}</td>`;
@@ -1044,6 +1051,7 @@
             renderizarTabela();
         }
 
+        // Função do Resumo de Pendências que muda para a cor verde se o valor for 0
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
             
@@ -1064,10 +1072,20 @@
                 if (!formatCell(r[7]) || formatCell(r[7]) === '-') pendAgen++;
             });
 
-            document.getElementById('mPendMobi').innerText = pendMobi;
-            document.getElementById('mPendTerm').innerText = pendTerm;
-            document.getElementById('mPendAvis').innerText = pendAvis;
-            document.getElementById('mPendAgen').innerText = pendAgen;
+            const atualizarElementoMetrica = (id, valor) => {
+                const el = document.getElementById(id);
+                el.innerText = valor;
+                if (valor === 0) {
+                    el.className = 'val green';
+                } else {
+                    el.className = 'val red';
+                }
+            };
+
+            atualizarElementoMetrica('mPendMobi', pendMobi);
+            atualizarElementoMetrica('mPendTerm', pendTerm);
+            atualizarElementoMetrica('mPendAvis', pendAvis);
+            atualizarElementoMetrica('mPendAgen', pendAgen);
         }
 
         function abrirModal() {
