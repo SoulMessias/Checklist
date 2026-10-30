@@ -111,7 +111,7 @@
             grid-template-columns: 1.8fr 1fr 1fr 2.2fr;
             gap: 10px;
             width: 100%;
-            align-items: stretch; /* Garante que todos os cards tenham a mesma altura */
+            align-items: stretch;
         }
 
         .card-panel {
@@ -137,7 +137,6 @@
             text-overflow: ellipsis;
         }
 
-        /* Altura ampliada dos quadros de filtros */
         .lines-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
@@ -187,11 +186,10 @@
             text-overflow: ellipsis;
         }
 
-        /* Container de Métricas esticado para corresponder exatamente à altura dos filtros */
         .metrics-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: auto 1fr 1fr; /* Distribui proporcionalmente o espaço vertical */
+            grid-template-rows: auto 1fr 1fr;
             gap: 8px;
             flex: 1;
             max-height: 250px;
@@ -335,6 +333,17 @@
             transform: translateY(-1px);
         }
 
+        .img-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .img-link:hover { text-decoration: underline; }
+
         .badge-status {
             padding: 2px 6px;
             border-radius: 4px;
@@ -385,6 +394,10 @@
             flex-direction: column;
             gap: 4px;
             text-align: left;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
         }
 
         .form-group label {
@@ -500,6 +513,7 @@
                         <th>TERMINAIS</th>
                         <th>AVISOS</th>
                         <th>AGÊNCIA/TELÃO</th>
+                        <th>IMAGEM</th>
                         <th>ANOTAÇÕES</th>
                         <th>STATUS</th>
                         <th>PENDÊNCIA</th>
@@ -552,6 +566,7 @@
                     <div class="form-group"><label>Terminais</label><input type="text" id="fTerminais"></div>
                     <div class="form-group"><label>Avisos</label><input type="text" id="fAvisos"></div>
                     <div class="form-group"><label>Agência/Telão</label><input type="text" id="fAgencia"></div>
+                    <div class="form-group full-width"><label>Link / URL da Imagem</label><input type="url" id="fImagem" placeholder="https://exemplo.com/imagem.png"></div>
                     <div class="form-group"><label>Anotações</label><input type="text" id="fAnotacoes"></div>
                     <div class="form-group"><label>Status</label><input type="text" id="fStatus"></div>
                 </div>
@@ -594,7 +609,7 @@
         async function carregarDados() {
             const tbody = document.getElementById('tableBody');
             if(dadosGlobais.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar informações da planilha, por favor aguarde...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar informações da planilha, por favor aguarde...</td></tr>`;
             }
             document.getElementById('statusNuvem').innerText = "A sincronizar...";
 
@@ -621,7 +636,7 @@
             } catch (err) {
                 console.error("Erro detalhado:", err);
                 document.getElementById('statusNuvem').innerText = "Erro de Sincronização";
-                tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da nuvem.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da nuvem.</td></tr>`;
             }
         }
 
@@ -828,7 +843,7 @@
                 }
                 
                 tr.onclick = (e) => {
-                    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                    if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A') return;
                     document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
                     tr.classList.add('linha-selecionada');
                     linhaSelecionadaId = item.rowIndex;
@@ -845,7 +860,16 @@
                 tdContent += `<td>${formatCell(row[6])}</td>`;
                 tdContent += `<td>${formatCell(row[7])}</td>`;
 
-                const anotacaoVal = formatCell(row[8]);
+                // Coluna Imagem (col[8] da planilha mapeada para índice 8)
+                const imgVal = formatCell(row[8]);
+                if (imgVal) {
+                    tdContent += `<td><a href="${imgVal}" target="_blank" class="img-link">🖼️ Ver Imagem</a></td>`;
+                } else {
+                    tdContent += `<td></td>`;
+                }
+
+                // Coluna Anotações (col[9] da planilha)
+                const anotacaoVal = formatCell(row[9]);
                 if (anotacaoVal) {
                     const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
                     tdContent += `<td>
@@ -857,9 +881,10 @@
                     tdContent += `<td></td>`;
                 }
 
-                tdContent += `<td>${formatCell(row[9])}</td>`;
+                // Coluna Status (col[10]) e Pendência (col[11])
+                tdContent += `<td>${formatCell(row[10])}</td>`;
 
-                const pendenciaVal = row[10] || 'Pendente';
+                const pendenciaVal = row[11] || 'Pendente';
                 const badgeClass = pendenciaVal.toLowerCase() === 'atualizado' ? 'badge-atualizado' : 'badge-pendente';
                 tdContent += `<td><span class="badge-status ${badgeClass}">${pendenciaVal}</span></td>`;
 
@@ -925,7 +950,7 @@
 
             dados.forEach(d => {
                 const r = d.data;
-                const statusVal = formatCell(r[9]).toLowerCase();
+                const statusVal = formatCell(r[10]).toLowerCase(); // Status está na coluna 10
 
                 if (statusVal === 'ok') return;
 
@@ -968,8 +993,9 @@
             document.getElementById('fTerminais').value = r[5] || '';
             document.getElementById('fAvisos').value = r[6] || '';
             document.getElementById('fAgencia').value = r[7] || '';
-            document.getElementById('fAnotacoes').value = r[8] || '';
-            document.getElementById('fStatus').value = r[9] || '';
+            document.getElementById('fImagem').value = r[8] || '';
+            document.getElementById('fAnotacoes').value = r[9] || '';
+            document.getElementById('fStatus').value = r[10] || '';
 
             document.getElementById('modalOverlay').style.display = 'flex';
         }
@@ -1004,9 +1030,10 @@
                 col6: term,
                 col7: avis,
                 col8: agen,
-                col9: document.getElementById('fAnotacoes').value,
-                col10: stat,
-                col11: pendenciaCalculada
+                col9: document.getElementById('fImagem').value.trim(),
+                col10: document.getElementById('fAnotacoes').value,
+                col11: stat,
+                col12: pendenciaCalculada
             };
 
             ultimaLinhaSalvaId = targetRow ? parseInt(targetRow) : 2;
