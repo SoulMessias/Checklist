@@ -42,7 +42,7 @@
             gap: 16px;
         }
 
-        /* Área do Topo Congelada (Sticky Header abrangendo até o cabeçalho da tabela) */
+        /* Área do Topo Congelada com fundo sólido cobrindo perfeitamente o scroll da borda externa */
         .sticky-top-area {
             position: sticky;
             top: 0;
@@ -51,8 +51,8 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            padding-bottom: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+            padding-top: 4px;
+            padding-bottom: 12px;
         }
 
         header {
@@ -181,16 +181,21 @@
             overflow-y: auto;
         }
 
-        /* Centralização perfeita horizontal e vertical dos botões do Tipo de Alteração e Tipo de Dia */
-        .stack-list .filter-btn {
+        /* Alinhamento à esquerda para o Tipo de Dia conforme solicitado */
+        #filterDia .filter-btn {
+            text-align: left;
+            justify-content: flex-start;
+            padding: 8px 12px;
+        }
+
+        /* Centralizado para Tipo de Alteração */
+        #filterTipo .filter-btn {
             text-align: center;
             justify-content: center;
             padding: 8px 12px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
+        /* Resumo de Pendências Sofisticado mantendo a exata estrutura de caixas */
         .metrics-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -202,31 +207,47 @@
         }
 
         .metric-box {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 10px;
-            border: 1px solid var(--border-color);
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 10px;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
             text-align: center;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+
+        .metric-box:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
         }
 
         .metric-box.full-width {
             grid-column: span 2;
+            background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+            border-color: #a7f3d0;
         }
 
         .metric-box h4 {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: var(--text-muted);
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-weight: 600;
+        }
+
+        .metric-box.full-width h4 {
+            color: #047857;
         }
 
         .metric-box .val {
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: var(--primary);
+            letter-spacing: -0.02em;
         }
 
         .metric-box .val.red {
@@ -264,7 +285,7 @@
 
         .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
 
-        /* Tabela unificada com larguras simétricas estritas para garantir o alinhamento perfeito do cabeçalho */
+        /* Tabela unificada com larguras simétricas estritas para alinhamento perfeito */
         .table-card {
             background: var(--surface-color);
             border-radius: 12px;
@@ -278,7 +299,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.78rem;
-            table-layout: fixed; /* Força o alinhamento simétrico entre th e td */
+            table-layout: fixed;
         }
 
         th, td {
@@ -291,7 +312,7 @@
             white-space: nowrap;
         }
 
-        /* Larguras idênticas definidas estritamente para cabeçalho e corpo */
+        /* Larguras simétricas idênticas para cabeçalho e dados */
         th:nth-child(1), td:nth-child(1) { width: 7%; }   /* LINHA */
         th:nth-child(2), td:nth-child(2) { width: 9%; }   /* VIGÊNCIA */
         th:nth-child(3), td:nth-child(3) { width: 11%; }  /* TIPO */
@@ -306,7 +327,7 @@
         th:nth-child(12), td:nth-child(12) { width: 9%; } /* PENDÊNCIA */
         th:nth-child(13), td:nth-child(13) { width: 7%; } /* AÇÕES */
 
-        /* Cabeçalho da tabela fixo junto com o topo */
+        /* Cabeçalho da tabela fixo logo abaixo */
         thead th {
             position: sticky;
             top: 0;
@@ -492,7 +513,7 @@
                     <div class="stack-list" id="filterTipo"></div>
                 </div>
 
-                <!-- Painel de Métricas Separadas -->
+                <!-- Painel de Métricas Sofisticado -->
                 <div class="card-panel metrics-container-wrapper">
                     <div class="card-panel" style="border: none; box-shadow: none; padding: 0; height: 100%; display: flex; flex-direction: column;">
                         <h3>Resumo de Pendências</h3>
@@ -522,7 +543,7 @@
                 </div>
             </div>
 
-            <!-- Barra de Ações com o novo botão "Filtrar Pendentes" -->
+            <!-- Barra de Ações -->
             <div class="action-bar">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <button class="btn-outline btn" onclick="limparFiltros()">Limpar Todos Filtros</button>
@@ -532,7 +553,7 @@
                 <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
             </div>
 
-            <!-- CABEÇALHO DA TABELA UNIDO AO TOPO FIXO (Mantido na mesma caixa estrutural e alinhado) -->
+            <!-- CABEÇALHO DA TABELA UNIDO AO TOPO FIXO -->
             <div class="table-card" style="box-shadow: none; border-radius: 0; border-left: none; border-right: none;">
                 <table>
                     <thead>
@@ -646,7 +667,6 @@
         let ultimaLinhaSalvaId = null;
         let linhaSelecionadaId = null;
 
-        // Ajusta dinamicamente a posição do cabeçalho fixo abaixo do topo
         function atualizarPosicaoCabecalhoTabela() {
             const stickyArea = document.getElementById('stickyTopArea');
             const thElement = document.querySelector('thead th');
@@ -749,11 +769,10 @@
             return str;
         }
 
+        // Mantém os hífens e valores originais sem remover nada
         function formatCell(val) {
             if (val === undefined || val === null) return '';
-            const str = val.toString().trim();
-            if (str === '-') return '';
-            return str;
+            return val.toString().trim();
         }
 
         function mostrarNotaCompleta(texto) {
@@ -923,14 +942,14 @@
                 tdContent += `<td>${formatCell(row[7])}</td>`;
 
                 const imgVal = formatCell(row[8]);
-                if (imgVal) {
+                if (imgVal && imgVal !== '-') {
                     tdContent += `<td><a href="${imgVal}" target="_blank" class="img-link">🖼️ Ver Imagem</a></td>`;
                 } else {
-                    tdContent += `<td></td>`;
+                    tdContent += `<td>${imgVal}</td>`;
                 }
 
                 const anotacaoVal = formatCell(row[9]);
-                if (anotacaoVal) {
+                if (anotacaoVal && anotacaoVal !== '-') {
                     const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
                     tdContent += `<td>
                         <div class="anotacao-badge" onclick="mostrarNotaCompleta('${textoEscapado}')" title="Clique para ler a anotação">
@@ -938,7 +957,7 @@
                         </div>
                     </td>`;
                 } else {
-                    tdContent += `<td></td>`;
+                    tdContent += `<td>${anotacaoVal}</td>`;
                 }
 
                 tdContent += `<td>${formatCell(row[10])}</td>`;
@@ -1039,10 +1058,10 @@
 
                 if (statusVal === 'ok') return;
 
-                if (!formatCell(r[4])) pendMobi++;
-                if (!formatCell(r[5])) pendTerm++;
-                if (!formatCell(r[6])) pendAvis++;
-                if (!formatCell(r[7])) pendAgen++;
+                if (!formatCell(r[4]) || formatCell(r[4]) === '-') pendMobi++;
+                if (!formatCell(r[5]) || formatCell(r[5]) === '-') pendTerm++;
+                if (!formatCell(r[6]) || formatCell(r[6]) === '-') pendAvis++;
+                if (!formatCell(r[7]) || formatCell(r[7]) === '-') pendAgen++;
             });
 
             document.getElementById('mPendMobi').innerText = pendMobi;
