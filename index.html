@@ -42,7 +42,7 @@
             gap: 16px;
         }
 
-        /* Área do Topo Congelada com fundo sólido cobrindo perfeitamente o scroll da borda externa */
+        /* Área do Topo Congelada */
         .sticky-top-area {
             position: sticky;
             top: 0;
@@ -181,21 +181,18 @@
             overflow-y: auto;
         }
 
-        /* Alinhamento à esquerda para o Tipo de Dia */
         #filterDia .filter-btn {
             text-align: left;
             justify-content: flex-start;
             padding: 8px 12px;
         }
 
-        /* Centralizado para Tipo de Alteração */
         #filterTipo .filter-btn {
             text-align: center;
             justify-content: center;
             padding: 8px 12px;
         }
 
-        /* Resumo de Pendências Sofisticado */
         .metrics-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -289,7 +286,6 @@
 
         .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
 
-        /* Tabela */
         .table-card {
             background: var(--surface-color);
             border-radius: 12px;
@@ -316,7 +312,6 @@
             white-space: nowrap;
         }
 
-        /* Larguras simétricas idênticas */
         th:nth-child(1), td:nth-child(1) { width: 7%; }   /* LINHA */
         th:nth-child(2), td:nth-child(2) { width: 9%; }   /* VIGÊNCIA */
         th:nth-child(3), td:nth-child(3) { width: 11%; }  /* TIPO */
@@ -361,19 +356,20 @@
             100% { background-color: transparent; }
         }
 
+        /* Fonte reduzida para o encaixe perfeito na caixa da coluna de anotações */
         .anotacao-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 3px;
             width: 100%;
-            padding: 4px 8px;
+            padding: 4px 6px;
             background-color: #f0fdf4;
             color: #166534;
             border: 1px solid #bbf7d0;
             border-radius: 12px;
             font-weight: 500;
-            font-size: 0.75rem;
+            font-size: 0.68rem;
             cursor: pointer;
             white-space: nowrap;
             overflow: hidden;
@@ -391,14 +387,24 @@
             color: var(--primary);
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.68rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 3px;
             width: 100%;
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 4px 6px;
+            transition: all 0.2s ease;
         }
-        .img-link:hover { text-decoration: underline; }
+        .img-link:hover { 
+            background-color: #dcfce7;
+            border-color: #86efac;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
 
         .badge-status {
             padding: 2px 6px;
@@ -748,7 +754,6 @@
             return `${ano}-${mes}-${dia}`;
         }
 
-        // Converte e padroniza qualquer data no padrão dd/mm/aaaa
         function formatVigencia(valorRaw) {
             if (valorRaw === undefined || valorRaw === null) return '';
             const str = valorRaw.toString().trim();
@@ -765,7 +770,6 @@
             return str;
         }
 
-        // Formatação universal de célula que identifica e padroniza datas puras para dd/mm/aaaa
         function formatCell(val) {
             if (val === undefined || val === null) return '';
             const str = val.toString().trim();
@@ -947,19 +951,21 @@
                 tdContent += `<td>${formatCell(row[6])}</td>`;
                 tdContent += `<td>${formatCell(row[7])}</td>`;
 
+                // Imagem padronizada como "Imagem Disponível"
                 const imgVal = formatCell(row[8]);
                 if (imgVal && imgVal !== '-' && imgVal.startsWith('http')) {
-                    tdContent += `<td><a href="${imgVal}" target="_blank" class="img-link">🖼️ Ver Imagem</a></td>`;
+                    tdContent += `<td><a href="${imgVal}" target="_blank" class="img-link" title="Clique para abrir a imagem">🖼️ Imagem Disponível</a></td>`;
                 } else {
                     tdContent += `<td>${imgVal}</td>`;
                 }
 
+                // Anotações padronizadas como "Comentário Disponível" com fonte reduzida
                 const anotacaoVal = formatCell(row[9]);
                 if (anotacaoVal && anotacaoVal !== '-') {
                     const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
                     tdContent += `<td>
-                        <div class="anotacao-badge" onclick="mostrarNotaCompleta('${textoEscapado}')" title="Clique para ler a anotação">
-                            📝 ${anotacaoVal}
+                        <div class="anotacao-badge" onclick="mostrarNotaCompleta('${textoEscapado}')" title="Clique para ler o comentário completo">
+                            📝 Comentário Disponível
                         </div>
                     </td>`;
                 } else {
