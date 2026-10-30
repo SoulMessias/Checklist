@@ -42,7 +42,7 @@
             gap: 16px;
         }
 
-        /* Área do Topo Congelada */
+        /* Área do Topo Congelada com fundo sólido cobrindo perfeitamente o scroll da borda externa */
         .sticky-top-area {
             position: sticky;
             top: 0;
@@ -195,7 +195,7 @@
             padding: 8px 12px;
         }
 
-        /* Resumo de Pendências */
+        /* Resumo de Pendências Sofisticado */
         .metrics-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -748,7 +748,7 @@
             return `${ano}-${mes}-${dia}`;
         }
 
-        // Formatação estrita para dd/mm/aaaa quando houver apenas data pura na célula
+        // Converte e padroniza qualquer data no padrão dd/mm/aaaa
         function formatVigencia(valorRaw) {
             if (valorRaw === undefined || valorRaw === null) return '';
             const str = valorRaw.toString().trim();
@@ -765,14 +765,13 @@
             return str;
         }
 
-        // Formatação universal de célula contendo data pura ou texto com hífens mantidos
+        // Formatação universal de célula que identifica e padroniza datas puras para dd/mm/aaaa
         function formatCell(val) {
             if (val === undefined || val === null) return '';
             const str = val.toString().trim();
             
-            // Se for uma data pura sem texto ao redor, padroniza como dd/mm/aaaa
             const dt = parseData(str);
-            if (dt && !isNaN(dt.getTime()) && /^\d{4}-\d{2}-\d{2}$|^\d{1,2}\/\d{1,2}\/\d{4}$|^\d{5,}$/.test(str)) {
+            if (dt && !isNaN(dt.getTime()) && (/^\d{4}-\d{2}-\d{2}/.test(str) || /^\d{5}$/.test(str) || /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str))) {
                 const dia = String(dt.getDate()).padStart(2, '0');
                 const mes = String(dt.getMonth() + 1).padStart(2, '0');
                 const ano = dt.getFullYear();
@@ -1051,7 +1050,6 @@
             renderizarTabela();
         }
 
-        // Função do Resumo de Pendências que muda para a cor verde se o valor for 0
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
             
