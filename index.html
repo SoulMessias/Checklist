@@ -181,15 +181,11 @@
             overflow-y: auto;
         }
 
-        #filterDia .filter-btn {
+        /* Alinhamento à esquerda para Tipo de Dia e Tipo de Alteração */
+        #filterDia .filter-btn,
+        #filterTipo .filter-btn {
             text-align: left;
             justify-content: flex-start;
-            padding: 8px 12px;
-        }
-
-        #filterTipo .filter-btn {
-            text-align: center;
-            justify-content: center;
             padding: 8px 12px;
         }
 
@@ -263,6 +259,30 @@
             padding: 10px 16px;
             border-radius: 10px;
             border: 1px solid var(--border-color);
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Estilo da barra de pesquisa */
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            flex: 1;
+            max-width: 320px;
+        }
+
+        .search-box input {
+            border: none;
+            background: transparent;
+            font-size: 0.8rem;
+            outline: none;
+            width: 100%;
+            color: var(--text-main);
         }
 
         .btn {
@@ -356,7 +376,6 @@
             100% { background-color: transparent; }
         }
 
-        /* Ajuste fino na fonte e corte automático para se encaixar perfeitamente no quadro */
         .anotacao-badge {
             display: inline-flex;
             align-items: center;
@@ -557,11 +576,18 @@
                 </div>
             </div>
 
-            <!-- Barra de Ações -->
+            <!-- Barra de Ações & Pesquisa -->
             <div class="action-bar">
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1;">
                     <button class="btn-outline btn" onclick="limparFiltros()">Limpar Todos Filtros</button>
                     <button class="btn-outline btn" onclick="filtrarPendentesToggle()" id="btnFiltrarPendentes">Filtrar Pendentes</button>
+                    
+                    <!-- Barra de Pesquisa em tempo real -->
+                    <div class="search-box">
+                        <span>🔍</span>
+                        <input type="text" id="inputPesquisa" placeholder="Pesquisar em tudo..." oninput="renderizarTabela()">
+                    </div>
+
                     <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;"></span>
                 </div>
                 <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
@@ -857,13 +883,14 @@
 
             const inputInicio = document.getElementById('dataInicio').value;
             const inputFim = document.getElementById('dataFim').value;
+            const termoPesquisa = document.getElementById('inputPesquisa').value.toLowerCase().trim();
 
             const dInicio = inputInicio ? new Date(inputInicio + "T00:00:00") : null;
             const dFim = inputFim ? new Date(inputFim + "T23:59:59") : null;
 
             const labelMetrica = document.getElementById('labelMetricaTotais');
-            if (inputInicio || inputFim) {
-                labelMetrica.innerText = "Alterações por período";
+            if (inputInicio || inputFim || termoPesquisa) {
+                labelMetrica.innerText = "Alterações Filtradas";
             } else {
                 labelMetrica.innerText = "Alterações Totais";
             }
@@ -897,6 +924,15 @@
                     const statusStr = formatCell(row[10]).toLowerCase();
                     const pendenciaVal = (statusStr === 'ok') ? 'Atualizado' : 'Pendente';
                     if (pendenciaVal !== 'Pendente') return false;
+                }
+
+                // Filtro global de pesquisa por texto/caractere
+                if (termoPesquisa) {
+                    const matchGlobal = row.some(celula => {
+                        if (celula === null || celula === undefined) return false;
+                        return celula.toString().toLowerCase().includes(termoPesquisa);
+                    });
+                    if (!matchGlobal) return false;
                 }
 
                 return true;
@@ -1030,6 +1066,8 @@
 
         function atualizarTextoFiltrosAtivos() {
             let partes = [];
+            const termoPesquisa = document.getElementById('inputPesquisa').value.trim();
+            if (termoPesquisa) partes.push(`Busca: "${termoPesquisa}"`);
             if (apenasPendentesAtivo) partes.push('Apenas Pendentes');
             if (filtrosAtivos.linha.size > 0) partes.push(`Linhas: ${Array.from(filtrosAtivos.linha).join(', ')}`);
             if (filtrosAtivos.tipo.size > 0) partes.push(`Tipos: ${Array.from(filtrosAtivos.tipo).join(', ')}`);
@@ -1049,6 +1087,7 @@
             filtrosAtivos.dia.clear();
             filtrosAtivos.tipo.clear();
             apenasPendentesAtivo = false;
+            document.getElementById('inputPesquisa').value = '';
             
             const btnPendentes = document.getElementById('btnFiltrarPendentes');
             btnPendentes.classList.remove('active');
