@@ -80,20 +80,20 @@
         .date-filter-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: #f1f5f9;
-            padding: 6px 12px;
+            padding: 4px 10px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
         }
 
         .date-filter-group input {
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 4px 6px;
-            font-size: 0.8rem;
+            padding: 3px 6px;
+            font-size: 0.75rem;
             outline: none;
         }
 
@@ -273,7 +273,7 @@
             border-radius: 8px;
             border: 1px solid var(--border-color);
             flex: 1;
-            max-width: 320px;
+            max-width: 300px;
         }
 
         .search-box input {
@@ -517,14 +517,6 @@
                 <h1>Painel Operacional</h1>
                 
                 <div class="header-actions">
-                    <div class="date-filter-group">
-                        <label>Início:</label>
-                        <input type="date" id="dataInicio" onchange="renderizarTabela()">
-                        <label>Fim:</label>
-                        <input type="date" id="dataFim" onchange="renderizarTabela()">
-                        <button class="btn-outline btn btn-sm" onclick="limparFiltroData()" title="Limpar Período">✕ Limpar Data</button>
-                    </div>
-                    
                     <div class="status-badge" id="statusNuvem">Conectando...</div>
                 </div>
             </header>
@@ -576,19 +568,28 @@
                 </div>
             </div>
 
-            <!-- Barra de Ações & Pesquisa -->
+            <!-- Barra de Ações, Pesquisa & Datas Juntas -->
             <div class="action-bar">
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1;">
                     <button class="btn-outline btn" onclick="limparFiltros()">Limpar Todos Filtros</button>
                     <button class="btn-outline btn" onclick="filtrarPendentesToggle()" id="btnFiltrarPendentes">Filtrar Pendentes</button>
                     
-                    <!-- Barra de Pesquisa em tempo real -->
+                    <!-- Barra de Pesquisa -->
                     <div class="search-box">
                         <span>🔍</span>
                         <input type="text" id="inputPesquisa" placeholder="Pesquisar em tudo..." oninput="renderizarTabela()">
                     </div>
 
-                    <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;"></span>
+                    <!-- Seletor de Datas (Início e Fim) na mesma barra -->
+                    <div class="date-filter-group">
+                        <label>Início:</label>
+                        <input type="date" id="dataInicio" onchange="renderizarTabela()">
+                        <label>Fim:</label>
+                        <input type="date" id="dataFim" onchange="renderizarTabela()">
+                        <button class="btn-outline btn btn-sm" onclick="limparFiltroData()" title="Limpar Período">✕ Limpar Data</button>
+                    </div>
+
+                    <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted); margin-left:4px;"></span>
                 </div>
                 <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
             </div>
