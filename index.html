@@ -80,20 +80,20 @@
         .date-filter-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: #f1f5f9;
-            padding: 6px 12px;
+            padding: 4px 10px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
         }
 
         .date-filter-group input {
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 4px 6px;
-            font-size: 0.8rem;
+            padding: 3px 6px;
+            font-size: 0.75rem;
             outline: none;
         }
 
@@ -159,6 +159,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            user-select: none;
         }
 
         .filter-btn:hover {
@@ -263,7 +264,6 @@
             flex-wrap: wrap;
         }
 
-        /* Estilo da barra de pesquisa */
         .search-box {
             display: flex;
             align-items: center;
@@ -273,7 +273,7 @@
             border-radius: 8px;
             border: 1px solid var(--border-color);
             flex: 1;
-            max-width: 320px;
+            max-width: 280px;
         }
 
         .search-box input {
@@ -517,14 +517,6 @@
                 <h1>Painel Operacional</h1>
                 
                 <div class="header-actions">
-                    <div class="date-filter-group">
-                        <label>Início:</label>
-                        <input type="date" id="dataInicio" onchange="renderizarTabela()">
-                        <label>Fim:</label>
-                        <input type="date" id="dataFim" onchange="renderizarTabela()">
-                        <button class="btn-outline btn btn-sm" onclick="limparFiltroData()" title="Limpar Período">✕ Limpar Data</button>
-                    </div>
-                    
                     <div class="status-badge" id="statusNuvem">Conectando...</div>
                 </div>
             </header>
@@ -576,19 +568,28 @@
                 </div>
             </div>
 
-            <!-- Barra de Ações & Pesquisa -->
+            <!-- Barra de Ações, Pesquisa & Datas -->
             <div class="action-bar">
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1;">
                     <button class="btn-outline btn" onclick="limparFiltros()">Limpar Todos Filtros</button>
                     <button class="btn-outline btn" onclick="filtrarPendentesToggle()" id="btnFiltrarPendentes">Filtrar Pendentes</button>
                     
-                    <!-- Barra de Pesquisa em tempo real -->
+                    <!-- Barra de Pesquisa -->
                     <div class="search-box">
                         <span>🔍</span>
-                        <input type="text" id="inputPesquisa" placeholder="Pesquisar em tudo..." oninput="renderizarTabela()">
+                        <input type="text" id="inputPesquisa" placeholder="Pesquisar em tudo... (use \"\" para exato)" oninput="renderizarTabela()">
                     </div>
 
-                    <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;"></span>
+                    <!-- Seletor de Datas Movido para ao lado da pesquisa -->
+                    <div class="date-filter-group">
+                        <label>Início:</label>
+                        <input type="date" id="dataInicio" onchange="renderizarTabela()">
+                        <label>Fim:</label>
+                        <input type="date" id="dataFim" onchange="renderizarTabela()">
+                        <button class="btn-outline btn btn-sm" onclick="limparFiltroData()" title="Limpar Período">✕</button>
+                    </div>
+
+                    <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted); margin-left:4px;"></span>
                 </div>
                 <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
             </div>
@@ -703,6 +704,7 @@
             tipo: new Set()
         };
         let apenasPendentesAtivo = false;
+        let ultimoItemClicado = { tipo: null, valor: null };
 
         let ultimaLinhaSalvaId = null;
         let linhaSelecionadaId = null;
@@ -841,40 +843,71 @@
                 if (tipoVal) tiposSet.add(tipoVal);
             });
 
-            const containerLinhas = document.getElementById('filterLinhas');
-            containerLinhas.innerHTML = '';
-            Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})).forEach(linha => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                if (filtrosAtivos.linha.has(linha)) btn.classList.add('active');
-                btn.innerText = linha;
-                btn.onclick = (e) => toggleFiltro('linha', linha, btn, e);
-                containerLinhas.appendChild(btn);
-            });
-
-            const containerDia = document.getElementById('filterDia');
-            containerDia.innerHTML = '';
-            Array.from(diasSet).sort((a, b) => a.localeCompare(b)).forEach(dia => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                if (filtrosAtivos.dia.has(dia)) btn.classList.add('active');
-                btn.innerText = dia;
-                btn.onclick = (e) => toggleFiltro('dia', dia, btn, e);
-                containerDia.appendChild(btn);
-            });
-
-            const containerTipo = document.getElementById('filterTipo');
-            containerTipo.innerHTML = '';
-            Array.from(tiposSet).sort((a, b) => a.localeCompare(b)).forEach(tipo => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                if (filtrosAtivos.tipo.has(tipo)) btn.classList.add('active');
-                btn.innerText = tipo;
-                btn.onclick = (e) => toggleFiltro('tipo', tipo, btn, e);
-                containerTipo.appendChild(btn);
-            });
+            preencherContainerFiltro('filterLinhas', 'linha', Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})));
+            preencherContainerFiltro('filterDia', 'dia', Array.from(diasSet).sort((a, b) => a.localeCompare(b)));
+            preencherContainerFiltro('filterTipo', 'tipo', Array.from(tiposSet).sort((a, b) => a.localeCompare(b)));
 
             setTimeout(atualizarPosicaoCabecalhoTabela, 50);
+        }
+
+        function preencherContainerFiltro(containerId, tipoFiltro, listaValores) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            listaValores.forEach(valor => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                if (filtrosAtivos[tipoFiltro].has(valor)) btn.classList.add('active');
+                btn.innerText = valor;
+                btn.dataset.valor = valor;
+                btn.dataset.tipo = tipoFiltro;
+                
+                btn.onclick = (e) => tratarCliqueFiltro(tipoFiltro, valor, btn, e);
+                container.appendChild(btn);
+            });
+        }
+
+        // Lógica para seleção múltipla com Shift (sequência) e Ctrl (alternado)
+        function tratarCliqueFiltro(tipo, valor, elemento, event) {
+            const setAtivo = filtrosAtivos[tipo];
+            const botoesNoContainer = Array.from(document.querySelectorAll(`#filter${tipo.charAt(0).toUpperCase() + tipo.slice(1)} .filter-btn`));
+
+            if (event.shiftKey && ultimoItemClicado.tipo === tipo && ultimoItemClicado.valor !== null) {
+                const idxAnterior = botoesNoContainer.findIndex(b => b.dataset.valor === ultimoItemClicado.valor);
+                const idxAtual = botoesNoContainer.findIndex(b => b.dataset.valor === valor);
+
+                if (idxAnterior !== -1 && idxAtual !== -1) {
+                    const inicio = Math.min(idxAnterior, idxAtual);
+                    const fim = Math.max(idxAnterior, idxAtual);
+
+                    for (let i = inicio; i <= fim; i++) {
+                        const valItem = botoesNoContainer[i].dataset.valor;
+                        setAtivo.add(valItem);
+                        botoesNoContainer[i].classList.add('active');
+                    }
+                }
+            } else if (event.ctrlKey || event.metaKey) {
+                if (setAtivo.has(valor)) {
+                    setAtivo.delete(valor);
+                    elemento.classList.remove('active');
+                } else {
+                    setAtivo.add(valor);
+                    elemento.classList.add('active');
+                }
+            } else {
+                // Clique simples normal
+                if (setAtivo.has(valor) && setAtivo.size === 1) {
+                    setAtivo.clear();
+                    elemento.classList.remove('active');
+                } else {
+                    setAtivo.clear();
+                    botoesNoContainer.forEach(b => b.classList.remove('active'));
+                    setAtivo.add(valor);
+                    elemento.classList.add('active');
+                }
+            }
+
+            ultimoItemClicado = { tipo, valor };
+            renderizarTabela();
         }
 
         function renderizarTabela() {
@@ -883,7 +916,7 @@
 
             const inputInicio = document.getElementById('dataInicio').value;
             const inputFim = document.getElementById('dataFim').value;
-            const termoPesquisa = document.getElementById('inputPesquisa').value.toLowerCase().trim();
+            const termoPesquisa = document.getElementById('inputPesquisa').value.trim();
 
             const dInicio = inputInicio ? new Date(inputInicio + "T00:00:00") : null;
             const dFim = inputFim ? new Date(inputFim + "T23:59:59") : null;
@@ -926,13 +959,24 @@
                     if (pendenciaVal !== 'Pendente') return false;
                 }
 
-                // Filtro global de pesquisa por texto/caractere
+                // Pesquisa avançada: verifica se há termos entre aspas para busca exata
                 if (termoPesquisa) {
-                    const matchGlobal = row.some(celula => {
-                        if (celula === null || celula === undefined) return false;
-                        return celula.toString().toLowerCase().includes(termoPesquisa);
-                    });
-                    if (!matchGlobal) return false;
+                    const matchAspas = termoPesquisa.match(/"([^"]+)"/);
+                    if (matchAspas) {
+                        const termoExato = matchAspas[1].toLowerCase();
+                        const achouExato = row.some(celula => {
+                            if (celula === null || celula === undefined) return false;
+                            return celula.toString().toLowerCase().includes(termoExato);
+                        });
+                        if (!achouExato) return false;
+                    } else {
+                        const termoComum = termoPesquisa.toLowerCase();
+                        const matchGlobal = row.some(celula => {
+                            if (celula === null || celula === undefined) return false;
+                            return celula.toString().toLowerCase().includes(termoComum);
+                        });
+                        if (!matchGlobal) return false;
+                    }
                 }
 
                 return true;
@@ -992,7 +1036,6 @@
                 tdContent += `<td>${formatCell(row[6])}</td>`;
                 tdContent += `<td>${formatCell(row[7])}</td>`;
 
-                // Imagem padronizada como "Imagem Disponível"
                 const imgVal = formatCell(row[8]);
                 if (imgVal && imgVal !== '-' && imgVal.startsWith('http')) {
                     tdContent += `<td><a href="${imgVal}" target="_blank" class="img-link" title="Clique para abrir a imagem">🖼️ Imagem Disponível</a></td>`;
@@ -1000,7 +1043,6 @@
                     tdContent += `<td>${imgVal}</td>`;
                 }
 
-                // Anotações padronizadas como "Comentário Disponível" com fonte ajustada para caber no quadro
                 const anotacaoVal = formatCell(row[9]);
                 if (anotacaoVal && anotacaoVal !== '-') {
                     const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
@@ -1050,28 +1092,14 @@
             renderizarTabela();
         }
 
-        function toggleFiltro(tipo, valor, elemento, event) {
-            const set = filtrosAtivos[tipo];
-            
-            if (set.has(valor)) {
-                set.delete(valor);
-                elemento.classList.remove('active');
-            } else {
-                set.add(valor);
-                elemento.classList.add('active');
-            }
-
-            renderizarTabela();
-        }
-
         function atualizarTextoFiltrosAtivos() {
             let partes = [];
             const termoPesquisa = document.getElementById('inputPesquisa').value.trim();
             if (termoPesquisa) partes.push(`Busca: "${termoPesquisa}"`);
             if (apenasPendentesAtivo) partes.push('Apenas Pendentes');
-            if (filtrosAtivos.linha.size > 0) partes.push(`Linhas: ${Array.from(filtrosAtivos.linha).join(', ')}`);
-            if (filtrosAtivos.tipo.size > 0) partes.push(`Tipos: ${Array.from(filtrosAtivos.tipo).join(', ')}`);
-            if (filtrosAtivos.dia.size > 0) partes.push(`Dias: ${Array.from(filtrosAtivos.dia).join(', ')}`);
+            if (filtrosAtivos.linha.size > 0) partes.push(`Linhas (${filtrosAtivos.linha.size})`);
+            if (filtrosAtivos.tipo.size > 0) partes.push(`Tipos (${filtrosAtivos.tipo.size})`);
+            if (filtrosAtivos.dia.size > 0) partes.push(`Dias (${filtrosAtivos.dia.size})`);
             
             document.getElementById('filtroAtivoLabel').innerText = partes.join(' | ');
         }
