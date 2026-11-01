@@ -159,6 +159,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            user-select: none;
         }
 
         .filter-btn:hover {
@@ -181,7 +182,6 @@
             overflow-y: auto;
         }
 
-        /* Alinhamento à esquerda para Tipo de Dia e Tipo de Alteração */
         #filterDia .filter-btn,
         #filterTipo .filter-btn {
             text-align: left;
@@ -263,7 +263,6 @@
             flex-wrap: wrap;
         }
 
-        /* Estilo da barra de pesquisa */
         .search-box {
             display: flex;
             align-items: center;
@@ -704,9 +703,10 @@
             tipo: new Set()
         };
         let apenasPendentesAtivo = false;
+        let ultimoItemClicado = { tipo: null, valor: null };
 
         let ultimaLinhaSalvaId = null;
-        let linhaSelecionadaId = null;
+        let linhasSelecionadasIds = new Set(); // Alterado para suportar múltiplas seleções de linhas
 
         function atualizarPosicaoCabecalhoTabela() {
             const stickyArea = document.getElementById('stickyTopArea');
@@ -842,40 +842,69 @@
                 if (tipoVal) tiposSet.add(tipoVal);
             });
 
-            const containerLinhas = document.getElementById('filterLinhas');
-            containerLinhas.innerHTML = '';
-            Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})).forEach(linha => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                if (filtrosAtivos.linha.has(linha)) btn.classList.add('active');
-                btn.innerText = linha;
-                btn.onclick = (e) => toggleFiltro('linha', linha, btn, e);
-                containerLinhas.appendChild(btn);
-            });
-
-            const containerDia = document.getElementById('filterDia');
-            containerDia.innerHTML = '';
-            Array.from(diasSet).sort((a, b) => a.localeCompare(b)).forEach(dia => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                if (filtrosAtivos.dia.has(dia)) btn.classList.add('active');
-                btn.innerText = dia;
-                btn.onclick = (e) => toggleFiltro('dia', dia, btn, e);
-                containerDia.appendChild(btn);
-            });
-
-            const containerTipo = document.getElementById('filterTipo');
-            containerTipo.innerHTML = '';
-            Array.from(tiposSet).sort((a, b) => a.localeCompare(b)).forEach(tipo => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                if (filtrosAtivos.tipo.has(tipo)) btn.classList.add('active');
-                btn.innerText = tipo;
-                btn.onclick = (e) => toggleFiltro('tipo', tipo, btn, e);
-                containerTipo.appendChild(btn);
-            });
+            preencherContainerFiltro('filterLinhas', 'linha', Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})));
+            preencherContainerFiltro('filterDia', 'dia', Array.from(diasSet).sort((a, b) => a.localeCompare(b)));
+            preencherContainerFiltro('filterTipo', 'tipo', Array.from(tiposSet).sort((a, b) => a.localeCompare(b)));
 
             setTimeout(atualizarPosicaoCabecalhoTabela, 50);
+        }
+
+        function preencherContainerFiltro(containerId, tipoFiltro, listaValores) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            listaValores.forEach(valor => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                if (filtrosAtivos[tipoFiltro].has(valor)) btn.classList.add('active');
+                btn.innerText = valor;
+                btn.dataset.valor = valor;
+                btn.dataset.tipo = tipoFiltro;
+                
+                btn.onclick = (e) => tratarCliqueFiltro(tipoFiltro, valor, btn, e);
+                container.appendChild(btn);
+            });
+        }
+
+        function tratarCliqueFiltro(tipo, valor, elemento, event) {
+            const setAtivo = filtrosAtivos[tipo];
+            const botoesNoContainer = Array.from(document.querySelectorAll(`#filter${tipo.charAt(0).toUpperCase() + tipo.slice(1)} .filter-btn`));
+
+            if (event.shiftKey && ultimoItemClicado.tipo === tipo && ultimoItemClicado.valor !== null) {
+                const idxAnterior = botoesNoContainer.findIndex(b => b.dataset.valor === ultimoItemClicado.valor);
+                const idxAtual = botoesNoContainer.findIndex(b => b.dataset.valor === valor);
+
+                if (idxAnterior !== -1 && idxAtual !== -1) {
+                    const inicio = Math.min(idxAnterior, idxAtual);
+                    const fim = Math.max(idxAnterior, idxAtual);
+
+                    for (let i = inicio; i <= fim; i++) {
+                        const valItem = botoesNoContainer[i].dataset.valor;
+                        setAtivo.add(valItem);
+                        botoesNoContainer[i].classList.add('active');
+                    }
+                }
+            } else if (event.ctrlKey || event.metaKey) {
+                if (setAtivo.has(valor)) {
+                    setAtivo.delete(valor);
+                    elemento.classList.remove('active');
+                } else {
+                    setAtivo.add(valor);
+                    elemento.classList.add('active');
+                }
+            } else {
+                if (setAtivo.has(valor) && setAtivo.size === 1) {
+                    setAtivo.clear();
+                    elemento.classList.remove('active');
+                } else {
+                    setAtivo.clear();
+                    botoesNoContainer.forEach(b => b.classList.remove('active'));
+                    setAtivo.add(valor);
+                    elemento.classList.add('active');
+                }
+            }
+
+            ultimoItemClicado = { tipo, valor };
+            renderizarTabela();
         }
 
         function renderizarTabela() {
@@ -884,7 +913,7 @@
 
             const inputInicio = document.getElementById('dataInicio').value;
             const inputFim = document.getElementById('dataFim').value;
-            const termoPesquisa = document.getElementById('inputPesquisa').value.toLowerCase().trim();
+            const termoPesquisa = document.getElementById('inputPesquisa').value.trim();
 
             const dInicio = inputInicio ? new Date(inputInicio + "T00:00:00") : null;
             const dFim = inputFim ? new Date(inputFim + "T23:59:59") : null;
@@ -927,13 +956,23 @@
                     if (pendenciaVal !== 'Pendente') return false;
                 }
 
-                // Filtro global de pesquisa por texto/caractere
                 if (termoPesquisa) {
-                    const matchGlobal = row.some(celula => {
-                        if (celula === null || celula === undefined) return false;
-                        return celula.toString().toLowerCase().includes(termoPesquisa);
-                    });
-                    if (!matchGlobal) return false;
+                    const matchAspas = termoPesquisa.match(/"([^"]+)"/);
+                    if (matchAspas) {
+                        const termoExato = matchAspas[1].toLowerCase();
+                        const achouExato = row.some(celula => {
+                            if (celula === null || celula === undefined) return false;
+                            return celula.toString().toLowerCase().includes(termoExato);
+                        });
+                        if (!achouExato) return false;
+                    } else {
+                        const termoComum = termoPesquisa.toLowerCase();
+                        const matchGlobal = row.some(celula => {
+                            if (celula === null || celula === undefined) return false;
+                            return celula.toString().toLowerCase().includes(termoComum);
+                        });
+                        if (!matchGlobal) return false;
+                    }
                 }
 
                 return true;
@@ -971,15 +1010,32 @@
                 const tr = document.createElement('tr');
                 tr.id = `row-${item.rowIndex}`;
 
-                if (item.rowIndex === linhaSelecionadaId) {
+                // Verifica se esta linha está incluída no conjunto de linhas selecionadas
+                if (linhasSelecionadasIds.has(item.rowIndex)) {
                     tr.classList.add('linha-selecionada');
                 }
                 
+                // Lógica de seleção por clique simples ou mantendo CTRL pressionado
                 tr.onclick = (e) => {
                     if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A') return;
-                    document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
-                    tr.classList.add('linha-selecionada');
-                    linhaSelecionadaId = item.rowIndex;
+                    
+                    if (e.ctrlKey || e.metaKey) {
+                        // Se o CTRL estiver pressionado, adiciona ou remove da seleção múltipla
+                        if (linhasSelecionadasIds.has(item.rowIndex)) {
+                            linhasSelecionadasIds.delete(item.rowIndex);
+                            tr.classList.remove('linha-selecionada');
+                        } else {
+                            linhasSelecionadasIds.add(item.rowIndex);
+                            tr.classList.add('linha-selecionada');
+                        }
+                    } else {
+                        // Clique normal: limpa as outras e seleciona apenas esta
+                        document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
+                        linhasSelecionadasIds.clear();
+                        
+                        linhasSelecionadasIds.add(item.rowIndex);
+                        tr.classList.add('linha-selecionada');
+                    }
                 };
 
                 let tdContent = '';
@@ -993,7 +1049,6 @@
                 tdContent += `<td>${formatCell(row[6])}</td>`;
                 tdContent += `<td>${formatCell(row[7])}</td>`;
 
-                // Imagem padronizada como "Imagem Disponível"
                 const imgVal = formatCell(row[8]);
                 if (imgVal && imgVal !== '-' && imgVal.startsWith('http')) {
                     tdContent += `<td><a href="${imgVal}" target="_blank" class="img-link" title="Clique para abrir a imagem">🖼️ Imagem Disponível</a></td>`;
@@ -1001,7 +1056,6 @@
                     tdContent += `<td>${imgVal}</td>`;
                 }
 
-                // Anotações padronizadas como "Comentário Disponível" com fonte ajustada para caber no quadro
                 const anotacaoVal = formatCell(row[9]);
                 if (anotacaoVal && anotacaoVal !== '-') {
                     const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
@@ -1051,28 +1105,14 @@
             renderizarTabela();
         }
 
-        function toggleFiltro(tipo, valor, elemento, event) {
-            const set = filtrosAtivos[tipo];
-            
-            if (set.has(valor)) {
-                set.delete(valor);
-                elemento.classList.remove('active');
-            } else {
-                set.add(valor);
-                elemento.classList.add('active');
-            }
-
-            renderizarTabela();
-        }
-
         function atualizarTextoFiltrosAtivos() {
             let partes = [];
             const termoPesquisa = document.getElementById('inputPesquisa').value.trim();
             if (termoPesquisa) partes.push(`Busca: "${termoPesquisa}"`);
             if (apenasPendentesAtivo) partes.push('Apenas Pendentes');
-            if (filtrosAtivos.linha.size > 0) partes.push(`Linhas: ${Array.from(filtrosAtivos.linha).join(', ')}`);
-            if (filtrosAtivos.tipo.size > 0) partes.push(`Tipos: ${Array.from(filtrosAtivos.tipo).join(', ')}`);
-            if (filtrosAtivos.dia.size > 0) partes.push(`Dias: ${Array.from(filtrosAtivos.dia).join(', ')}`);
+            if (filtrosAtivos.linha.size > 0) partes.push(`Linhas (${filtrosAtivos.linha.size})`);
+            if (filtrosAtivos.tipo.size > 0) partes.push(`Tipos (${filtrosAtivos.tipo.size})`);
+            if (filtrosAtivos.dia.size > 0) partes.push(`Dias (${filtrosAtivos.dia.size})`);
             
             document.getElementById('filtroAtivoLabel').innerText = partes.join(' | ');
         }
@@ -1089,6 +1129,7 @@
             filtrosAtivos.tipo.clear();
             apenasPendentesAtivo = false;
             document.getElementById('inputPesquisa').value = '';
+            linhasSelecionadasIds.clear();
             
             const btnPendentes = document.getElementById('btnFiltrarPendentes');
             btnPendentes.classList.remove('active');
@@ -1204,7 +1245,8 @@
 
             ultimaLinhaSalvaId = targetRow ? parseInt(targetRow) : 2;
             if (targetRow) {
-                linhaSelecionadaId = parseInt(targetRow);
+                linhasSelecionadasIds.clear();
+                linhasSelecionadasIds.add(parseInt(targetRow));
             }
 
             document.getElementById('statusNuvem').innerText = "Salvando...";
