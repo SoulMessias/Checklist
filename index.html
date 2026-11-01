@@ -17,6 +17,7 @@
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --accent-red: #ef4444;
+            --accent-red-hover: #dc2626;
         }
 
         * {
@@ -303,6 +304,19 @@
             border: 1px solid var(--border-color);
         }
 
+        .btn-danger {
+            background: var(--accent-red);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .btn-danger:hover { background: var(--accent-red-hover); }
+
         .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
 
         .table-card {
@@ -502,7 +516,8 @@
         .modal-footer {
             margin-top: 16px;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between; /* Ajustado para alinhar o botão de deletar à esquerda e salvar à direita */
+            align-items: center;
             gap: 8px;
         }
     </style>
@@ -671,8 +686,12 @@
                     <div class="form-group"><label>Status</label><input type="text" id="fStatus" placeholder="Ex: Ok"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
-                    <button type="submit" class="btn">Salvar na Nuvem</button>
+                    <!-- Botão de Deletar visível apenas no modo de Edição -->
+                    <button type="button" class="btn-danger" id="btnDeletarRegistro" style="display: none;" onclick="deletarRegistro()">Excluir Linha</button>
+                    <div style="display: flex; gap: 8px; margin-left: auto;">
+                        <button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
+                        <button type="submit" class="btn">Salvar na Nuvem</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -706,7 +725,7 @@
         let ultimoItemClicado = { tipo: null, valor: null };
 
         let ultimaLinhaSalvaId = null;
-        let linhasSelecionadasIds = new Set(); // Alterado para suportar múltiplas seleções de linhas
+        let linhasSelecionadasIds = new Set();
 
         function atualizarPosicaoCabecalhoTabela() {
             const stickyArea = document.getElementById('stickyTopArea');
@@ -1010,17 +1029,14 @@
                 const tr = document.createElement('tr');
                 tr.id = `row-${item.rowIndex}`;
 
-                // Verifica se esta linha está incluída no conjunto de linhas selecionadas
                 if (linhasSelecionadasIds.has(item.rowIndex)) {
                     tr.classList.add('linha-selecionada');
                 }
                 
-                // Lógica de seleção por clique simples ou mantendo CTRL pressionado
                 tr.onclick = (e) => {
                     if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A') return;
                     
                     if (e.ctrlKey || e.metaKey) {
-                        // Se o CTRL estiver pressionado, adiciona ou remove da seleção múltipla
                         if (linhasSelecionadasIds.has(item.rowIndex)) {
                             linhasSelecionadasIds.delete(item.rowIndex);
                             tr.classList.remove('linha-selecionada');
@@ -1029,7 +1045,6 @@
                             tr.classList.add('linha-selecionada');
                         }
                     } else {
-                        // Clique normal: limpa as outras e seleciona apenas esta
                         document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
                         linhasSelecionadasIds.clear();
                         
@@ -1182,6 +1197,8 @@
             document.getElementById('modalTitle').innerText = 'Adicionar Nova Linha';
             document.getElementById('editRowIndex').value = '';
             document.getElementById('dataForm').reset();
+            // Esconde o botão de excluir ao adicionar novo registro
+            document.getElementById('btnDeletarRegistro').style.display = 'none';
             document.getElementById('modalOverlay').style.display = 'flex';
         }
 
@@ -1209,7 +1226,43 @@
             document.getElementById('fAnotacoes').value = r[9] || '';
             document.getElementById('fStatus').value = r[10] || '';
 
+            // Mostra o botão de excluir no modo de edição
+            document.getElementById('btnDeletarRegistro').style.display = 'inline-block';
             document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        async function deletarRegistro() {
+            const targetRow = document.getElementById('editRowIndex').value;
+            if (!targetRow) return;
+
+            if (!confirm(`Tem certeza de que deseja excluir o registro da Linha ${targetRow}?`)) {
+                return;
+            }
+
+            document.getElementById('statusNuvem').innerText = "Excluindo...";
+
+            // Payload sinalizando exclusão (definindo todas as colunas como vazias ou enviando ação de delete dependendo do seu Apps Script)
+            // Aqui estamos enviando os dados em branco para a linha correspondente limpar no Sheets
+            const payload = {
+                rowIndex: targetRow,
+                col1: "", col2: "", col3: "", col4: "", col5: "",
+                col6: "", col7: "", col8: "", col9: "", col10: "",
+                col11: "", col12: ""
+            };
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+
+                fecharModal();
+                setTimeout(carregarDados, 1500);
+            } catch (err) {
+                console.error("Erro ao excluir:", err);
+                alert("Erro ao excluir o registro na nuvem.");
+            }
         }
 
         async function salvarRegistro(event) {
