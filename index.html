@@ -60,16 +60,8 @@
             text-align: center;
         }
 
-        .selection-card h2 {
-            font-size: 1.35rem;
-            color: var(--text-main);
-        }
-
-        .selection-card p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
+        .selection-card h2 { font-size: 1.35rem; color: var(--text-main); }
+        .selection-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
 
         .selection-btn {
             background: var(--primary);
@@ -249,7 +241,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.78rem;
-            table-layout: fixed;
+            table-layout: fixed; /* Garante alinhamento rigoroso entre thead e tbody */
         }
 
         th, td {
@@ -356,7 +348,6 @@
                 </div>
             </header>
 
-            <!-- Segmentador de dados por Linha (Apenas na aba Socorro) -->
             <div class="top-grid" id="painelFiltroLinha" style="display: none;">
                 <div class="card-panel">
                     <h3>Segmentação por Linha</h3>
@@ -444,6 +435,23 @@
             limparFiltros();
         }
 
+        // Função para formatar o horário corrompido do Google Sheets (1899-12-30T...) para HH:mm ou texto limpo
+        function formatarHorario(valorRaw) {
+            if (!valorRaw) return '';
+            const str = valorRaw.toString().trim();
+            
+            // Se vier no formato ISO do Sheets (ex: 1899-12-30T14:02:28.000Z)
+            if (str.includes('1899-12-30T') || str.includes('T') && str.includes('Z')) {
+                const dataObj = new Date(str);
+                if (!isNaN(dataObj.getTime())) {
+                    const horas = String(dataObj.getUTCHours()).padStart(2, '0');
+                    const minutos = String(dataObj.getUTCMinutes()).padStart(2, '0');
+                    return `${horas}:${minutos}`;
+                }
+            }
+            return str;
+        }
+
         async function carregarDados() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar informações da aba ${abaAtual}...</td></tr>`;
@@ -461,17 +469,6 @@
                 if(abaAtual === "Socorro") gerarSegmentacaoLinhas();
                 renderizarTabela();
                 document.getElementById('statusNuvem').innerText = "Conectado ao Google Sheets";
-
-                if (ultimaLinhaSalvaId !== null) {
-                    setTimeout(() => {
-                        const trAlvo = document.getElementById(`row-${ultimaLinhaSalvaId}`);
-                        if (trAlvo) {
-                            trAlvo.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            trAlvo.classList.add('linha-focada');
-                        }
-                        ultimaLinhaSalvaId = null;
-                    }, 300);
-                }
             } catch (err) {
                 console.error("Erro:", err);
                 document.getElementById('statusNuvem').innerText = "Erro de Sincronização";
@@ -482,6 +479,7 @@
         function construirCabecalhoTabela() {
             const trHead = document.getElementById('tableHeaderRow');
             if (abaAtual === "Socorro") {
+                // Larguras idênticas aplicadas no th e no td para garantir alinhamento perfeito
                 trHead.innerHTML = `
                     <th style="width: 10%;">Nº INCIDENTE</th>
                     <th style="width: 10%;">LINHA</th>
@@ -552,7 +550,7 @@
 
                 if (linhasSelecionadasIds.has(item.rowIndex)) tr.classList.add('linha-selecionada');
 
-                tr.onclick = (e) => {
+                tr.onclick = () => {
                     if (linhasSelecionadasIds.has(item.rowIndex)) {
                         linhasSelecionadasIds.delete(item.rowIndex);
                         tr.classList.remove('linha-selecionada');
@@ -564,14 +562,14 @@
 
                 let tdContent = '';
                 if (abaAtual === "Socorro") {
-                    tdContent += `<td>${row[0] || ''}</td>`;
-                    tdContent += `<td>${row[1] || ''}</td>`;
-                    tdContent += `<td>${row[2] || ''}</td>`;
-                    tdContent += `<td>${row[3] || ''}</td>`;
-                    tdContent += `<td>${row[4] || ''}</td>`;
-                    tdContent += `<td>${row[5] || ''}</td>`;
-                    tdContent += `<td>${row[6] || ''}</td>`;
-                    tdContent += `<td>${row[7] || ''}</td>`;
+                    tdContent += `<td style="width: 10%;">${row[0] || ''}</td>`;
+                    tdContent += `<td style="width: 10%;">${row[1] || ''}</td>`;
+                    tdContent += `<td style="width: 10%;">${row[2] || ''}</td>`;
+                    tdContent += `<td style="width: 12%;">${formatarHorario(row[3])}</td>`; // Horário limpo e formatado
+                    tdContent += `<td style="width: 14%;">${row[4] || ''}</td>`;
+                    tdContent += `<td style="width: 14%;">${row[5] || ''}</td>`;
+                    tdContent += `<td style="width: 15%;">${row[6] || ''}</td>`;
+                    tdContent += `<td style="width: 15%;">${row[7] || ''}</td>`;
                 } else {
                     for(let i=0; i<8; i++) tdContent += `<td>${row[i] || ''}</td>`;
                 }
@@ -591,7 +589,7 @@
                     <div class="form-group"><label>Nº do Incidente</label><input type="text" id="fCol1" required></div>
                     <div class="form-group"><label>Linha</label><input type="text" id="fCol2" required></div>
                     <div class="form-group"><label>Serviço</label><input type="text" id="fCol3"></div>
-                    <div class="form-group"><label>Horário (dd/mm/aaaa ou livre)</label><input type="text" id="fCol4" placeholder="Ex: 05/11/2026 1430"></div>
+                    <div class="form-group"><label>Horário</label><input type="text" id="fCol4" placeholder="Ex: 1430"></div>
                     <div class="form-group"><label>Carro que Sai</label><input type="text" id="fCol5"></div>
                     <div class="form-group"><label>Carro que Entra</label><input type="text" id="fCol6"></div>
                     <div class="form-group"><label>Motorista que Sai</label><input type="text" id="fCol7"></div>
@@ -619,7 +617,7 @@
                 col1: document.getElementById('fCol1').value,
                 col2: document.getElementById('fCol2').value,
                 col3: document.getElementById('fCol3').value,
-                col4: document.getElementById('fCol4').value, // Horário sem formatação automática
+                col4: document.getElementById('fCol4').value,
                 col5: document.getElementById('fCol5').value,
                 col6: document.getElementById('fCol6').value,
                 col7: document.getElementById('fCol7').value,
