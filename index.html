@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Controle Operacional</title>
+    <title>Seleção de Painel Operacional</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -32,6 +32,69 @@
             color: var(--text-main);
             padding: 16px;
             overflow-x: hidden;
+        }
+
+        /* Tela de Seleção Inicial */
+        #selectionOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(6px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        .selection-card {
+            background: var(--surface-color);
+            padding: 28px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+        }
+
+        .selection-card h2 {
+            font-size: 1.35rem;
+            color: var(--text-main);
+        }
+
+        .selection-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .selection-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .selection-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .selection-btn.secondary {
+            background: #f1f5f9;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .selection-btn.secondary:hover {
+            background: #e2e8f0;
         }
 
         .container {
@@ -522,15 +585,28 @@
         }
     </style>
 </head>
-<body onload="carregarDados()">
+<body>
+
+    <!-- TELA DE SELEÇÃO DE PLANILHA -->
+    <div id="selectionOverlay">
+        <div class="selection-card">
+            <h2>Selecionar Painel</h2>
+            <p>Escolha qual planilha você deseja abrir e gerenciar:</p>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+                <button class="selection-btn" onclick="selecionarPainel('PLANILHA_1')">Abrir Painel 1 (Principal)</button>
+                <button class="selection-btn secondary" onclick="selecionarPainel('PLANILHA_2')">Abrir Painel 2 (Nova Planilha)</button>
+            </div>
+        </div>
+    </div>
 
     <div class="container">
         <!-- ÁREA CONGELADA NO TOPO -->
         <div class="sticky-top-area" id="stickyTopArea">
             <header>
-                <h1>Painel Operacional</h1>
+                <h1 id="tituloPainel">Painel Operacional</h1>
                 
                 <div class="header-actions">
+                    <button class="btn-outline btn btn-sm" onclick="voltarParaSelecao()" style="font-size: 0.75rem;">🔄 Trocar Painel</button>
                     <div class="status-badge" id="statusNuvem">Conectando...</div>
                 </div>
             </header>
@@ -712,8 +788,13 @@
     </div>
 
     <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec';
+        // Defina aqui as URLs dos Web Apps de cada planilha do Google Sheets
+        const URLS_PAINEIS = {
+            "PLANILHA_1": "https://docs.google.com/spreadsheets/d/1tBA5w_RFs5k2fmUMIu0kWPe-TZ1ajPkV5FTK4qeQ_C0/edit?gid=0#gid=0",
+            "PLANILHA_2": "https://docs.google.com/spreadsheets/d/1tBA5w_RFs5k2fmUMIu0kWPe-TZ1ajPkV5FTK4qeQ_C0/edit?gid=1335728187#gid=1335728187"
+        };
 
+        let WEB_APP_URL = "";
         let dadosGlobais = [];
         let filtrosAtivos = {
             linha: new Set(),
@@ -725,6 +806,27 @@
 
         let ultimaLinhaSalvaId = null;
         let linhasSelecionadasIds = new Set();
+
+        function selecionarPainel(tipoPlanilha) {
+            WEB_APP_URL = URLS_PAINEIS[tipoPlanilha];
+            
+            // Altera o título visual conforme a escolha
+            if(tipoPlanilha === "PLANILHA_1") {
+                document.getElementById('tituloPainel').innerText = "Painel Operacional - Principal";
+            } else {
+                document.getElementById('tituloPainel').innerText = "Painel Operacional - Nova Planilha";
+            }
+
+            // Oculta a tela de seleção e carrega os dados
+            document.getElementById('selectionOverlay').style.display = 'none';
+            carregarDados();
+        }
+
+        function voltarParaSelecao() {
+            document.getElementById('selectionOverlay').style.display = 'flex';
+            dadosGlobais = [];
+            limparFiltros();
+        }
 
         function atualizarPosicaoCabecalhoTabela() {
             const stickyArea = document.getElementById('stickyTopArea');
@@ -739,9 +841,7 @@
 
         async function carregarDados() {
             const tbody = document.getElementById('tableBody');
-            if(dadosGlobais.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar informações da planilha, por favor aguarde...</td></tr>`;
-            }
+            tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar informações da planilha, por favor aguarde...</td></tr>`;
             document.getElementById('statusNuvem').innerText = "A sincronizar...";
 
             try {
@@ -769,7 +869,7 @@
             } catch (err) {
                 console.error("Erro detalhado:", err);
                 document.getElementById('statusNuvem').innerText = "Erro de Sincronização";
-                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da nuvem.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da nuvem. Verifique a URL do Web App.</td></tr>`;
             }
         }
 
