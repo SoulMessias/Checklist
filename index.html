@@ -668,8 +668,25 @@
             tbody.innerHTML = '';
             const termoPesquisa = document.getElementById('inputPesquisa').value.trim().toLowerCase();
 
+            const inputInicio = document.getElementById('dataInicio').value;
+            const inputFim = document.getElementById('dataFim').value;
+            const dInicio = inputInicio ? new Date(inputInicio + "T00:00:00") : null;
+            const dFim = inputFim ? new Date(inputFim + "T23:59:59") : null;
+
             let dadosExibidos = dadosGlobais.filter(item => {
                 const row = item.data;
+
+                // Filtro de Período baseado na Coluna "Vigência" (índice 1)
+                if (dInicio || dFim) {
+                    const dtVigencia = parseData(row[1]);
+                    if (dtVigencia) {
+                        if (dInicio && dtVigencia < dInicio) return false;
+                        if (dFim && dtVigencia > dFim) return false;
+                    } else {
+                        return false;
+                    }
+                }
+
                 if (filtrosAtivos.linha.size > 0 && !filtrosAtivos.linha.has(formatCell(row[0]))) return false;
                 if (filtrosAtivos.dia.size > 0 && !filtrosAtivos.dia.has(formatCell(row[3]))) return false;
                 if (filtrosAtivos.tipo.size > 0 && !filtrosAtivos.tipo.has(formatCell(row[2]))) return false;
@@ -704,10 +721,21 @@
 
                 tr.onclick = (e) => {
                     if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A') return;
-                    if (linhasSelecionadasIds.has(item.rowIndex)) {
-                        linhasSelecionadasIds.delete(item.rowIndex);
-                        tr.classList.remove('linha-selecionada');
+                    
+                    // SELEÇÃO MÚLTIPLA SOMENTE COM CTRL OU COMMAND APERTADO
+                    if (e.ctrlKey || e.metaKey) {
+                        if (linhasSelecionadasIds.has(item.rowIndex)) {
+                            linhasSelecionadasIds.delete(item.rowIndex);
+                            tr.classList.remove('linha-selecionada');
+                        } else {
+                            linhasSelecionadasIds.add(item.rowIndex);
+                            tr.classList.add('linha-selecionada');
+                        }
                     } else {
+                        // Clique normal: limpa os anteriores e seleciona apenas este
+                        document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
+                        linhasSelecionadasIds.clear();
+                        
                         linhasSelecionadasIds.add(item.rowIndex);
                         tr.classList.add('linha-selecionada');
                     }
