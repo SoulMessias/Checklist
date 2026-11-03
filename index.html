@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seleção de Painel Operacional</title>
+    <title>Painel Operacional</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -34,69 +34,6 @@
             overflow-x: hidden;
         }
 
-        /* Tela de Seleção Inicial */
-        #selectionOverlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(6px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 3000;
-        }
-
-        .selection-card {
-            background: var(--surface-color);
-            padding: 28px;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            border: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            text-align: center;
-        }
-
-        .selection-card h2 {
-            font-size: 1.35rem;
-            color: var(--text-main);
-        }
-
-        .selection-card p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .selection-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .selection-btn:hover {
-            background: var(--primary-hover);
-        }
-
-        .selection-btn.secondary {
-            background: #f1f5f9;
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-        }
-
-        .selection-btn.secondary:hover {
-            background: #e2e8f0;
-        }
-
         .container {
             width: 100%;
             max-width: 100%;
@@ -106,7 +43,6 @@
             gap: 16px;
         }
 
-        /* Área do Topo Congelada */
         .sticky-top-area {
             position: sticky;
             top: 0;
@@ -276,11 +212,6 @@
             transition: all 0.2s ease;
         }
 
-        .metric-box:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-        }
-
         .metric-box.full-width {
             grid-column: span 2;
             background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
@@ -292,28 +223,19 @@
             color: var(--text-muted);
             margin-bottom: 2px;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
             font-weight: 600;
         }
 
-        .metric-box.full-width h4 {
-            color: #047857;
-        }
+        .metric-box.full-width h4 { color: #047857; }
 
         .metric-box .val {
             font-size: 1.25rem;
             font-weight: 700;
             color: var(--primary);
-            letter-spacing: -0.02em;
         }
 
-        .metric-box .val.red {
-            color: var(--accent-red);
-        }
-
-        .metric-box .val.green {
-            color: var(--primary);
-        }
+        .metric-box .val.red { color: var(--accent-red); }
+        .metric-box .val.green { color: var(--primary); }
 
         .action-bar {
             display: flex;
@@ -408,19 +330,19 @@
             white-space: nowrap;
         }
 
-        th:nth-child(1), td:nth-child(1) { width: 7%; }   /* LINHA */
-        th:nth-child(2), td:nth-child(2) { width: 9%; }   /* VIGÊNCIA */
-        th:nth-child(3), td:nth-child(3) { width: 11%; }  /* TIPO */
-        th:nth-child(4), td:nth-child(4) { width: 8%; }   /* DIA */
-        th:nth-child(5), td:nth-child(5) { width: 8%; }   /* MOBILIBUS */
-        th:nth-child(6), td:nth-child(6) { width: 8%; }   /* TERMINAIS */
-        th:nth-child(7), td:nth-child(7) { width: 8%; }   /* AVISOS */
-        th:nth-child(8), td:nth-child(8) { width: 9%; }   /* AGÊNCIA/TELÃO */
-        th:nth-child(9), td:nth-child(9) { width: 8%; }   /* IMAGEM */
-        th:nth-child(10), td:nth-child(10) { width: 10%; }/* ANOTAÇÕES */
-        th:nth-child(11), td:nth-child(11) { width: 8%; } /* STATUS */
-        th:nth-child(12), td:nth-child(12) { width: 9%; } /* PENDÊNCIA */
-        th:nth-child(13), td:nth-child(13) { width: 7%; } /* AÇÕES */
+        th:nth-child(1), td:nth-child(1) { width: 7%; }   
+        th:nth-child(2), td:nth-child(2) { width: 9%; }   
+        th:nth-child(3), td:nth-child(3) { width: 11%; }  
+        th:nth-child(4), td:nth-child(4) { width: 8%; }   
+        th:nth-child(5), td:nth-child(5) { width: 8%; }   
+        th:nth-child(6), td:nth-child(6) { width: 8%; }   
+        th:nth-child(7), td:nth-child(7) { width: 8%; }   
+        th:nth-child(8), td:nth-child(8) { width: 9%; }   
+        th:nth-child(9), td:nth-child(9) { width: 8%; }   
+        th:nth-child(10), td:nth-child(10) { width: 10%; }
+        th:nth-child(11), td:nth-child(11) { width: 8%; } 
+        th:nth-child(12), td:nth-child(12) { width: 9%; } 
+        th:nth-child(13), td:nth-child(13) { width: 7%; } 
 
         thead th {
             position: sticky;
@@ -432,33 +354,15 @@
             box-shadow: inset 0 -1px 0 var(--border-color);
         }
 
-        tbody tr {
-            cursor: pointer;
-            transition: background-color 0.15s ease;
-        }
-        tbody tr:hover { 
-            background: #f1f5f9; 
-        }
-        tbody tr.linha-selecionada {
-            background-color: #cbd5e1 !important;
-        }
+        tbody tr { cursor: pointer; transition: background-color 0.15s ease; }
+        tbody tr:hover { background: #f1f5f9; }
+        tbody tr.linha-selecionada { background-color: #cbd5e1 !important; }
 
-        tr.linha-focada {
-            animation: highlightFade 3s ease-out forwards;
-        }
-
-        @keyframes highlightFade {
-            0% { background-color: #a7f3d0; }
-            100% { background-color: transparent; }
-        }
-
-        .anotacao-badge {
+        .anotacao-badge, .img-link {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 2px;
             width: 100%;
-            max-width: 100%;
             padding: 3px 4px;
             background-color: #f0fdf4;
             color: #166534;
@@ -467,53 +371,10 @@
             font-weight: 600;
             font-size: 0.62rem;
             cursor: pointer;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            transition: all 0.2s ease;
-        }
-
-        .anotacao-badge:hover {
-            background-color: #dcfce7;
-            border-color: #86efac;
-            transform: translateY(-1px);
-        }
-
-        .img-link {
-            color: var(--primary);
             text-decoration: none;
-            font-weight: 600;
-            font-size: 0.62rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            width: 100%;
-            max-width: 100%;
-            background-color: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: 12px;
-            padding: 3px 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            transition: all 0.2s ease;
-        }
-        .img-link:hover { 
-            background-color: #dcfce7;
-            border-color: #86efac;
-            text-decoration: none;
-            transform: translateY(-1px);
         }
 
-        .badge-status {
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 0.7rem;
-            display: inline-block;
-        }
-
+        .badge-status { padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.7rem; display: inline-block; }
         .badge-pendente { background: #fef2f2; color: #ef4444; }
         .badge-atualizado { background: #ecfdf5; color: #059669; }
 
@@ -538,80 +399,26 @@
             overflow-y: auto;
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            text-align: left;
-        }
-
-        .form-group.full-width {
-            grid-column: span 2;
-        }
-
-        .form-group label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        .form-group input, .form-group select {
-            padding: 6px 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            outline: none;
-            font-size: 0.8rem;
-        }
-
-        .modal-footer {
-            margin-top: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; text-align: left; }
+        .form-group.full-width { grid-column: span 2; }
+        .form-group label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+        .form-group input, .form-group select { padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); outline: none; font-size: 0.8rem; }
+        .modal-footer { margin-top: 16px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     </style>
 </head>
 <body>
 
-    <!-- TELA DE SELEÇÃO DE PLANILHA -->
-    <div id="selectionOverlay">
-        <div class="selection-card">
-            <h2>Selecionar Painel</h2>
-            <p>Escolha qual planilha você deseja abrir e gerenciar:</p>
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
-                <button class="selection-btn" onclick="selecionarPainel('PLANILHA_1')">Abrir Painel 1 (Principal)</button>
-                <button class="selection-btn secondary" onclick="selecionarPainel('PLANILHA_2')">Abrir Painel 2 (Nova Planilha)</button>
-            </div>
-        </div>
-    </div>
-
     <div class="container">
-        <!-- ÁREA CONGELADA NO TOPO -->
         <div class="sticky-top-area" id="stickyTopArea">
             <header>
                 <h1 id="tituloPainel">Painel Operacional</h1>
-                
                 <div class="header-actions">
-                    <button class="btn-outline btn btn-sm" onclick="voltarParaSelecao()" style="font-size: 0.75rem;">🔄 Trocar Painel</button>
                     <div class="status-badge" id="statusNuvem">Conectando...</div>
                 </div>
             </header>
 
-            <!-- Quadros Superiores -->
             <div class="top-grid">
                 <div class="card-panel">
                     <h3>Linhas de Ônibus</h3>
@@ -628,791 +435,9 @@
                     <div class="stack-list" id="filterTipo"></div>
                 </div>
 
-                <!-- Painel de Métricas -->
                 <div class="card-panel metrics-container-wrapper">
                     <div class="card-panel" style="border: none; box-shadow: none; padding: 0; height: 100%; display: flex; flex-direction: column;">
                         <h3>Resumo de Pendências</h3>
                         <div class="metrics-container">
                             <div class="metric-box full-width">
                                 <h4 id="labelMetricaTotais">Alterações Totais</h4>
-                                <div class="val" id="mTotGeral">0</div>
-                            </div>
-                            <div class="metric-box">
-                                <h4>Mobilibus</h4>
-                                <div class="val" id="mPendMobi">0</div>
-                            </div>
-                            <div class="metric-box">
-                                <h4>Terminais</h4>
-                                <div class="val" id="mPendTerm">0</div>
-                            </div>
-                            <div class="metric-box">
-                                <h4>Avisos</h4>
-                                <div class="val" id="mPendAvis">0</div>
-                            </div>
-                            <div class="metric-box">
-                                <h4>Agência/Telão</h4>
-                                <div class="val" id="mPendAgen">0</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Barra de Ações, Pesquisa & Datas Juntas -->
-            <div class="action-bar">
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1;">
-                    <button class="btn-outline btn" onclick="limparFiltros()">Limpar Todos Filtros</button>
-                    <button class="btn-outline btn" onclick="filtrarPendentesToggle()" id="btnFiltrarPendentes">Filtrar Pendentes</button>
-                    
-                    <!-- Barra de Pesquisa -->
-                    <div class="search-box">
-                        <span>🔍</span>
-                        <input type="text" id="inputPesquisa" placeholder="Pesquisar em tudo..." oninput="renderizarTabela()">
-                    </div>
-
-                    <!-- Seletor de Datas (Início e Fim) na mesma barra -->
-                    <div class="date-filter-group">
-                        <label>Início:</label>
-                        <input type="date" id="dataInicio" onchange="renderizarTabela()">
-                        <label>Fim:</label>
-                        <input type="date" id="dataFim" onchange="renderizarTabela()">
-                        <button class="btn-outline btn btn-sm" onclick="limparFiltroData()" title="Limpar Período">✕ Limpar Data</button>
-                    </div>
-
-                    <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted); margin-left:4px;"></span>
-                </div>
-                <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
-            </div>
-
-            <!-- CABEÇALHO DA TABELA UNIDO AO TOPO FIXO -->
-            <div class="table-card" style="box-shadow: none; border-radius: 0; border-left: none; border-right: none;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>LINHA</th>
-                            <th>VIGÊNCIA</th>
-                            <th>TIPO</th>
-                            <th>DIA</th>
-                            <th>MOBILIBUS</th>
-                            <th>TERMINAIS</th>
-                            <th>AVISOS</th>
-                            <th>AGÊNCIA/TELÃO</th>
-                            <th>IMAGEM</th>
-                            <th>ANOTAÇÕES</th>
-                            <th>STATUS</th>
-                            <th>PENDÊNCIA</th>
-                            <th>AÇÕES</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
-        </div>
-
-        <!-- Corpo da Tabela -->
-        <div class="table-card" style="border-top: none; border-top-left-radius: 0; border-top-right-radius: 0;">
-            <table>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Modal de Preenchimento / Edição -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 id="modalTitle">Adicionar Informação</h2>
-                <button class="btn-outline btn btn-sm" onclick="fecharModal()">✕</button>
-            </div>
-            <form id="dataForm" onsubmit="salvarRegistro(event)">
-                <input type="hidden" id="editRowIndex" value="">
-                <div class="form-grid">
-                    <div class="form-group"><label>Linha</label><input type="text" id="fLinha" required></div>
-                    <div class="form-group"><label>Vigência</label><input type="date" id="fVigencia"></div>
-                    
-                    <div class="form-group">
-                        <label>Tipo</label>
-                        <select id="fTipo">
-                            <option value="">Selecione...</option>
-                            <option value="Ajuste Emergencial">Ajuste Emergencial</option>
-                            <option value="Correção">Correção</option>
-                            <option value="Exposição">Exposição</option>
-                            <option value="Finados">Finados</option>
-                            <option value="Proposta">Proposta</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Dia</label>
-                        <select id="fDia">
-                            <option value="">Selecione...</option>
-                            <option value="Útil">Útil</option>
-                            <option value="Sáb">Sáb</option>
-                            <option value="Dom">Dom</option>
-                            <option value="Útil e Sáb">Útil e Sáb</option>
-                            <option value="Útil, Sáb e Dom">Útil, Sáb e Dom</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group"><label>Mobilibus</label><input type="text" id="fMobilibus"></div>
-                    <div class="form-group"><label>Terminais</label><input type="text" id="fTerminais"></div>
-                    <div class="form-group"><label>Avisos</label><input type="text" id="fAvisos"></div>
-                    <div class="form-group"><label>Agência/Telão</label><input type="text" id="fAgencia"></div>
-                    <div class="form-group full-width"><label>Link / URL da Imagem</label><input type="url" id="fImagem" placeholder="https://exemplo.com/imagem.png"></div>
-                    <div class="form-group"><label>Anotações</label><input type="text" id="fAnotacoes"></div>
-                    <div class="form-group"><label>Status</label><input type="text" id="fStatus" placeholder="Ex: Ok"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-danger" id="btnDeletarRegistro" style="display: none;" onclick="deletarRegistro()">Excluir Linha</button>
-                    <div style="display: flex; gap: 8px; margin-left: auto;">
-                        <button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
-                        <button type="submit" class="btn">Salvar na Nuvem</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Pop-up para Anotações -->
-    <div class="modal-overlay" id="modalNotaOverlay">
-        <div class="modal" style="max-width: 450px;">
-            <div class="modal-header">
-                <h2>Texto Completo da Anotação</h2>
-                <button class="btn-outline btn btn-sm" onclick="fecharModalNota()">✕</button>
-            </div>
-            <div id="textoNotaCompleto" style="font-size: 0.85rem; line-height: 1.6; word-break: break-word; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); max-height: 250px; overflow-y: auto; white-space: pre-wrap; text-align: left;">
-            </div>
-            <div class="modal-footer" style="margin-top: 16px;">
-                <button type="button" class="btn" onclick="fecharModalNota()">Fechar</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Defina aqui as URLs dos Web Apps de cada planilha do Google Sheets
-        const URLS_PAINEIS = {
-            "PLANILHA_1": "SUA_URL_DO_WEB_APP_DA_PLANILHA_1_AQUI",
-            "PLANILHA_2": "SUA_URL_DO_WEB_APP_DA_PLANILHA_2_AQUI"
-        };
-
-        let WEB_APP_URL = "";
-        let dadosGlobais = [];
-        let filtrosAtivos = {
-            linha: new Set(),
-            dia: new Set(),
-            tipo: new Set()
-        };
-        let apenasPendentesAtivo = false;
-        let ultimoItemClicado = { tipo: null, valor: null };
-
-        let ultimaLinhaSalvaId = null;
-        let linhasSelecionadasIds = new Set();
-
-        function selecionarPainel(tipoPlanilha) {
-            WEB_APP_URL = URLS_PAINEIS[tipoPlanilha];
-            
-            // Altera o título visual conforme a escolha
-            if(tipoPlanilha === "PLANILHA_1") {
-                document.getElementById('tituloPainel').innerText = "Painel Operacional - Principal";
-            } else {
-                document.getElementById('tituloPainel').innerText = "Painel Operacional - Nova Planilha";
-            }
-
-            // Oculta a tela de seleção e carrega os dados
-            document.getElementById('selectionOverlay').style.display = 'none';
-            carregarDados();
-        }
-
-        function voltarParaSelecao() {
-            document.getElementById('selectionOverlay').style.display = 'flex';
-            dadosGlobais = [];
-            limparFiltros();
-        }
-
-        function atualizarPosicaoCabecalhoTabela() {
-            const stickyArea = document.getElementById('stickyTopArea');
-            const thElement = document.querySelector('thead th');
-            if(stickyArea && thElement) {
-                const alturaTopo = stickyArea.offsetHeight;
-                thElement.style.top = (alturaTopo - document.querySelector('.sticky-top-area .table-card').offsetHeight) + 'px';
-            }
-        }
-
-        window.addEventListener('resize', atualizarPosicaoCabecalhoTabela);
-
-        async function carregarDados() {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar informações da planilha, por favor aguarde...</td></tr>`;
-            document.getElementById('statusNuvem').innerText = "A sincronizar...";
-
-            try {
-                const resp = await fetch(WEB_APP_URL);
-                const data = await resp.json();
-                
-                dadosGlobais = data.slice(1).map((row, index) => ({ rowIndex: index + 2, data: row }));
-                
-                gerarFiltrosDinamicos();
-                renderizarTabela();
-                document.getElementById('statusNuvem').innerText = "Conectado ao Google Sheets";
-
-                setTimeout(atualizarPosicaoCabecalhoTabela, 100);
-
-                if (ultimaLinhaSalvaId !== null) {
-                    setTimeout(() => {
-                        const trAlvo = document.getElementById(`row-${ultimaLinhaSalvaId}`);
-                        if (trAlvo) {
-                            trAlvo.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            trAlvo.classList.add('linha-focada');
-                        }
-                        ultimaLinhaSalvaId = null;
-                    }, 300);
-                }
-            } catch (err) {
-                console.error("Erro detalhado:", err);
-                document.getElementById('statusNuvem').innerText = "Erro de Sincronização";
-                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da nuvem. Verifique a URL do Web App.</td></tr>`;
-            }
-        }
-
-        function parseData(valorRaw) {
-            if (!valorRaw) return null;
-            const str = valorRaw.toString().trim();
-            if (str === '' || str === '-') return null;
-            
-            const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-            if (isoMatch) {
-                return new Date(isoMatch[1], isoMatch[2] - 1, isoMatch[3]);
-            }
-            if (str.includes('/')) {
-                const partes = str.split('/');
-                if (partes.length === 3) {
-                    return new Date(partes[2], partes[1] - 1, partes[0]);
-                }
-            }
-            const dtNum = Number(str);
-            if (!isNaN(dtNum) && dtNum > 30000) {
-                return new Date((dtNum - (25567 + 2)) * 86400 * 1000);
-            }
-            return null;
-        }
-
-        function formatToInputDate(valorRaw) {
-            const dt = parseData(valorRaw);
-            if (!dt || isNaN(dt.getTime())) return '';
-            const ano = dt.getFullYear();
-            const mes = String(dt.getMonth() + 1).padStart(2, '0');
-            const dia = String(dt.getDate()).padStart(2, '0');
-            return `${ano}-${mes}-${dia}`;
-        }
-
-        function formatVigencia(valorRaw) {
-            if (valorRaw === undefined || valorRaw === null) return '';
-            const str = valorRaw.toString().trim();
-            if (str === '' || str === '-') return str;
-
-            const dt = parseData(str);
-            if (dt && !isNaN(dt.getTime())) {
-                const dia = String(dt.getDate()).padStart(2, '0');
-                const mes = String(dt.getMonth() + 1).padStart(2, '0');
-                const ano = dt.getFullYear();
-                return `${dia}/${mes}/${ano}`;
-            }
-
-            return str;
-        }
-
-        function formatCell(val) {
-            if (val === undefined || val === null) return '';
-            const str = val.toString().trim();
-            
-            const dt = parseData(str);
-            if (dt && !isNaN(dt.getTime()) && (/^\d{4}-\d{2}-\d{2}/.test(str) || /^\d{5}$/.test(str) || /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str))) {
-                const dia = String(dt.getDate()).padStart(2, '0');
-                const mes = String(dt.getMonth() + 1).padStart(2, '0');
-                const ano = dt.getFullYear();
-                return `${dia}/${mes}/${ano}`;
-            }
-
-            return str;
-        }
-
-        function mostrarNotaCompleta(texto) {
-            document.getElementById('textoNotaCompleto').innerText = texto || 'Nenhuma anotação registrada.';
-            document.getElementById('modalNotaOverlay').style.display = 'flex';
-        }
-
-        function fecharModalNota() {
-            document.getElementById('modalNotaOverlay').style.display = 'none';
-        }
-
-        function gerarFiltrosDinamicos() {
-            const linhasSet = new Set();
-            const diasSet = new Set();
-            const tiposSet = new Set();
-
-            dadosGlobais.forEach(item => {
-                const r = item.data;
-                const linhaVal = formatCell(r[0]);
-                const diaVal = formatCell(r[3]);
-                const tipoVal = formatCell(r[2]);
-
-                if (linhaVal) linhasSet.add(linhaVal);
-                if (diaVal) diasSet.add(diaVal);
-                if (tipoVal) tiposSet.add(tipoVal);
-            });
-
-            preencherContainerFiltro('filterLinhas', 'linha', Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})));
-            preencherContainerFiltro('filterDia', 'dia', Array.from(diasSet).sort((a, b) => a.localeCompare(b)));
-            preencherContainerFiltro('filterTipo', 'tipo', Array.from(tiposSet).sort((a, b) => a.localeCompare(b)));
-
-            setTimeout(atualizarPosicaoCabecalhoTabela, 50);
-        }
-
-        function preencherContainerFiltro(containerId, tipoFiltro, listaValores) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            listaValores.forEach(valor => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                if (filtrosAtivos[tipoFiltro].has(valor)) btn.classList.add('active');
-                btn.innerText = valor;
-                btn.dataset.valor = valor;
-                btn.dataset.tipo = tipoFiltro;
-                
-                btn.onclick = (e) => tratarCliqueFiltro(tipoFiltro, valor, btn, e);
-                container.appendChild(btn);
-            });
-        }
-
-        function tratarCliqueFiltro(tipo, valor, elemento, event) {
-            const setAtivo = filtrosAtivos[tipo];
-            const botoesNoContainer = Array.from(document.querySelectorAll(`#filter${tipo.charAt(0).toUpperCase() + tipo.slice(1)} .filter-btn`));
-
-            if (event.shiftKey && ultimoItemClicado.tipo === tipo && ultimoItemClicado.valor !== null) {
-                const idxAnterior = botoesNoContainer.findIndex(b => b.dataset.valor === ultimoItemClicado.valor);
-                const idxAtual = botoesNoContainer.findIndex(b => b.dataset.valor === valor);
-
-                if (idxAnterior !== -1 && idxAtual !== -1) {
-                    const inicio = Math.min(idxAnterior, idxAtual);
-                    const fim = Math.max(idxAnterior, idxAtual);
-
-                    for (let i = inicio; i <= fim; i++) {
-                        const valItem = botoesNoContainer[i].dataset.valor;
-                        setAtivo.add(valItem);
-                        botoesNoContainer[i].classList.add('active');
-                    }
-                }
-            } else if (event.ctrlKey || event.metaKey) {
-                if (setAtivo.has(valor)) {
-                    setAtivo.delete(valor);
-                    elemento.classList.remove('active');
-                } else {
-                    setAtivo.add(valor);
-                    elemento.classList.add('active');
-                }
-            } else {
-                if (setAtivo.has(valor) && setAtivo.size === 1) {
-                    setAtivo.clear();
-                    elemento.classList.remove('active');
-                } else {
-                    setAtivo.clear();
-                    botoesNoContainer.forEach(b => b.classList.remove('active'));
-                    setAtivo.add(valor);
-                    elemento.classList.add('active');
-                }
-            }
-
-            ultimoItemClicado = { tipo, valor };
-            renderizarTabela();
-        }
-
-        function renderizarTabela() {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-
-            const inputInicio = document.getElementById('dataInicio').value;
-            const inputFim = document.getElementById('dataFim').value;
-            const termoPesquisa = document.getElementById('inputPesquisa').value.trim();
-
-            const dInicio = inputInicio ? new Date(inputInicio + "T00:00:00") : null;
-            const dFim = inputFim ? new Date(inputFim + "T23:59:59") : null;
-
-            const labelMetrica = document.getElementById('labelMetricaTotais');
-            if (inputInicio || inputFim || termoPesquisa) {
-                labelMetrica.innerText = "Alterações Filtradas";
-            } else {
-                labelMetrica.innerText = "Alterações Totais";
-            }
-
-            let dadosExibidos = dadosGlobais.filter(item => {
-                const row = item.data;
-                
-                if (dInicio || dFim) {
-                    const dtVigencia = parseData(row[1]);
-                    if (dtVigencia) {
-                        if (dInicio && dtVigencia < dInicio) return false;
-                        if (dFim && dtVigencia > dFim) return false;
-                    } else {
-                        return false;
-                    }
-                }
-
-                if (filtrosAtivos.linha.size > 0) {
-                    if (!filtrosAtivos.linha.has(formatCell(row[0]))) return false;
-                }
-
-                if (filtrosAtivos.dia.size > 0) {
-                    if (!filtrosAtivos.dia.has(formatCell(row[3]))) return false;
-                }
-
-                if (filtrosAtivos.tipo.size > 0) {
-                    if (!filtrosAtivos.tipo.has(formatCell(row[2]))) return false;
-                }
-
-                if (apenasPendentesAtivo) {
-                    const statusStr = formatCell(row[10]).toLowerCase();
-                    const pendenciaVal = (statusStr === 'ok') ? 'Atualizado' : 'Pendente';
-                    if (pendenciaVal !== 'Pendente') return false;
-                }
-
-                if (termoPesquisa) {
-                    const matchAspas = termoPesquisa.match(/"([^"]+)"/);
-                    if (matchAspas) {
-                        const termoExato = matchAspas[1].toLowerCase();
-                        const achouExato = row.some(celula => {
-                            if (celula === null || celula === undefined) return false;
-                            return celula.toString().toLowerCase().includes(termoExato);
-                        });
-                        if (!achouExato) return false;
-                    } else {
-                        const termoComum = termoPesquisa.toLowerCase();
-                        const matchGlobal = row.some(celula => {
-                            if (celula === null || celula === undefined) return false;
-                            return celula.toString().toLowerCase().includes(termoComum);
-                        });
-                        if (!matchGlobal) return false;
-                    }
-                }
-
-                return true;
-            });
-
-            dadosExibidos.sort((a, b) => {
-                const rA = a.data;
-                const rB = b.data;
-
-                const dtA = parseData(rA[1]);
-                const dtB = parseData(rB[1]);
-                if (dtA && dtB) {
-                    if (dtB - dtA !== 0) return dtB - dtA;
-                } else {
-                    const strA = (rA[1] || '').toString();
-                    const strB = (rB[1] || '').toString();
-                    const compVig = strB.localeCompare(strA);
-                    if (compVig !== 0) return compVig;
-                }
-
-                const linhaA = formatCell(rA[0]);
-                const linhaB = formatCell(rB[0]);
-                const compLinha = linhaA.localeCompare(linhaB, undefined, { numeric: true });
-                if (compLinha !== 0) return compLinha;
-
-                const diaA = formatCell(rA[3]);
-                const diaB = formatCell(rB[3]);
-                return diaA.localeCompare(diaB, undefined, { sensitivity: 'base' });
-            });
-
-            atualizarTextoFiltrosAtivos();
-
-            dadosExibidos.forEach((item) => {
-                const row = item.data;
-                const tr = document.createElement('tr');
-                tr.id = `row-${item.rowIndex}`;
-
-                if (linhasSelecionadasIds.has(item.rowIndex)) {
-                    tr.classList.add('linha-selecionada');
-                }
-                
-                tr.onclick = (e) => {
-                    if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A') return;
-                    
-                    if (e.ctrlKey || e.metaKey) {
-                        if (linhasSelecionadasIds.has(item.rowIndex)) {
-                            linhasSelecionadasIds.delete(item.rowIndex);
-                            tr.classList.remove('linha-selecionada');
-                        } else {
-                            linhasSelecionadasIds.add(item.rowIndex);
-                            tr.classList.add('linha-selecionada');
-                        }
-                    } else {
-                        document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
-                        linhasSelecionadasIds.clear();
-                        
-                        linhasSelecionadasIds.add(item.rowIndex);
-                        tr.classList.add('linha-selecionada');
-                    }
-                };
-
-                let tdContent = '';
-                
-                tdContent += `<td>${formatCell(row[0])}</td>`;
-                tdContent += `<td>${formatVigencia(row[1])}</td>`;
-                tdContent += `<td>${formatCell(row[2])}</td>`;
-                tdContent += `<td>${formatCell(row[3])}</td>`;
-                tdContent += `<td>${formatCell(row[4])}</td>`;
-                tdContent += `<td>${formatCell(row[5])}</td>`;
-                tdContent += `<td>${formatCell(row[6])}</td>`;
-                tdContent += `<td>${formatCell(row[7])}</td>`;
-
-                const imgVal = formatCell(row[8]);
-                if (imgVal && imgVal !== '-' && imgVal.startsWith('http')) {
-                    tdContent += `<td><a href="${imgVal}" target="_blank" class="img-link" title="Clique para abrir a imagem">🖼️ Imagem Disponível</a></td>`;
-                } else {
-                    tdContent += `<td>${imgVal}</td>`;
-                }
-
-                const anotacaoVal = formatCell(row[9]);
-                if (anotacaoVal && anotacaoVal !== '-') {
-                    const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
-                    tdContent += `<td>
-                        <div class="anotacao-badge" onclick="mostrarNotaCompleta('${textoEscapado}')" title="Clique para ler o comentário completo">
-                            📝 Comentário Disponível
-                        </div>
-                    </td>`;
-                } else {
-                    tdContent += `<td>${anotacaoVal}</td>`;
-                }
-
-                tdContent += `<td>${formatCell(row[10])}</td>`;
-
-                const statusStr = formatCell(row[10]).toLowerCase();
-                const pendenciaVal = (statusStr === 'ok') ? 'Atualizado' : 'Pendente';
-                const badgeClass = (pendenciaVal === 'Atualizado') ? 'badge-atualizado' : 'badge-pendente';
-                tdContent += `<td><span class="badge-status ${badgeClass}">${pendenciaVal}</span></td>`;
-
-                tdContent += `
-                    <td>
-                        <button class="btn btn-outline btn-sm" onclick="editarRegistro(${item.rowIndex})">Editar</button>
-                    </td>
-                `;
-
-                tr.innerHTML = tdContent;
-                tbody.appendChild(tr);
-            });
-
-            atualizarMetricas(dadosExibidos);
-        }
-
-        function filtrarPendentesToggle() {
-            apenasPendentesAtivo = !apenasPendentesAtivo;
-            const btn = document.getElementById('btnFiltrarPendentes');
-            
-            if (apenasPendentesAtivo) {
-                btn.classList.add('active');
-                btn.style.backgroundColor = 'var(--primary)';
-                btn.style.color = 'white';
-            } else {
-                btn.classList.remove('active');
-                btn.style.backgroundColor = 'transparent';
-                btn.style.color = 'var(--text-muted)';
-            }
-
-            renderizarTabela();
-        }
-
-        function atualizarTextoFiltrosAtivos() {
-            let partes = [];
-            const termoPesquisa = document.getElementById('inputPesquisa').value.trim();
-            if (termoPesquisa) partes.push(`Busca: "${termoPesquisa}"`);
-            if (apenasPendentesAtivo) partes.push('Apenas Pendentes');
-            if (filtrosAtivos.linha.size > 0) partes.push(`Linhas (${filtrosAtivos.linha.size})`);
-            if (filtrosAtivos.tipo.size > 0) partes.push(`Tipos (${filtrosAtivos.tipo.size})`);
-            if (filtrosAtivos.dia.size > 0) partes.push(`Dias (${filtrosAtivos.dia.size})`);
-            
-            document.getElementById('filtroAtivoLabel').innerText = partes.join(' | ');
-        }
-
-        function limparFiltroData() {
-            document.getElementById('dataInicio').value = '';
-            document.getElementById('dataFim').value = '';
-            renderizarTabela();
-        }
-
-        function limparFiltros() {
-            filtrosAtivos.linha.clear();
-            filtrosAtivos.dia.clear();
-            filtrosAtivos.tipo.clear();
-            apenasPendentesAtivo = false;
-            document.getElementById('inputPesquisa').value = '';
-            linhasSelecionadasIds.clear();
-            
-            const btnPendentes = document.getElementById('btnFiltrarPendentes');
-            btnPendentes.classList.remove('active');
-            btnPendentes.style.backgroundColor = 'transparent';
-            btnPendentes.style.color = 'var(--text-muted)';
-
-            limparFiltroData();
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('filtroAtivoLabel').innerText = '';
-            renderizarTabela();
-        }
-
-        function atualizarMetricas(dados) {
-            document.getElementById('mTotGeral').innerText = dados.length;
-            
-            let pendMobi = 0;
-            let pendTerm = 0;
-            let pendAvis = 0;
-            let pendAgen = 0;
-
-            dados.forEach(d => {
-                const r = d.data;
-                const statusVal = formatCell(r[10]).toLowerCase();
-
-                if (statusVal === 'ok') return;
-
-                if (!formatCell(r[4]) || formatCell(r[4]) === '-') pendMobi++;
-                if (!formatCell(r[5]) || formatCell(r[5]) === '-') pendTerm++;
-                if (!formatCell(r[6]) || formatCell(r[6]) === '-') pendAvis++;
-                if (!formatCell(r[7]) || formatCell(r[7]) === '-') pendAgen++;
-            });
-
-            const atualizarElementoMetrica = (id, valor) => {
-                const el = document.getElementById(id);
-                el.innerText = valor;
-                if (valor === 0) {
-                    el.className = 'val green';
-                } else {
-                    el.className = 'val red';
-                }
-            };
-
-            atualizarElementoMetrica('mPendMobi', pendMobi);
-            atualizarElementoMetrica('mPendTerm', pendTerm);
-            atualizarElementoMetrica('mPendAvis', pendAvis);
-            atualizarElementoMetrica('mPendAgen', pendAgen);
-        }
-
-        function abrirModal() {
-            document.getElementById('modalTitle').innerText = 'Adicionar Nova Linha';
-            document.getElementById('editRowIndex').value = '';
-            document.getElementById('dataForm').reset();
-            document.getElementById('btnDeletarRegistro').style.display = 'none';
-            document.getElementById('modalOverlay').style.display = 'flex';
-        }
-
-        function fecharModal() {
-            document.getElementById('modalOverlay').style.display = 'none';
-        }
-
-        function editarRegistro(rowIndex) {
-            const registro = dadosGlobais.find(d => d.rowIndex === rowIndex);
-            if (!registro) return;
-
-            const r = registro.data;
-            document.getElementById('modalTitle').innerText = `Editar Registro (Linha ${rowIndex})`;
-            document.getElementById('editRowIndex').value = rowIndex;
-
-            document.getElementById('fLinha').value = r[0] || '';
-            document.getElementById('fVigencia').value = formatToInputDate(r[1]);
-            document.getElementById('fTipo').value = r[2] || '';
-            document.getElementById('fDia').value = r[3] || '';
-            document.getElementById('fMobilibus').value = r[4] || '';
-            document.getElementById('fTerminais').value = r[5] || '';
-            document.getElementById('fAvisos').value = r[6] || '';
-            document.getElementById('fAgencia').value = r[7] || '';
-            document.getElementById('fImagem').value = r[8] || '';
-            document.getElementById('fAnotacoes').value = r[9] || '';
-            document.getElementById('fStatus').value = r[10] || '';
-
-            document.getElementById('btnDeletarRegistro').style.display = 'inline-block';
-            document.getElementById('modalOverlay').style.display = 'flex';
-        }
-
-        async function deletarRegistro() {
-            const targetRow = document.getElementById('editRowIndex').value;
-            if (!targetRow) return;
-
-            if (!confirm(`Tem certeza de que deseja excluir o registro da Linha ${targetRow}?`)) {
-                return;
-            }
-
-            document.getElementById('statusNuvem').innerText = "Excluindo...";
-
-            const payload = {
-                rowIndex: targetRow,
-                col1: "", col2: "", col3: "", col4: "", col5: "",
-                col6: "", col7: "", col8: "", col9: "", col10: "",
-                col11: "", col12: ""
-            };
-
-            try {
-                await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                });
-
-                fecharModal();
-                setTimeout(carregarDados, 1500);
-            } catch (err) {
-                console.error("Erro ao excluir:", err);
-                alert("Erro ao excluir o registro na nuvem.");
-            }
-        }
-
-        async function salvarRegistro(event) {
-            event.preventDefault();
-
-            const targetRow = document.getElementById('editRowIndex').value;
-            const stat = document.getElementById('fStatus').value.trim();
-
-            const pendenciaCalculada = (stat.toLowerCase() === 'ok') ? 'Atualizado' : 'Pendente';
-
-            const vigenciaInput = document.getElementById('fVigencia').value;
-            let vigenciaFormatada = vigenciaInput;
-            if (vigenciaInput && vigenciaInput.includes('-')) {
-                const p = vigenciaInput.split('-');
-                vigenciaFormatada = `${p[2]}/${p[1]}/${p[0]}`;
-            }
-
-            const payload = {
-                rowIndex: targetRow,
-                col1: document.getElementById('fLinha').value,
-                col2: vigenciaFormatada,
-                col3: document.getElementById('fTipo').value,
-                col4: document.getElementById('fDia').value,
-                col5: document.getElementById('fMobilibus').value.trim(),
-                col6: document.getElementById('fTerminais').value.trim(),
-                col7: document.getElementById('fAvisos').value.trim(),
-                col8: document.getElementById('fAgencia').value.trim(),
-                col9: document.getElementById('fImagem').value.trim(),
-                col10: document.getElementById('fAnotacoes').value,
-                col11: stat,
-                col12: pendenciaCalculada
-            };
-
-            ultimaLinhaSalvaId = targetRow ? parseInt(targetRow) : 2;
-            if (targetRow) {
-                linhasSelecionadasIds.clear();
-                linhasSelecionadasIds.add(parseInt(targetRow));
-            }
-
-            document.getElementById('statusNuvem').innerText = "Salvando...";
-
-            try {
-                await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                });
-
-                fecharModal();
-                setTimeout(carregarDados, 1500);
-            } catch (err) {
-                console.error("Erro ao salvar:", err);
-                alert("Erro ao salvar dados na nuvem.");
-            }
-        }
-    </script>
-</body>
-</html>
