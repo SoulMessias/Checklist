@@ -1,35 +1,525 @@
-<script>
-        // Cole abaixo a URL do Web App gerada no seu Apps Script
-        const WEB_APP_BASE_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec';
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleção de Painel Operacional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --primary: #059669;
+            --primary-hover: #047857;
+            --primary-light: #ecfdf5;
+            --primary-border: #a7f3d0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --accent-red: #ef4444;
+            --accent-red-hover: #dc2626;
+        }
 
-        // Defina aqui os nomes EXATOS das duas abas da sua planilha
-        const ABAS_PLANILHA = {
-            "PLANILHA_1": "Página1",       // <-- Nome exato da sua Aba Principal
-            "PLANILHA_2": "NomeDaNovaAba"  // <-- Substitua "NomeDaNovaAba" pelo nome exato da segunda aba!
-        };
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 16px;
+            overflow-x: hidden;
+        }
+
+        /* Tela de Seleção Inicial */
+        #selectionOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(6px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        .selection-card {
+            background: var(--surface-color);
+            padding: 28px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+        }
+
+        .selection-card h2 {
+            font-size: 1.35rem;
+            color: var(--text-main);
+        }
+
+        .selection-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .selection-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .selection-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .selection-btn.secondary {
+            background: #0284c7;
+        }
+
+        .selection-btn.secondary:hover {
+            background: #0369a1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Área do Topo Congelada */
+        .sticky-top-area {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-top: 4px;
+            padding-bottom: 12px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface-color);
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .top-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            align-items: stretch;
+        }
+
+        .card-panel {
+            background: var(--surface-color);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-panel h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .lines-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+            gap: 6px;
+            flex: 1;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .filter-btn {
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 2px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .filter-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface-color);
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .search-box input {
+            border: none;
+            background: transparent;
+            font-size: 0.8rem;
+            outline: none;
+            width: 100%;
+            color: var(--text-main);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .btn:hover { background: var(--primary-hover); }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-danger {
+            background: var(--accent-red);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .btn-danger:hover { background: var(--accent-red-hover); }
+
+        .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
+
+        .table-card {
+            background: var(--surface-color);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 8px 6px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            z-index: 101;
+            font-weight: 600;
+            color: var(--text-muted);
+            box-shadow: inset 0 -1px 0 var(--border-color);
+        }
+
+        tbody tr {
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        tbody tr:hover { 
+            background: #f1f5f9; 
+        }
+        tbody tr.linha-selecionada {
+            background-color: #cbd5e1 !important;
+        }
+
+        .badge-status {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.7rem;
+            display: inline-block;
+        }
+
+        .badge-pendente { background: #fef2f2; color: #ef4444; }
+        .badge-atualizado { background: #ecfdf5; color: #059669; }
+
+        .modal-overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--surface-color);
+            border-radius: 16px;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-align: left;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            outline: none;
+            font-size: 0.8rem;
+        }
+
+        .modal-footer {
+            margin-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TELA DE SELEÇÃO DE ABA -->
+    <div id="selectionOverlay">
+        <div class="selection-card">
+            <h2>Selecione o Painel</h2>
+            <p>Escolha qual aba da planilha você deseja abrir:</p>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+                <button class="selection-btn" onclick="selecionarPainel('Página1')">Abrir Página 1 (Principal)</button>
+                <button class="selection-btn secondary" onclick="selecionarPainel('Socorro')">Abrir Aba Socorro</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- ÁREA CONGELADA NO TOPO -->
+        <div class="sticky-top-area" id="stickyTopArea">
+            <header>
+                <h1 id="tituloPainel">Painel Operacional</h1>
+                
+                <div class="header-actions">
+                    <button class="btn-outline btn btn-sm" onclick="voltarParaSelecao()" style="font-size: 0.75rem;">🔄 Trocar Aba</button>
+                    <div class="status-badge" id="statusNuvem">Conectando...</div>
+                </div>
+            </header>
+
+            <!-- Quadros Superiores (Visíveis apenas na Página 1) -->
+            <div class="top-grid" id="painelFiltrosExtras" style="display: none;">
+                <div class="card-panel">
+                    <h3>Linhas de Ônibus</h3>
+                    <div class="lines-grid" id="filterLinhas"></div>
+                </div>
+                <div class="card-panel">
+                    <h3>Tipo de Dia</h3>
+                    <div class="lines-grid" id="filterDia"></div>
+                </div>
+            </div>
+
+            <!-- Barra de Ações & Pesquisa -->
+            <div class="action-bar">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1;">
+                    <button class="btn-outline btn" onclick="limparFiltros()">Limpar Filtros</button>
+                    <button class="btn-outline btn" onclick="filtrarPendentesToggle()" id="btnFiltrarPendentes">Filtrar Pendentes</button>
+                    
+                    <div class="search-box">
+                        <span>🔍</span>
+                        <input type="text" id="inputPesquisa" placeholder="Pesquisar..." oninput="renderizarTabela()">
+                    </div>
+                    <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted);"></span>
+                </div>
+                <button class="btn" onclick="abrirModal()">+ Adicionar Registro</button>
+            </div>
+
+            <!-- CABEÇALHO DA TABELA -->
+            <div class="table-card" style="box-shadow: none; border-radius: 0; border-left: none; border-right: none;">
+                <table>
+                    <thead>
+                        <tr id="tableHeaderRow"></tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Corpo da Tabela -->
+        <div class="table-card" style="border-top: none; border-top-left-radius: 0; border-top-right-radius: 0;">
+            <table>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal de Preenchimento / Edição Dinâmico -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Adicionar Informação</h2>
+                <button class="btn-outline btn btn-sm" onclick="fecharModal()">✕</button>
+            </div>
+            <form id="dataForm" onsubmit="salvarRegistro(event)">
+                <input type="hidden" id="editRowIndex" value="">
+                <div class="form-grid" id="modalFormFields">
+                    <!-- Os campos serão gerados dinamicamente via JS dependendo da aba -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-danger" id="btnDeletarRegistro" style="display: none;" onclick="deletarRegistro()">Excluir Linha</button>
+                    <div style="display: flex; gap: 8px; margin-left: auto;">
+                        <button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
+                        <button type="submit" class="btn">Salvar na Nuvem</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const WEB_APP_BASE_URL = 'https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec';
 
         let abaAtual = "";
         let WEB_APP_URL = "";
         let dadosGlobais = [];
-        let filtrosAtivos = {
-            linha: new Set(),
-            dia: new Set(),
-            tipo: new Set()
-        };
+        let filtrosAtivos = { linha: new Set(), dia: new Set() };
         let apenasPendentesAtivo = false;
-        let ultimoItemClicado = { tipo: null, valor: null };
-
-        let ultimaLinhaSalvaId = null;
         let linhasSelecionadasIds = new Set();
+        let ultimaLinhaSalvaId = null;
 
-        function selecionarPainel(tipoPlanilha) {
-            abaAtual = ABAS_PLANILHA[tipoPlanilha];
+        function selecionarPainel(nomeAba) {
+            abaAtual = nomeAba;
             WEB_APP_URL = `${WEB_APP_BASE_URL}?aba=${encodeURIComponent(abaAtual)}`;
             
-            if(tipoPlanilha === "PLANILHA_1") {
-                document.getElementById('tituloPainel').innerText = "Painel Operacional - Principal";
+            if(nomeAba === "Página1") {
+                document.getElementById('tituloPainel').innerText = "Painel Operacional - Página 1";
+                document.getElementById('painelFiltrosExtras').style.display = 'grid';
             } else {
-                document.getElementById('tituloPainel').innerText = "Painel Operacional - Secundário";
+                document.getElementById('tituloPainel').innerText = "Painel Operacional - Socorro";
+                document.getElementById('painelFiltrosExtras').style.display = 'none';
             }
 
             document.getElementById('selectionOverlay').style.display = 'none';
@@ -42,37 +532,23 @@
             limparFiltros();
         }
 
-        function atualizarPosicaoCabecalhoTabela() {
-            const stickyArea = document.getElementById('stickyTopArea');
-            const thElement = document.querySelector('thead th');
-            if(stickyArea && thElement) {
-                const alturaTopo = stickyArea.offsetHeight;
-                thElement.style.top = (alturaTopo - document.querySelector('.sticky-top-area .table-card').offsetHeight) + 'px';
-            }
-        }
-
-        window.addEventListener('resize', atualizarPosicaoCabecalhoTabela);
-
         async function carregarDados() {
             const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar informações da planilha, por favor aguarde...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar informações da aba ${abaAtual}...</td></tr>`;
             document.getElementById('statusNuvem').innerText = "A sincronizar...";
 
             try {
                 const resp = await fetch(WEB_APP_URL);
                 const data = await resp.json();
                 
-                if (data.status === "erro") {
-                    throw new Error(data.message);
-                }
+                if (data.status === "erro") throw new Error(data.message);
 
                 dadosGlobais = data.slice(1).map((row, index) => ({ rowIndex: index + 2, data: row }));
                 
-                gerarFiltrosDinamicos();
+                construirCabecalhoTabela();
+                if(abaAtual === "Página1") gerarFiltrosDinamicos();
                 renderizarTabela();
                 document.getElementById('statusNuvem').innerText = "Conectado ao Google Sheets";
-
-                setTimeout(atualizarPosicaoCabecalhoTabela, 100);
 
                 if (ultimaLinhaSalvaId !== null) {
                     setTimeout(() => {
@@ -85,436 +561,147 @@
                     }, 300);
                 }
             } catch (err) {
-                console.error("Erro detalhado:", err);
+                console.error("Erro:", err);
                 document.getElementById('statusNuvem').innerText = "Erro de Sincronização";
-                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da nuvem. Verifique o nome das abas.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados. Verifique a aba "${abaAtual}".</td></tr>`;
             }
         }
 
-        function parseData(valorRaw) {
-            if (!valorRaw) return null;
-            const str = valorRaw.toString().trim();
-            if (str === '' || str === '-') return null;
-            
-            const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-            if (isoMatch) {
-                return new Date(isoMatch[1], isoMatch[2] - 1, isoMatch[3]);
-            }
-            if (str.includes('/')) {
-                const partes = str.split('/');
-                if (partes.length === 3) {
-                    return new Date(partes[2], partes[1] - 1, partes[0]);
-                }
-            }
-            const dtNum = Number(str);
-            if (!isNaN(dtNum) && dtNum > 30000) {
-                return new Date((dtNum - (25567 + 2)) * 86400 * 1000);
-            }
-            return null;
-        }
-
-        function formatToInputDate(valorRaw) {
-            const dt = parseData(valorRaw);
-            if (!dt || isNaN(dt.getTime())) return '';
-            const ano = dt.getFullYear();
-            const mes = String(dt.getMonth() + 1).padStart(2, '0');
-            const dia = String(dt.getDate()).padStart(2, '0');
-            return `${ano}-${mes}-${dia}`;
-        }
-
-        function formatVigencia(valorRaw) {
-            if (valorRaw === undefined || valorRaw === null) return '';
-            const str = valorRaw.toString().trim();
-            if (str === '' || str === '-') return str;
-
-            const dt = parseData(str);
-            if (dt && !isNaN(dt.getTime())) {
-                const dia = String(dt.getDate()).padStart(2, '0');
-                const mes = String(dt.getMonth() + 1).padStart(2, '0');
-                const ano = dt.getFullYear();
-                return `${dia}/${mes}/${ano}`;
-            }
-
-            return str;
-        }
-
-        function formatCell(val) {
-            if (val === undefined || val === null) return '';
-            const str = val.toString().trim();
-            
-            const dt = parseData(str);
-            if (dt && !isNaN(dt.getTime()) && (/^\d{4}-\d{2}-\d{2}/.test(str) || /^\d{5}$/.test(str) || /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str))) {
-                const dia = String(dt.getDate()).padStart(2, '0');
-                const mes = String(dt.getMonth() + 1).padStart(2, '0');
-                const ano = dt.getFullYear();
-                return `${dia}/${mes}/${ano}`;
-            }
-
-            return str;
-        }
-
-        function mostrarNotaCompleta(texto) {
-            document.getElementById('textoNotaCompleto').innerText = texto || 'Nenhuma anotação registrada.';
-            document.getElementById('modalNotaOverlay').style.display = 'flex';
-        }
-
-        function fecharModalNota() {
-            document.getElementById('modalNotaOverlay').style.display = 'none';
-        }
-
-        function gerarFiltrosDinamicos() {
-            const linhasSet = new Set();
-            const diasSet = new Set();
-            const tiposSet = new Set();
-
-            dadosGlobais.forEach(item => {
-                const r = item.data;
-                const linhaVal = formatCell(r[0]);
-                const diaVal = formatCell(r[3]);
-                const tipoVal = formatCell(r[2]);
-
-                if (linhaVal) linhasSet.add(linhaVal);
-                if (diaVal) diasSet.add(diaVal);
-                if (tipoVal) tiposSet.add(tipoVal);
-            });
-
-            preencherContainerFiltro('filterLinhas', 'linha', Array.from(linhasSet).sort((a, b) => a.localeCompare(b, undefined, {numeric: true})));
-            preencherContainerFiltro('filterDia', 'dia', Array.from(diasSet).sort((a, b) => a.localeCompare(b)));
-            preencherContainerFiltro('filterTipo', 'tipo', Array.from(tiposSet).sort((a, b) => a.localeCompare(b)));
-
-            setTimeout(atualizarPosicaoCabecalhoTabela, 50);
-        }
-
-        function preencherContainerFiltro(containerId, tipoFiltro, listaValores) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            listaValores.forEach(valor => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                if (filtrosAtivos[tipoFiltro].has(valor)) btn.classList.add('active');
-                btn.innerText = valor;
-                btn.dataset.valor = valor;
-                btn.dataset.tipo = tipoFiltro;
-                
-                btn.onclick = (e) => tratarCliqueFiltro(tipoFiltro, valor, btn, e);
-                container.appendChild(btn);
-            });
-        }
-
-        function tratarCliqueFiltro(tipo, valor, elemento, event) {
-            const setAtivo = filtrosAtivos[tipo];
-            const botoesNoContainer = Array.from(document.querySelectorAll(`#filter${tipo.charAt(0).toUpperCase() + tipo.slice(1)} .filter-btn`));
-
-            if (event.shiftKey && ultimoItemClicado.tipo === tipo && ultimoItemClicado.valor !== null) {
-                const idxAnterior = botoesNoContainer.findIndex(b => b.dataset.valor === ultimoItemClicado.valor);
-                const idxAtual = botoesNoContainer.findIndex(b => b.dataset.valor === valor);
-
-                if (idxAnterior !== -1 && idxAtual !== -1) {
-                    const inicio = Math.min(idxAnterior, idxAtual);
-                    const fim = Math.max(idxAnterior, idxAtual);
-
-                    for (let i = inicio; i <= fim; i++) {
-                        const valItem = botoesNoContainer[i].dataset.valor;
-                        setAtivo.add(valItem);
-                        botoesNoContainer[i].classList.add('active');
-                    }
-                }
-            } else if (event.ctrlKey || event.metaKey) {
-                if (setAtivo.has(valor)) {
-                    setAtivo.delete(valor);
-                    elemento.classList.remove('active');
-                } else {
-                    setAtivo.add(valor);
-                    elemento.classList.add('active');
-                }
+        function construirCabecalhoTabela() {
+            const trHead = document.getElementById('tableHeaderRow');
+            if (abaAtual === "Socorro") {
+                trHead.innerHTML = `
+                    <th style="width: 10%;">Nº INCIDENTE</th>
+                    <th style="width: 9%;">LINHA</th>
+                    <th style="width: 9%;">SERVIÇO</th>
+                    <th style="width: 9%;">HORÁRIO</th>
+                    <th style="width: 11%;">CARRO SAI</th>
+                    <th style="width: 13%;">MOTORISTA SAI</th>
+                    <th style="width: 11%;">CARRO ENTRA</th>
+                    <th style="width: 13%;">MOTORISTA ENTRA</th>
+                    <th style="width: 9%;">STATUS</th>
+                    <th style="width: 6%;">AÇÕES</th>
+                `;
             } else {
-                if (setAtivo.has(valor) && setAtivo.size === 1) {
-                    setAtivo.clear();
-                    elemento.classList.remove('active');
-                } else {
-                    setAtivo.clear();
-                    botoesNoContainer.forEach(b => b.classList.remove('active'));
-                    setAtivo.add(valor);
-                    elemento.classList.add('active');
-                }
+                // Mantém o cabeçalho original da Página1 se necessário, ou adapta conforme sua estrutura anterior
+                trHead.innerHTML = `
+                    <th>LINHA</th><th>VIGÊNCIA</th><th>TIPO</th><th>DIA</th><th>MOBILIBUS</th>
+                    <th>TERMINAIS</th><th>AVISOS</th><th>AGÊNCIA</th><th>STATUS</th><th>AÇÕES</th>
+                `;
             }
-
-            ultimoItemClicado = { tipo, valor };
-            renderizarTabela();
         }
 
         function renderizarTabela() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-
-            const inputInicio = document.getElementById('dataInicio').value;
-            const inputFim = document.getElementById('dataFim').value;
-            const termoPesquisa = document.getElementById('inputPesquisa').value.trim();
-
-            const dInicio = inputInicio ? new Date(inputInicio + "T00:00:00") : null;
-            const dFim = inputFim ? new Date(inputFim + "T23:59:59") : null;
-
-            const labelMetrica = document.getElementById('labelMetricaTotais');
-            if (inputInicio || inputFim || termoPesquisa) {
-                labelMetrica.innerText = "Alterações Filtradas";
-            } else {
-                labelMetrica.innerText = "Alterações Totais";
-            }
+            const termoPesquisa = document.getElementById('inputPesquisa').value.trim().toLowerCase();
 
             let dadosExibidos = dadosGlobais.filter(item => {
                 const row = item.data;
-                
-                if (dInicio || dFim) {
-                    const dtVigencia = parseData(row[1]);
-                    if (dtVigencia) {
-                        if (dInicio && dtVigencia < dInicio) return false;
-                        if (dFim && dtVigencia > dFim) return false;
-                    } else {
-                        return false;
-                    }
-                }
-
-                if (filtrosAtivos.linha.size > 0) {
-                    if (!filtrosAtivos.linha.has(formatCell(row[0]))) return false;
-                }
-
-                if (filtrosAtivos.dia.size > 0) {
-                    if (!filtrosAtivos.dia.has(formatCell(row[3]))) return false;
-                }
-
-                if (filtrosAtivos.tipo.size > 0) {
-                    if (!filtrosAtivos.tipo.has(formatCell(row[2]))) return false;
-                }
-
                 if (apenasPendentesAtivo) {
-                    const statusStr = formatCell(row[10]).toLowerCase();
-                    const pendenciaVal = (statusStr === 'ok') ? 'Atualizado' : 'Pendente';
-                    if (pendenciaVal !== 'Pendente') return false;
+                    // Coluna de status/pendência
+                    const statusStr = (row[8] || '').toString().toLowerCase();
+                    if (statusStr === 'ok') return false;
                 }
-
                 if (termoPesquisa) {
-                    const matchAspas = termoPesquisa.match(/"([^"]+)"/);
-                    if (matchAspas) {
-                        const termoExato = matchAspas[1].toLowerCase();
-                        const achouExato = row.some(celula => {
-                            if (celula === null || celula === undefined) return false;
-                            return celula.toString().toLowerCase().includes(termoExato);
-                        });
-                        if (!achouExato) return false;
-                    } else {
-                        const termoComum = termoPesquisa.toLowerCase();
-                        const matchGlobal = row.some(celula => {
-                            if (celula === null || celula === undefined) return false;
-                            return celula.toString().toLowerCase().includes(termoComum);
-                        });
-                        if (!matchGlobal) return false;
-                    }
+                    return row.some(celula => celula && celula.toString().toLowerCase().includes(termoPesquisa));
                 }
-
                 return true;
             });
-
-            dadosExibidos.sort((a, b) => {
-                const rA = a.data;
-                const rB = b.data;
-
-                const dtA = parseData(rA[1]);
-                const dtB = parseData(rB[1]);
-                if (dtA && dtB) {
-                    if (dtB - dtA !== 0) return dtB - dtA;
-                } else {
-                    const strA = (rA[1] || '').toString();
-                    const strB = (rB[1] || '').toString();
-                    const compVig = strB.localeCompare(strA);
-                    if (compVig !== 0) return compVig;
-                }
-
-                const linhaA = formatCell(rA[0]);
-                const linhaB = formatCell(rB[0]);
-                const compLinha = linhaA.localeCompare(linhaB, undefined, { numeric: true });
-                if (compLinha !== 0) return compLinha;
-
-                const diaA = formatCell(rA[3]);
-                const diaB = formatCell(rB[3]);
-                return diaA.localeCompare(diaB, undefined, { sensitivity: 'base' });
-            });
-
-            atualizarTextoFiltrosAtivos();
 
             dadosExibidos.forEach((item) => {
                 const row = item.data;
                 const tr = document.createElement('tr');
                 tr.id = `row-${item.rowIndex}`;
 
-                if (linhasSelecionadasIds.has(item.rowIndex)) {
-                    tr.classList.add('linha-selecionada');
-                }
-                
+                if (linhasSelecionadasIds.has(item.rowIndex)) tr.classList.add('linha-selecionada');
+
                 tr.onclick = (e) => {
-                    if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A') return;
-                    
-                    if (e.ctrlKey || e.metaKey) {
-                        if (linhasSelecionadasIds.has(item.rowIndex)) {
-                            linhasSelecionadasIds.delete(item.rowIndex);
-                            tr.classList.remove('linha-selecionada');
-                        } else {
-                            linhasSelecionadasIds.add(item.rowIndex);
-                            tr.classList.add('linha-selecionada');
-                        }
+                    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                    if (linhasSelecionadasIds.has(item.rowIndex)) {
+                        linhasSelecionadasIds.delete(item.rowIndex);
+                        tr.classList.remove('linha-selecionada');
                     } else {
-                        document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
-                        linhasSelecionadasIds.clear();
-                        
                         linhasSelecionadasIds.add(item.rowIndex);
                         tr.classList.add('linha-selecionada');
                     }
                 };
 
                 let tdContent = '';
-                
-                tdContent += `<td>${formatCell(row[0])}</td>`;
-                tdContent += `<td>${formatVigencia(row[1])}</td>`;
-                tdContent += `<td>${formatCell(row[2])}</td>`;
-                tdContent += `<td>${formatCell(row[3])}</td>`;
-                tdContent += `<td>${formatCell(row[4])}</td>`;
-                tdContent += `<td>${formatCell(row[5])}</td>`;
-                tdContent += `<td>${formatCell(row[6])}</td>`;
-                tdContent += `<td>${formatCell(row[7])}</td>`;
-
-                const imgVal = formatCell(row[8]);
-                if (imgVal && imgVal !== '-' && imgVal.startsWith('http')) {
-                    tdContent += `<td><a href="${imgVal}" target="_blank" class="img-link" title="Clique para abrir a imagem">🖼️ Imagem Disponível</a></td>`;
+                if (abaAtual === "Socorro") {
+                    tdContent += `<td>${row[0] || ''}</td>`;
+                    tdContent += `<td>${row[1] || ''}</td>`;
+                    tdContent += `<td>${row[2] || ''}</td>`;
+                    tdContent += `<td>${row[3] || ''}</td>`;
+                    tdContent += `<td>${row[4] || ''}</td>`;
+                    tdContent += `<td>${row[5] || ''}</td>`;
+                    tdContent += `<td>${row[6] || ''}</td>`;
+                    tdContent += `<td>${row[7] || ''}</td>`;
+                    
+                    const statusVal = row[8] || '';
+                    const badgeClass = (statusVal.toLowerCase() === 'ok') ? 'badge-atualizado' : 'badge-pendente';
+                    tdContent += `<td><span class="badge-status ${badgeClass}">${statusVal || 'Pendente'}</span></td>`;
                 } else {
-                    tdContent += `<td>${imgVal}</td>`;
+                    // Exibição padrão para Página1
+                    for(let i=0; i<8; i++) tdContent += `<td>${row[i] || ''}</td>`;
+                    tdContent += `<td>${row[8] || ''}</td>`;
                 }
 
-                const anotacaoVal = formatCell(row[9]);
-                if (anotacaoVal && anotacaoVal !== '-') {
-                    const textoEscapado = anotacaoVal.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
-                    tdContent += `<td>
-                        <div class="anotacao-badge" onclick="mostrarNotaCompleta('${textoEscapado}')" title="Clique para ler o comentário completo">
-                            📝 Comentário Disponível
-                        </div>
-                    </td>`;
-                } else {
-                    tdContent += `<td>${anotacaoVal}</td>`;
-                }
-
-                tdContent += `<td>${formatCell(row[10])}</td>`;
-
-                const statusStr = formatCell(row[10]).toLowerCase();
-                const pendenciaVal = (statusStr === 'ok') ? 'Atualizado' : 'Pendente';
-                const badgeClass = (pendenciaVal === 'Atualizado') ? 'badge-atualizado' : 'badge-pendente';
-                tdContent += `<td><span class="badge-status ${badgeClass}">${pendenciaVal}</span></td>`;
-
-                tdContent += `
-                    <td>
-                        <button class="btn btn-outline btn-sm" onclick="editarRegistro(${item.rowIndex})">Editar</button>
-                    </td>
-                `;
-
+                tdContent += `<td><button class="btn btn-outline btn-sm" onclick="editarRegistro(${item.rowIndex})">Editar</button></td>`;
                 tr.innerHTML = tdContent;
                 tbody.appendChild(tr);
             });
-
-            atualizarMetricas(dadosExibidos);
-        }
-
-        function filtrarPendentesToggle() {
-            apenasPendentesAtivo = !apenasPendentesAtivo;
-            const btn = document.getElementById('btnFiltrarPendentes');
-            
-            if (apenasPendentesAtivo) {
-                btn.classList.add('active');
-                btn.style.backgroundColor = 'var(--primary)';
-                btn.style.color = 'white';
-            } else {
-                btn.classList.remove('active');
-                btn.style.backgroundColor = 'transparent';
-                btn.style.color = 'var(--text-muted)';
-            }
-
-            renderizarTabela();
-        }
-
-        function atualizarTextoFiltrosAtivos() {
-            let partes = [];
-            const termoPesquisa = document.getElementById('inputPesquisa').value.trim();
-            if (termoPesquisa) partes.push(`Busca: "${termoPesquisa}"`);
-            if (apenasPendentesAtivo) partes.push('Apenas Pendentes');
-            if (filtrosAtivos.linha.size > 0) partes.push(`Linhas (${filtrosAtivos.linha.size})`);
-            if (filtrosAtivos.tipo.size > 0) partes.push(`Tipos (${filtrosAtivos.tipo.size})`);
-            if (filtrosAtivos.dia.size > 0) partes.push(`Dias (${filtrosAtivos.dia.size})`);
-            
-            document.getElementById('filtroAtivoLabel').innerText = partes.join(' | ');
-        }
-
-        function limparFiltroData() {
-            document.getElementById('dataInicio').value = '';
-            document.getElementById('dataFim').value = '';
-            renderizarTabela();
-        }
-
-        function limparFiltros() {
-            filtrosAtivos.linha.clear();
-            filtrosAtivos.dia.clear();
-            filtrosAtivos.tipo.clear();
-            apenasPendentesAtivo = false;
-            document.getElementById('inputPesquisa').value = '';
-            linhasSelecionadasIds.clear();
-            
-            const btnPendentes = document.getElementById('btnFiltrarPendentes');
-            btnPendentes.classList.remove('active');
-            btnPendentes.style.backgroundColor = 'transparent';
-            btnPendentes.style.color = 'var(--text-muted)';
-
-            limparFiltroData();
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('filtroAtivoLabel').innerText = '';
-            renderizarTabela();
-        }
-
-        function atualizarMetricas(dados) {
-            document.getElementById('mTotGeral').innerText = dados.length;
-            
-            let pendMobi = 0;
-            let pendTerm = 0;
-            let pendAvis = 0;
-            let pendAgen = 0;
-
-            dados.forEach(d => {
-                const r = d.data;
-                const statusVal = formatCell(r[10]).toLowerCase();
-
-                if (statusVal === 'ok') return;
-
-                if (!formatCell(r[4]) || formatCell(r[4]) === '-') pendMobi++;
-                if (!formatCell(r[5]) || formatCell(r[5]) === '-') pendTerm++;
-                if (!formatCell(r[6]) || formatCell(r[6]) === '-') pendAvis++;
-                if (!formatCell(r[7]) || formatCell(r[7]) === '-') pendAgen++;
-            });
-
-            const atualizarElementoMetrica = (id, valor) => {
-                const el = document.getElementById(id);
-                el.innerText = valor;
-                if (valor === 0) {
-                    el.className = 'val green';
-                } else {
-                    el.className = 'val red';
-                }
-            };
-
-            atualizarElementoMetrica('mPendMobi', pendMobi);
-            atualizarElementoMetrica('mPendTerm', pendTerm);
-            atualizarElementoMetrica('mPendAvis', pendAvis);
-            atualizarElementoMetrica('mPendAgen', pendAgen);
         }
 
         function abrirModal() {
-            document.getElementById('modalTitle').innerText = 'Adicionar Nova Linha';
+            document.getElementById('modalTitle').innerText = abaAtual === "Socorro" ? 'Novo Registro de Socorro' : 'Adicionar Informação';
             document.getElementById('editRowIndex').value = '';
-            document.getElementById('dataForm').reset();
+            
+            const containerFields = document.getElementById('modalFormFields');
+            if (abaAtual === "Socorro") {
+                containerFields.innerHTML = `
+                    <div class="form-group"><label>Nº do Incidente</label><input type="text" id="fCol1" required></div>
+                    <div class="form-group"><label>Linha</label><input type="text" id="fCol2" required></div>
+                    <div class="form-group"><label>Serviço</label><input type="text" id="fCol3"></div>
+                    <div class="form-group"><label>Horário</label><input type="text" id="fCol4" placeholder="Ex: 14:30"></div>
+                    <div class="form-group"><label>Carro que Sai</label><input type="text" id="fCol5"></div>
+                    <div class="form-group"><label>Motorista que Sai</label><input type="text" id="fCol6"></div>
+                    <div class="form-group"><label>Carro que Entra</label><input type="text" id="fCol7"></div>
+                    <div class="form-group"><label>Motorista que Entra</label><input type="text" id="fCol8"></div>
+                    <div class="form-group full-width"><label>Status (Ex: Ok ou Pendente)</label><input type="text" id="fCol9"></div>
+                `;
+            } else {
+                containerFields.innerHTML = `<div class="form-group full-width"><label>Preencha os dados da Página 1</label></div>`;
+            }
+
             document.getElementById('btnDeletarRegistro').style.display = 'none';
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function editarRegistro(rowIndex) {
+            const registro = dadosGlobais.find(d => d.rowIndex === rowIndex);
+            if (!registro) return;
+            const r = registro.data;
+
+            document.getElementById('modalTitle').innerText = `Editar Registro (Linha ${rowIndex})`;
+            document.getElementById('editRowIndex').value = rowIndex;
+
+            const containerFields = document.getElementById('modalFormFields');
+            if (abaAtual === "Socorro") {
+                containerFields.innerHTML = `
+                    <div class="form-group"><label>Nº do Incidente</label><input type="text" id="fCol1" value="${r[0] || ''}" required></div>
+                    <div class="form-group"><label>Linha</label><input type="text" id="fCol2" value="${r[1] || ''}" required></div>
+                    <div class="form-group"><label>Serviço</label><input type="text" id="fCol3" value="${r[2] || ''}"></div>
+                    <div class="form-group"><label>Horário</label><input type="text" id="fCol4" value="${r[3] || ''}"></div>
+                    <div class="form-group"><label>Carro que Sai</label><input type="text" id="fCol5" value="${r[4] || ''}"></div>
+                    <div class="form-group"><label>Motorista que Sai</label><input type="text" id="fCol6" value="${r[5] || ''}"></div>
+                    <div class="form-group"><label>Carro que Entra</label><input type="text" id="fCol7" value="${r[6] || ''}"></div>
+                    <div class="form-group"><label>Motorista que Entra</label><input type="text" id="fCol8" value="${r[7] || ''}"></div>
+                    <div class="form-group full-width"><label>Status</label><input type="text" id="fCol9" value="${r[8] || ''}"></div>
+                `;
+            }
+
+            document.getElementById('btnDeletarRegistro').style.display = 'inline-block';
             document.getElementById('modalOverlay').style.display = 'flex';
         }
 
@@ -522,100 +709,24 @@
             document.getElementById('modalOverlay').style.display = 'none';
         }
 
-        function editarRegistro(rowIndex) {
-            const registro = dadosGlobais.find(d => d.rowIndex === rowIndex);
-            if (!registro) return;
-
-            const r = registro.data;
-            document.getElementById('modalTitle').innerText = `Editar Registro (Linha ${rowIndex})`;
-            document.getElementById('editRowIndex').value = rowIndex;
-
-            document.getElementById('fLinha').value = r[0] || '';
-            document.getElementById('fVigencia').value = formatToInputDate(r[1]);
-            document.getElementById('fTipo').value = r[2] || '';
-            document.getElementById('fDia').value = r[3] || '';
-            document.getElementById('fMobilibus').value = r[4] || '';
-            document.getElementById('fTerminais').value = r[5] || '';
-            document.getElementById('fAvisos').value = r[6] || '';
-            document.getElementById('fAgencia').value = r[7] || '';
-            document.getElementById('fImagem').value = r[8] || '';
-            document.getElementById('fAnotacoes').value = r[9] || '';
-            document.getElementById('fStatus').value = r[10] || '';
-
-            document.getElementById('btnDeletarRegistro').style.display = 'inline-block';
-            document.getElementById('modalOverlay').style.display = 'flex';
-        }
-
-        async function deletarRegistro() {
-            const targetRow = document.getElementById('editRowIndex').value;
-            if (!targetRow) return;
-
-            if (!confirm(`Tem certeza de que deseja excluir o registro da Linha ${targetRow}?`)) {
-                return;
-            }
-
-            document.getElementById('statusNuvem').innerText = "Excluindo...";
-
-            const payload = {
-                aba: abaAtual,
-                rowIndex: targetRow,
-                col1: "", col2: "", col3: "", col4: "", col5: "",
-                col6: "", col7: "", col8: "", col9: "", col10: "",
-                col11: "", col12: ""
-            };
-
-            try {
-                await fetch(WEB_APP_BASE_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                });
-
-                fecharModal();
-                setTimeout(carregarDados, 1500);
-            } catch (err) {
-                console.error("Erro ao excluir:", err);
-                alert("Erro ao excluir o registro na nuvem.");
-            }
-        }
-
         async function salvarRegistro(event) {
             event.preventDefault();
-
             const targetRow = document.getElementById('editRowIndex').value;
-            const stat = document.getElementById('fStatus').value.trim();
 
-            const pendenciaCalculada = (stat.toLowerCase() === 'ok') ? 'Atualizado' : 'Pendente';
-
-            const vigenciaInput = document.getElementById('fVigencia').value;
-            let vigenciaFormatada = vigenciaInput;
-            if (vigenciaInput && vigenciaInput.includes('-')) {
-                const p = vigenciaInput.split('-');
-                vigenciaFormatada = `${p[2]}/${p[1]}/${p[0]}`;
-            }
-
-            const payload = {
+            let payload = {
                 aba: abaAtual,
                 rowIndex: targetRow,
-                col1: document.getElementById('fLinha').value,
-                col2: vigenciaFormatada,
-                col3: document.getElementById('fTipo').value,
-                col4: document.getElementById('fDia').value,
-                col5: document.getElementById('fMobilibus').value.trim(),
-                col6: document.getElementById('fTerminais').value.trim(),
-                col7: document.getElementById('fAvisos').value.trim(),
-                col8: document.getElementById('fAgencia').value.trim(),
-                col9: document.getElementById('fImagem').value.trim(),
-                col10: document.getElementById('fAnotacoes').value,
-                col11: stat,
-                col12: pendenciaCalculada
+                col1: document.getElementById('fCol1').value,
+                col2: document.getElementById('fCol2').value,
+                col3: document.getElementById('fCol3').value,
+                col4: document.getElementById('fCol4').value,
+                col5: document.getElementById('fCol5').value,
+                col6: document.getElementById('fCol6').value,
+                col7: document.getElementById('fCol7').value,
+                col8: document.getElementById('fCol8').value,
+                col9: document.getElementById('fCol9').value,
+                col10: (document.getElementById('fCol9').value.toLowerCase() === 'ok') ? 'Atualizado' : 'Pendente'
             };
-
-            ultimaLinhaSalvaId = targetRow ? parseInt(targetRow) : 2;
-            if (targetRow) {
-                linhasSelecionadasIds.clear();
-                linhasSelecionadasIds.add(parseInt(targetRow));
-            }
 
             document.getElementById('statusNuvem').innerText = "Salvando...";
 
@@ -633,4 +744,38 @@
                 alert("Erro ao salvar dados na nuvem.");
             }
         }
+
+        async function deletarRegistro() {
+            const targetRow = document.getElementById('editRowIndex').value;
+            if (!targetRow || !confirm("Deseja excluir este registro?")) return;
+
+            const payload = { aba: abaAtual, rowIndex: targetRow, col1: "", col2: "", col3: "", col4: "", col5: "", col6: "", col7: "", col8: "", col9: "", col10: "" };
+
+            try {
+                await fetch(WEB_APP_BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                fecharModal();
+                setTimeout(carregarDados, 1500);
+            } catch (err) {
+                alert("Erro ao excluir.");
+            }
+        }
+
+        function filtrarPendentesToggle() {
+            apenasPendentesAtivo = !apenasPendentesAtivo;
+            renderizarTabela();
+        }
+
+        function limparFiltros() {
+            document.getElementById('inputPesquisa').value = '';
+            apenasPendentesAtivo = false;
+            renderizarTabela();
+        }
+
+        function gerarFiltrosDinamicos() {}
     </script>
+</body>
+</html>
