@@ -43,6 +43,42 @@
             gap: 16px;
         }
 
+        /* Tela de Login Inicial (Bloqueada por padrão) */
+        #loginOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(6px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .login-card {
+            background: var(--surface-color);
+            padding: 24px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+        }
+
+        .login-card h2 {
+            font-size: 1.25rem;
+            color: var(--text-main);
+        }
+
+        .login-card p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
         /* Área do Topo Congelada */
         .sticky-top-area {
             position: sticky;
@@ -516,13 +552,33 @@
         .modal-footer {
             margin-top: 16px;
             display: flex;
-            justify-content: space-between; /* Ajustado para alinhar o botão de deletar à esquerda e salvar à direita */
+            justify-content: space-between;
             align-items: center;
             gap: 8px;
         }
     </style>
 </head>
-<body onload="carregarDados()">
+<body>
+
+    <!-- TELA DE LOGIN SEGURA -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2>Painel Operacional</h2>
+            <p>Insira suas credenciais cadastradas para acessar o sistema.</p>
+            <form id="loginForm" onsubmit="realizarLogin(event)" style="display: flex; flex-direction: column; gap: 10px; text-align: left;">
+                <div class="form-group">
+                    <label>Usuário</label>
+                    <input type="text" id="loginUsuario" required placeholder="Digite seu usuário">
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="loginSenha" required placeholder="Digite sua senha">
+                </div>
+                <button type="submit" class="btn" style="margin-top: 8px; width: 100%;">Entrar</button>
+                <div id="loginErro" style="color: var(--accent-red); font-size: 0.75rem; text-align: center; display: none;">Usuário ou senha incorretos!</div>
+            </form>
+        </div>
+    </div>
 
     <div class="container">
         <!-- ÁREA CONGELADA NO TOPO -->
@@ -686,7 +742,6 @@
                     <div class="form-group"><label>Status</label><input type="text" id="fStatus" placeholder="Ex: Ok"></div>
                 </div>
                 <div class="modal-footer">
-                    <!-- Botão de Deletar visível apenas no modo de Edição -->
                     <button type="button" class="btn-danger" id="btnDeletarRegistro" style="display: none;" onclick="deletarRegistro()">Excluir Linha</button>
                     <div style="display: flex; gap: 8px; margin-left: auto;">
                         <button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
@@ -726,6 +781,35 @@
 
         let ultimaLinhaSalvaId = null;
         let linhasSelecionadasIds = new Set();
+
+        async function realizarLogin(event) {
+            event.preventDefault();
+            const usuarioInput = document.getElementById('loginUsuario').value.trim();
+            const senhaInput = document.getElementById('loginSenha').value.trim();
+            const erroDiv = document.getElementById('loginErro');
+            
+            erroDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: "login", usuario: usuarioInput, senha: senhaInput })
+                });
+                const resultado = await response.json();
+
+                if (resultado.status === "sucesso") {
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    carregarDados(); // Carrega os dados somente após o login bem-sucedido
+                } else {
+                    erroDiv.style.display = 'block';
+                }
+            } catch (err) {
+                console.error("Erro no login:", err);
+                erroDiv.innerText = "Erro de conexão com a nuvem.";
+                erroDiv.style.display = 'block';
+            }
+        }
 
         function atualizarPosicaoCabecalhoTabela() {
             const stickyArea = document.getElementById('stickyTopArea');
@@ -1197,7 +1281,6 @@
             document.getElementById('modalTitle').innerText = 'Adicionar Nova Linha';
             document.getElementById('editRowIndex').value = '';
             document.getElementById('dataForm').reset();
-            // Esconde o botão de excluir ao adicionar novo registro
             document.getElementById('btnDeletarRegistro').style.display = 'none';
             document.getElementById('modalOverlay').style.display = 'flex';
         }
@@ -1226,7 +1309,6 @@
             document.getElementById('fAnotacoes').value = r[9] || '';
             document.getElementById('fStatus').value = r[10] || '';
 
-            // Mostra o botão de excluir no modo de edição
             document.getElementById('btnDeletarRegistro').style.display = 'inline-block';
             document.getElementById('modalOverlay').style.display = 'flex';
         }
@@ -1241,8 +1323,6 @@
 
             document.getElementById('statusNuvem').innerText = "Excluindo...";
 
-            // Payload sinalizando exclusão (definindo todas as colunas como vazias ou enviando ação de delete dependendo do seu Apps Script)
-            // Aqui estamos enviando os dados em branco para a linha correspondente limpar no Sheets
             const payload = {
                 rowIndex: targetRow,
                 col1: "", col2: "", col3: "", col4: "", col5: "",
