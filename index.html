@@ -572,7 +572,6 @@
     </div>
 
     <script>
-        // Insira aqui embaixo o link do seu Web App implantado no Apps Script (terminado em /exec)
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec";
 
         let dadosGlobais = [];
@@ -683,6 +682,17 @@
                     return row.some(celula => celula && celula.toString().toLowerCase().includes(termoPesquisa));
                 }
                 return true;
+            });
+
+            // ORDENAÇÃO: Do mais novo para o mais velho (baseado na coluna "Vigência" - índice 1)
+            dadosExibidos.sort((a, b) => {
+                const dtA = parseData(a.data[1]);
+                const dtB = parseData(b.data[1]);
+                
+                const timeA = dtA ? dtA.getTime() : 0;
+                const timeB = dtB ? dtB.getTime() : 0;
+
+                return timeB - timeA; // Ordem decrescente (mais recente primeiro)
             });
 
             dadosExibidos.forEach((item) => {
