@@ -209,7 +209,6 @@
             flex-direction: column;
             justify-content: center;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.02);
-            transition: all 0.2s ease;
         }
 
         .metric-box.full-width {
@@ -413,7 +412,7 @@
     <div class="container">
         <div class="sticky-top-area" id="stickyTopArea">
             <header>
-                <h1 id="tituloPainel">Painel Operacional</h1>
+                <h1>Painel Operacional</h1>
                 <div class="header-actions">
                     <div class="status-badge" id="statusNuvem">Conectando...</div>
                 </div>
@@ -441,3 +440,92 @@
                         <div class="metrics-container">
                             <div class="metric-box full-width">
                                 <h4 id="labelMetricaTotais">Alterações Totais</h4>
+                                <div class="val" id="mTotGeral">0</div>
+                            </div>
+                            <div class="metric-box"><h4>Mobilibus</h4><div class="val" id="mPendMobi">0</div></div>
+                            <div class="metric-box"><h4>Terminais</h4><div class="val" id="mPendTerm">0</div></div>
+                            <div class="metric-box"><h4>Avisos</h4><div class="val" id="mPendAvis">0</div></div>
+                            <div class="metric-box"><h4>Agência/Telão</h4><div class="val" id="mPendAgen">0</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-bar">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1;">
+                    <button class="btn-outline btn" onclick="limparFiltros()">Limpar Todos Filtros</button>
+                    <button class="btn-outline btn" onclick="filtrarPendentesToggle()" id="btnFiltrarPendentes">Filtrar Pendentes</button>
+                    
+                    <div class="search-box">
+                        <span>🔍</span>
+                        <input type="text" id="inputPesquisa" placeholder="Pesquisar em tudo..." oninput="renderizarTabela()">
+                    </div>
+
+                    <div class="date-filter-group">
+                        <label>Início:</label>
+                        <input type="date" id="dataInicio" onchange="renderizarTabela()">
+                        <label>Fim:</label>
+                        <input type="date" id="dataFim" onchange="renderizarTabela()">
+                        <button class="btn-outline btn btn-sm" onclick="limparFiltroData()">✕ Limpar Data</button>
+                    </div>
+
+                    <span id="filtroAtivoLabel" style="font-size:0.75rem; color:var(--text-muted);"></span>
+                </div>
+                <button class="btn" onclick="abrirModal()">+ Adicionar Nova Linha</button>
+            </div>
+
+            <div class="table-card" style="box-shadow: none; border-radius: 0; border-left: none; border-right: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>LINHA</th>
+                            <th>VIGÊNCIA</th>
+                            <th>TIPO</th>
+                            <th>DIA</th>
+                            <th>MOBILIBUS</th>
+                            <th>TERMINAIS</th>
+                            <th>AVISOS</th>
+                            <th>AGÊNCIA/TELÃO</th>
+                            <th>IMAGEM</th>
+                            <th>ANOTAÇÕES</th>
+                            <th>STATUS</th>
+                            <th>PENDÊNCIA</th>
+                            <th>AÇÕES</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <div class="table-card" style="border-top: none; border-top-left-radius: 0; border-top-right-radius: 0;">
+            <table>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Form -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Adicionar Informação</h2>
+                <button class="btn-outline btn btn-sm" onclick="fecharModal()">✕</button>
+            </div>
+            <form id="dataForm" onsubmit="salvarRegistro(event)">
+                <input type="hidden" id="editRowIndex" value="">
+                <div class="form-grid">
+                    <div class="form-group"><label>Linha</label><input type="text" id="fLinha" required></div>
+                    <div class="form-group"><label>Vigência</label><input type="date" id="fVigencia"></div>
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="fTipo">
+                            <option value="">Selecione...</option>
+                            <option value="Ajuste Emergencial">Ajuste Emergencial</option>
+                            <option value="Correção">Correção</option>
+                            <option value="Exposição">Exposição</option>
+                            <option value="Finados">Finados</option>
+                            <option value="Proposta">Proposta</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Dia</
