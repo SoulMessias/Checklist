@@ -36,7 +36,7 @@
             overflow-x: hidden;
         }
 
-        /* --- LOBBY ESTILIZAÇÃO --- */
+        /* LOBBY */
         .lobby-container {
             display: flex;
             flex-direction: column;
@@ -107,7 +107,7 @@
             line-height: 1.4;
         }
 
-        /* --- CONTAINER PRINCIPAL --- */
+        /* CONTAINERS PRINCIPAIS */
         .container {
             width: 100%;
             max-width: 100%;
@@ -400,20 +400,31 @@
             white-space: nowrap;
         }
 
-        /* Colunas Tabela Principal */
-        th:nth-child(1), td:nth-child(1) { width: 7%; }   
-        th:nth-child(2), td:nth-child(2) { width: 9%; }   
-        th:nth-child(3), td:nth-child(3) { width: 11%; }  
-        th:nth-child(4), td:nth-child(4) { width: 8%; }   
-        th:nth-child(5), td:nth-child(5) { width: 8%; }   
-        th:nth-child(6), td:nth-child(6) { width: 8%; }   
-        th:nth-child(7), td:nth-child(7) { width: 8%; }   
-        th:nth-child(8), td:nth-child(8) { width: 9%; }   
-        th:nth-child(9), td:nth-child(9) { width: 8%; }   
-        th:nth-child(10), td:nth-child(10) { width: 10%; }
-        th:nth-child(11), td:nth-child(11) { width: 8%; } 
-        th:nth-child(12), td:nth-child(12) { width: 9%; } 
-        th:nth-child(13), td:nth-child(13) { width: 7%; } 
+        /* Colunas Tabela Principal (Página1) */
+        #painelPrincipal th:nth-child(1), #painelPrincipal td:nth-child(1) { width: 7%; }   
+        #painelPrincipal th:nth-child(2), #painelPrincipal td:nth-child(2) { width: 9%; }   
+        #painelPrincipal th:nth-child(3), #painelPrincipal td:nth-child(3) { width: 11%; }  
+        #painelPrincipal th:nth-child(4), #painelPrincipal td:nth-child(4) { width: 8%; }   
+        #painelPrincipal th:nth-child(5), #painelPrincipal td:nth-child(5) { width: 8%; }   
+        #painelPrincipal th:nth-child(6), #painelPrincipal td:nth-child(6) { width: 8%; }   
+        #painelPrincipal th:nth-child(7), #painelPrincipal td:nth-child(7) { width: 8%; }   
+        #painelPrincipal th:nth-child(8), #painelPrincipal td:nth-child(8) { width: 9%; }   
+        #painelPrincipal th:nth-child(9), #painelPrincipal td:nth-child(9) { width: 8%; }   
+        #painelPrincipal th:nth-child(10), #painelPrincipal td:nth-child(10) { width: 10%; }
+        #painelPrincipal th:nth-child(11), #painelPrincipal td:nth-child(11) { width: 8%; } 
+        #painelPrincipal th:nth-child(12), #painelPrincipal td:nth-child(12) { width: 9%; } 
+        #painelPrincipal th:nth-child(13), #painelPrincipal td:nth-child(13) { width: 7%; } 
+
+        /* Colunas Tabela Socorro (8 colunas + 1 Ações) */
+        #painelSocorro th:nth-child(1), #painelSocorro td:nth-child(1) { width: 11%; } /* Nº do Incidente */
+        #painelSocorro th:nth-child(2), #painelSocorro td:nth-child(2) { width: 10%; } /* Linha */
+        #painelSocorro th:nth-child(3), #painelSocorro td:nth-child(3) { width: 13%; } /* Serviço */
+        #painelSocorro th:nth-child(4), #painelSocorro td:nth-child(4) { width: 11%; } /* Horário */
+        #painelSocorro th:nth-child(5), #painelSocorro td:nth-child(5) { width: 11%; } /* Carro que sai */
+        #painelSocorro th:nth-child(6), #painelSocorro td:nth-child(6) { width: 11%; } /* Carro que entra */
+        #painelSocorro th:nth-child(7), #painelSocorro td:nth-child(7) { width: 11%; } /* Motorista que entra */
+        #painelSocorro th:nth-child(8), #painelSocorro td:nth-child(8) { width: 11%; } /* Motorista que sai */
+        #painelSocorro th:nth-child(9), #painelSocorro td:nth-child(9) { width: 11%; } /* Ações */
 
         thead th {
             position: sticky;
@@ -481,27 +492,27 @@
 </head>
 <body>
 
-    <!-- LOBBY / SELEÇÃO INICIAL -->
+    <!-- LOBBY DE SELEÇÃO DE MÓDULO -->
     <div class="lobby-container" id="lobbyContainer">
         <h1 class="lobby-title">Central Operacional</h1>
-        <p class="lobby-subtitle">Selecione o módulo ou aba do Google Sheets que deseja gerenciar:</p>
+        <p class="lobby-subtitle">Selecione o módulo que deseja gerenciar:</p>
         
         <div class="lobby-cards-grid">
             <div class="lobby-card" onclick="abrirModulo('principal')">
                 <div class="icon">🚌</div>
                 <h2>Painel Operacional</h2>
-                <p>Controle de linhas de ônibus, vigências, tipos de alterações e pendências.</p>
+                <p>Controle de linhas, vigências, tipos de alterações e pendências.</p>
             </div>
 
             <div class="lobby-card socorro" onclick="abrirModulo('socorro')">
                 <div class="icon">🆘</div>
                 <h2>Módulo Socorro</h2>
-                <p>Aba "Socorro" do Google Sheets para chamados e ocorrências emergenciais.</p>
+                <p>Gestão da aba Socorro (Nº Incidente, Linha, Serviço, Horário, Carros e Motoristas).</p>
             </div>
         </div>
     </div>
 
-    <!-- ESTRUTURA DO PAINEL PRINCIPAL -->
+    <!-- ESTRUTURA DA ABA 1 (Página1) - INTOCADA -->
     <div class="container" id="painelPrincipal" style="display: none;">
         <div class="sticky-top-area" id="stickyTopArea">
             <header>
@@ -600,7 +611,7 @@
         </div>
     </div>
 
-    <!-- ESTRUTURA DO MÓDULO SOCORRO -->
+    <!-- ESTRUTURA DO MÓDULO SOCORRO (Aba Socorro) -->
     <div class="container" id="painelSocorro" style="display: none;">
         <header>
             <div style="display:flex; align-items:center; gap:12px;">
@@ -609,20 +620,30 @@
             </div>
             <div class="header-actions">
                 <div class="status-badge" id="statusNuvemSocorro">Conectando...</div>
-                <button class="btn" style="background: var(--accent-orange);" onclick="abrirModalSocorro()">+ Novo Chamado</button>
+                <button class="btn" style="background: var(--accent-orange);" onclick="abrirModalSocorro()">+ Novo Incidente</button>
             </div>
         </header>
 
-        <div class="table-card" style="margin-top: 16px;">
+        <div class="action-bar" style="margin-top: 12px;">
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" id="inputPesquisaSocorro" placeholder="Pesquisar em incidentes..." oninput="renderizarTabelaSocorro()">
+            </div>
+        </div>
+
+        <div class="table-card" style="margin-top: 12px;">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 10%;">ID/LINHA</th>
-                        <th style="width: 15%;">DATA/HORA</th>
-                        <th style="width: 25%;">OCORRÊNCIA</th>
-                        <th style="width: 20%;">ANOTAÇÕES</th>
-                        <th style="width: 15%;">STATUS</th>
-                        <th style="width: 15%;">AÇÕES</th>
+                        <th>Nº DO INCIDENTE</th>
+                        <th>LINHA</th>
+                        <th>SERVIÇO</th>
+                        <th>HORÁRIO</th>
+                        <th>CARRO QUE SAI</th>
+                        <th>CARRO QUE ENTRA</th>
+                        <th>MOTORISTA QUE ENTRA</th>
+                        <th>MOTORISTA QUE SAI</th>
+                        <th>AÇÕES</th>
                     </tr>
                 </thead>
                 <tbody id="tableBodySocorro"></tbody>
@@ -683,6 +704,36 @@
         </div>
     </div>
 
+    <!-- Modal Form Socorro (Baseado no novo cabeçalho) -->
+    <div class="modal-overlay" id="modalSocorroOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalSocorroTitle">Novo Registro de Socorro</h2>
+                <button class="btn-outline btn btn-sm" onclick="fecharModalSocorro()">✕</button>
+            </div>
+            <form id="dataFormSocorro" onsubmit="salvarRegistroSocorro(event)">
+                <input type="hidden" id="editRowIndexSocorro" value="">
+                <div class="form-grid">
+                    <div class="form-group"><label>Nº do Incidente</label><input type="text" id="sIncidente" required></div>
+                    <div class="form-group"><label>Linha</label><input type="text" id="sLinha" required></div>
+                    <div class="form-group"><label>Serviço</label><input type="text" id="sServico"></div>
+                    <div class="form-group"><label>Horário</label><input type="text" id="sHorario" placeholder="Ex: 14:30"></div>
+                    <div class="form-group"><label>Carro que sai</label><input type="text" id="sCarroSai"></div>
+                    <div class="form-group"><label>Carro que entra</label><input type="text" id="sCarroEntra"></div>
+                    <div class="form-group"><label>Motorista que entra</label><input type="text" id="sMotEntra"></div>
+                    <div class="form-group"><label>Motorista que sai</label><input type="text" id="sMotSai"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-danger" id="btnDeletarSocorro" style="display: none;" onclick="deletarRegistroSocorro()">Excluir Registro</button>
+                    <div style="display: flex; gap: 8px; margin-left: auto;">
+                        <button type="button" class="btn btn-outline" onclick="fecharModalSocorro()">Cancelar</button>
+                        <button type="submit" class="btn" style="background: var(--accent-orange);">Salvar na Aba Socorro</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal Nota -->
     <div class="modal-overlay" id="modalNotaOverlay">
         <div class="modal" style="max-width: 450px;">
@@ -707,7 +758,7 @@
         let apenasPendentesAtivo = false;
         let linhasSelecionadasIds = new Set();
 
-        // --- LÓGICA DO LOBBY ---
+        /* CONTROLE DO LOBBY */
         function abrirModulo(modulo) {
             moduloAtual = modulo;
             document.getElementById('lobbyContainer').style.display = 'none';
@@ -730,7 +781,7 @@
             moduloAtual = null;
         }
 
-        // --- MÓDULO PRINCIPAL ---
+        /* PAINEL PRINCIPAL (Página1) */
         async function carregarDados() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 20px;">Carregando informações da planilha...</td></tr>`;
@@ -752,10 +803,10 @@
             }
         }
 
-        // --- MÓDULO SOCORRO (ABA "Socorro") ---
+        /* MÓDULO SOCORRO (Aba Socorro) */
         async function carregarDadosSocorro() {
             const tbody = document.getElementById('tableBodySocorro');
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Carregando registros da aba Socorro...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 20px;">Carregando registros da aba Socorro...</td></tr>`;
             document.getElementById('statusNuvemSocorro').innerText = "Sincronizando...";
 
             try {
@@ -768,42 +819,118 @@
             } catch (err) {
                 console.error("Erro Socorro:", err);
                 document.getElementById('statusNuvemSocorro').innerText = "Erro de Sincronização";
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da aba Socorro. Verifique se a aba "Socorro" existe no Google Sheets.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da aba Socorro. Verifique se a aba "Socorro" existe no Google Sheets.</td></tr>`;
             }
         }
 
         function renderizarTabelaSocorro() {
             const tbody = document.getElementById('tableBodySocorro');
             tbody.innerHTML = '';
+            const termo = document.getElementById('inputPesquisaSocorro').value.trim().toLowerCase();
 
-            if (dadosSocorro.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum chamado registrado.</td></tr>`;
+            let exibidos = dadosSocorro.filter(item => {
+                if (!termo) return true;
+                return item.data.some(c => c && c.toString().toLowerCase().includes(termo));
+            });
+
+            if (exibidos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum registro encontrado na aba Socorro.</td></tr>`;
                 return;
             }
 
-            dadosSocorro.forEach(item => {
+            exibidos.forEach(item => {
                 const row = item.data;
                 const tr = document.createElement('tr');
                 let tdContent = '';
                 
-                for (let i = 0; i < 5; i++) {
+                for (let i = 0; i < 8; i++) {
                     tdContent += `<td>${formatCell(row[i])}</td>`;
                 }
+
                 tdContent += `<td><button class="btn btn-outline btn-sm" onclick="editarRegistroSocorro(${item.rowIndex})">Editar</button></td>`;
+                
                 tr.innerHTML = tdContent;
                 tbody.appendChild(tr);
             });
         }
 
         function abrirModalSocorro() {
-            alert("Abertura do formulário do Módulo Socorro (pode ser customizado com seus campos específicos da aba Socorro).");
+            document.getElementById('modalSocorroTitle').innerText = 'Novo Registro de Socorro';
+            document.getElementById('editRowIndexSocorro').value = '';
+            document.getElementById('dataFormSocorro').reset();
+            document.getElementById('btnDeletarSocorro').style.display = 'none';
+            document.getElementById('modalSocorroOverlay').style.display = 'flex';
+        }
+
+        function fecharModalSocorro() {
+            document.getElementById('modalSocorroOverlay').style.display = 'none';
         }
 
         function editarRegistroSocorro(rowIndex) {
-            alert(`Editar chamado Socorro da linha ${rowIndex}`);
+            const reg = dadosSocorro.find(d => d.rowIndex === rowIndex);
+            if (!reg) return;
+            const r = reg.data;
+
+            document.getElementById('modalSocorroTitle').innerText = `Editar Incidente (Linha ${rowIndex})`;
+            document.getElementById('editRowIndexSocorro').value = rowIndex;
+            document.getElementById('sIncidente').value = r[0] || '';
+            document.getElementById('sLinha').value = r[1] || '';
+            document.getElementById('sServico').value = r[2] || '';
+            document.getElementById('sHorario').value = r[3] || '';
+            document.getElementById('sCarroSai').value = r[4] || '';
+            document.getElementById('sCarroEntra').value = r[5] || '';
+            document.getElementById('sMotEntra').value = r[6] || '';
+            document.getElementById('sMotSai').value = r[7] || '';
+
+            document.getElementById('btnDeletarSocorro').style.display = 'inline-block';
+            document.getElementById('modalSocorroOverlay').style.display = 'flex';
         }
 
-        // --- FUNÇÕES AUXILIARES E FORMATADORES ---
+        async function salvarRegistroSocorro(event) {
+            event.preventDefault();
+            const targetRow = document.getElementById('editRowIndexSocorro').value;
+
+            const rowData = [
+                document.getElementById('sIncidente').value,
+                document.getElementById('sLinha').value,
+                document.getElementById('sServico').value,
+                document.getElementById('sHorario').value,
+                document.getElementById('sCarroSai').value,
+                document.getElementById('sCarroEntra').value,
+                document.getElementById('sMotEntra').value,
+                document.getElementById('sMotSai').value
+            ];
+
+            const payload = {
+                sheetName: "Socorro",
+                rowIndex: targetRow,
+                rowData: rowData
+            };
+
+            document.getElementById('statusNuvemSocorro').innerText = "Salvando...";
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                fecharModalSocorro();
+                setTimeout(carregarDadosSocorro, 1500);
+            } catch (err) { alert("Erro ao salvar dados na aba Socorro."); }
+        }
+
+        async function deletarRegistroSocorro() {
+            const targetRow = document.getElementById('editRowIndexSocorro').value;
+            if (!targetRow || !confirm("Deseja excluir este registro de socorro?")) return;
+            const payload = { sheetName: "Socorro", rowIndex: targetRow, rowData: ["","","","","","","",""] };
+            try {
+                await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+                fecharModalSocorro();
+                setTimeout(carregarDadosSocorro, 1500);
+            } catch (err) { alert("Erro ao excluir."); }
+        }
+
+        /* FUNÇÕES AUXILIARES DA ABA PRINCIPAL */
         function parseData(valorRaw) {
             if (!valorRaw) return null;
             const str = valorRaw.toString().trim();
@@ -1026,7 +1153,7 @@
             }
 
             const payload = {
-                sheetName: "Página1", // Ou o nome exato da sua aba principal
+                sheetName: "Página1",
                 rowIndex: targetRow,
                 col1: document.getElementById('fLinha').value,
                 col2: vigFormatada,
