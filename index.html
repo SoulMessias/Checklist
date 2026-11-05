@@ -415,7 +415,7 @@
         #painelPrincipal th:nth-child(12), #painelPrincipal td:nth-child(12) { width: 9%; } 
         #painelPrincipal th:nth-child(13), #painelPrincipal td:nth-child(13) { width: 7%; } 
 
-        /* Colunas Tabela Socorro (8 colunas + 1 Ações) */
+        /* Colunas Tabela Socorro */
         #painelSocorro th:nth-child(1), #painelSocorro td:nth-child(1) { width: 11%; } /* Nº do Incidente */
         #painelSocorro th:nth-child(2), #painelSocorro td:nth-child(2) { width: 10%; } /* Linha */
         #painelSocorro th:nth-child(3), #painelSocorro td:nth-child(3) { width: 13%; } /* Serviço */
@@ -704,7 +704,7 @@
         </div>
     </div>
 
-    <!-- Modal Form Socorro (Baseado no novo cabeçalho) -->
+    <!-- Modal Form Socorro (Horário formatado como hora hh:mm) -->
     <div class="modal-overlay" id="modalSocorroOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -717,7 +717,7 @@
                     <div class="form-group"><label>Nº do Incidente</label><input type="text" id="sIncidente" required></div>
                     <div class="form-group"><label>Linha</label><input type="text" id="sLinha" required></div>
                     <div class="form-group"><label>Serviço</label><input type="text" id="sServico"></div>
-                    <div class="form-group"><label>Horário</label><input type="text" id="sHorario" placeholder="Ex: 14:30"></div>
+                    <div class="form-group"><label>Horário (HH:mm)</label><input type="time" id="sHorario"></div>
                     <div class="form-group"><label>Carro que sai</label><input type="text" id="sCarroSai"></div>
                     <div class="form-group"><label>Carro que entra</label><input type="text" id="sCarroEntra"></div>
                     <div class="form-group"><label>Motorista que entra</label><input type="text" id="sMotEntra"></div>
@@ -823,6 +823,22 @@
             }
         }
 
+        // Função auxiliar específica para formatar o Horário (HH:mm) vindo da planilha
+        function formatarHora(val) {
+            if (!val) return '';
+            const str = val.toString().trim();
+            // Se o Google Sheets retornar uma data ISO completa gerada anteriormente
+            if (str.includes('T')) {
+                const partes = str.split('T')[1];
+                if (partes) return partes.substring(0, 5);
+            }
+            // Se já vier como string HH:mm ou similar
+            if (str.length >= 5 && str.includes(':')) {
+                return str.substring(0, 5);
+            }
+            return str;
+        }
+
         function renderizarTabelaSocorro() {
             const tbody = document.getElementById('tableBodySocorro');
             tbody.innerHTML = '';
@@ -843,7 +859,14 @@
                 const tr = document.createElement('tr');
                 let tdContent = '';
                 
-                for (let i = 0; i < 8; i++) {
+                // Colunas 0 a 3 (Nº Incidente, Linha, Serviço, Horário)
+                tdContent += `<td>${formatCell(row[0])}</td>`;
+                tdContent += `<td>${formatCell(row[1])}</td>`;
+                tdContent += `<td>${formatCell(row[2])}</td>`;
+                tdContent += `<td>${formatarHora(row[3])}</td>`; // Horário formatado HH:mm
+
+                // Colunas 4 a 7 (Carros e Motoristas)
+                for (let i = 4; i < 8; i++) {
                     tdContent += `<td>${formatCell(row[i])}</td>`;
                 }
 
@@ -876,7 +899,7 @@
             document.getElementById('sIncidente').value = r[0] || '';
             document.getElementById('sLinha').value = r[1] || '';
             document.getElementById('sServico').value = r[2] || '';
-            document.getElementById('sHorario').value = r[3] || '';
+            document.getElementById('sHorario').value = formatarHora(r[3]) || '';
             document.getElementById('sCarroSai').value = r[4] || '';
             document.getElementById('sCarroEntra').value = r[5] || '';
             document.getElementById('sMotEntra').value = r[6] || '';
