@@ -415,16 +415,17 @@
         #painelPrincipal th:nth-child(12), #painelPrincipal td:nth-child(12) { width: 9%; } 
         #painelPrincipal th:nth-child(13), #painelPrincipal td:nth-child(13) { width: 7%; } 
 
-        /* Colunas Tabela Socorro */
-        #painelSocorro th:nth-child(1), #painelSocorro td:nth-child(1) { width: 11%; } /* Nº do Incidente */
-        #painelSocorro th:nth-child(2), #painelSocorro td:nth-child(2) { width: 10%; } /* Linha */
-        #painelSocorro th:nth-child(3), #painelSocorro td:nth-child(3) { width: 13%; } /* Serviço */
-        #painelSocorro th:nth-child(4), #painelSocorro td:nth-child(4) { width: 11%; } /* Horário */
-        #painelSocorro th:nth-child(5), #painelSocorro td:nth-child(5) { width: 11%; } /* Carro que sai */
-        #painelSocorro th:nth-child(6), #painelSocorro td:nth-child(6) { width: 11%; } /* Carro que entra */
-        #painelSocorro th:nth-child(7), #painelSocorro td:nth-child(7) { width: 11%; } /* Motorista que entra */
-        #painelSocorro th:nth-child(8), #painelSocorro td:nth-child(8) { width: 11%; } /* Motorista que sai */
-        #painelSocorro th:nth-child(9), #painelSocorro td:nth-child(9) { width: 11%; } /* Ações */
+        /* Colunas Tabela Socorro (9 colunas + 1 Ações) */
+        #painelSocorro th:nth-child(1), #painelSocorro td:nth-child(1) { width: 10%; } /* Data */
+        #painelSocorro th:nth-child(2), #painelSocorro td:nth-child(2) { width: 10%; } /* Nº do Incidente */
+        #painelSocorro th:nth-child(3), #painelSocorro td:nth-child(3) { width: 9%; }  /* Linha */
+        #painelSocorro th:nth-child(4), #painelSocorro td:nth-child(4) { width: 11%; } /* Serviço */
+        #painelSocorro th:nth-child(5), #painelSocorro td:nth-child(5) { width: 10%; } /* Horário */
+        #painelSocorro th:nth-child(6), #painelSocorro td:nth-child(6) { width: 10%; } /* Carro que sai */
+        #painelSocorro th:nth-child(7), #painelSocorro td:nth-child(7) { width: 10%; } /* Carro que entra */
+        #painelSocorro th:nth-child(8), #painelSocorro td:nth-child(8) { width: 10%; } /* Motorista que entra */
+        #painelSocorro th:nth-child(9), #painelSocorro td:nth-child(9) { width: 10%; } /* Motorista que sai */
+        #painelSocorro th:nth-child(10), #painelSocorro td:nth-child(10) { width: 10%; } /* Ações */
 
         thead th {
             position: sticky;
@@ -507,7 +508,7 @@
             <div class="lobby-card socorro" onclick="abrirModulo('socorro')">
                 <div class="icon">🆘</div>
                 <h2>Módulo Socorro</h2>
-                <p>Gestão da aba Socorro (Nº Incidente, Linha, Serviço, Horário, Carros e Motoristas).</p>
+                <p>Gestão da aba Socorro (Data, Incidente, Linha, Serviço, Horário, Carros e Motoristas).</p>
             </div>
         </div>
     </div>
@@ -613,39 +614,67 @@
 
     <!-- ESTRUTURA DO MÓDULO SOCORRO (Aba Socorro) -->
     <div class="container" id="painelSocorro" style="display: none;">
-        <header>
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button class="btn btn-outline btn-sm" onclick="voltarAoLobby()">⬅ Voltar ao Lobby</button>
-                <h1 style="color: var(--accent-orange);">🆘 Módulo Socorro</h1>
+        <div class="sticky-top-area">
+            <header>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button class="btn btn-outline btn-sm" onclick="voltarAoLobby()">⬅ Voltar ao Lobby</button>
+                    <h1 style="color: var(--accent-orange);">🆘 Módulo Socorro</h1>
+                </div>
+                <div class="header-actions">
+                    <div class="status-badge" id="statusNuvemSocorro">Conectando...</div>
+                </div>
+            </header>
+
+            <!-- Painel de Filtro de Linhas para o Socorro -->
+            <div class="top-grid" style="grid-template-columns: 1fr;">
+                <div class="card-panel">
+                    <h3>Filtrar por Linha (Socorro)</h3>
+                    <div class="lines-grid" id="filterLinhasSocorro"></div>
+                </div>
             </div>
-            <div class="header-actions">
-                <div class="status-badge" id="statusNuvemSocorro">Conectando...</div>
+
+            <div class="action-bar">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1;">
+                    <button class="btn-outline btn" onclick="limparFiltrosSocorro()">Limpar Filtros</button>
+                    
+                    <div class="search-box">
+                        <span>🔍</span>
+                        <input type="text" id="inputPesquisaSocorro" placeholder="Pesquisar em incidentes..." oninput="renderizarTabelaSocorro()">
+                    </div>
+
+                    <div class="date-filter-group">
+                        <label>Início:</label>
+                        <input type="date" id="dataInicioSocorro" onchange="renderizarTabelaSocorro()">
+                        <label>Fim:</label>
+                        <input type="date" id="dataFimSocorro" onchange="renderizarTabelaSocorro()">
+                        <button class="btn-outline btn btn-sm" onclick="limparFiltroDataSocorro()">✕ Limpar Data</button>
+                    </div>
+                </div>
                 <button class="btn" style="background: var(--accent-orange);" onclick="abrirModalSocorro()">+ Novo Incidente</button>
             </div>
-        </header>
 
-        <div class="action-bar" style="margin-top: 12px;">
-            <div class="search-box">
-                <span>🔍</span>
-                <input type="text" id="inputPesquisaSocorro" placeholder="Pesquisar em incidentes..." oninput="renderizarTabelaSocorro()">
+            <div class="table-card" style="box-shadow: none; border-radius: 0; border-left: none; border-right: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>DATA</th>
+                            <th>Nº DO INCIDENTE</th>
+                            <th>LINHA</th>
+                            <th>SERVIÇO</th>
+                            <th>HORÁRIO</th>
+                            <th>CARRO QUE SAI</th>
+                            <th>CARRO QUE ENTRA</th>
+                            <th>MOTORISTA QUE ENTRA</th>
+                            <th>MOTORISTA QUE SAI</th>
+                            <th>AÇÕES</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
 
-        <div class="table-card" style="margin-top: 12px;">
+        <div class="table-card" style="border-top: none; border-top-left-radius: 0; border-top-right-radius: 0;">
             <table>
-                <thead>
-                    <tr>
-                        <th>Nº DO INCIDENTE</th>
-                        <th>LINHA</th>
-                        <th>SERVIÇO</th>
-                        <th>HORÁRIO</th>
-                        <th>CARRO QUE SAI</th>
-                        <th>CARRO QUE ENTRA</th>
-                        <th>MOTORISTA QUE ENTRA</th>
-                        <th>MOTORISTA QUE SAI</th>
-                        <th>AÇÕES</th>
-                    </tr>
-                </thead>
                 <tbody id="tableBodySocorro"></tbody>
             </table>
         </div>
@@ -704,7 +733,7 @@
         </div>
     </div>
 
-    <!-- Modal Form Socorro -->
+    <!-- Modal Form Socorro (Com campo Data) -->
     <div class="modal-overlay" id="modalSocorroOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -714,6 +743,7 @@
             <form id="dataFormSocorro" onsubmit="salvarRegistroSocorro(event)">
                 <input type="hidden" id="editRowIndexSocorro" value="">
                 <div class="form-grid">
+                    <div class="form-group"><label>Data</label><input type="date" id="sData" required></div>
                     <div class="form-group"><label>Nº do Incidente</label><input type="number" id="sIncidente" required></div>
                     <div class="form-group"><label>Linha</label><input type="text" id="sLinha" required></div>
                     <div class="form-group"><label>Serviço</label><input type="text" id="sServico"></div>
@@ -755,6 +785,7 @@
         let dadosGlobais = [];
         let dadosSocorro = [];
         let filtrosAtivos = { linha: new Set(), dia: new Set(), tipo: new Set() };
+        let filtrosSocorro = { linha: new Set() };
         let apenasPendentesAtivo = false;
         let linhasSelecionadasIds = new Set();
         let linhasSelecionadasSocorroIds = new Set();
@@ -807,7 +838,7 @@
         /* MÓDULO SOCORRO (Aba Socorro) */
         async function carregarDadosSocorro() {
             const tbody = document.getElementById('tableBodySocorro');
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 20px;">Carregando registros da aba Socorro...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 20px;">Carregando registros da aba Socorro...</td></tr>`;
             document.getElementById('statusNuvemSocorro').innerText = "Sincronizando...";
 
             try {
@@ -815,12 +846,13 @@
                 const data = await resp.json();
                 
                 dadosSocorro = data.slice(1).map((row, index) => ({ rowIndex: index + 2, data: row }));
+                gerarFiltrosSocorro();
                 renderizarTabelaSocorro();
                 document.getElementById('statusNuvemSocorro').innerText = "Conectado à aba Socorro";
             } catch (err) {
                 console.error("Erro Socorro:", err);
                 document.getElementById('statusNuvemSocorro').innerText = "Erro de Sincronização";
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da aba Socorro. Verifique se a aba "Socorro" existe no Google Sheets.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da aba Socorro. Verifique se a aba "Socorro" existe no Google Sheets.</td></tr>`;
             }
         }
 
@@ -837,21 +869,66 @@
             return str;
         }
 
+        function gerarFiltrosSocorro() {
+            const lSet = new Set();
+            dadosSocorro.forEach(item => {
+                const r = item.data;
+                if (formatCell(r[2])) lSet.add(formatCell(r[2])); // Coluna Linha é o índice 2 agora
+            });
+
+            const container = document.getElementById('filterLinhasSocorro');
+            container.innerHTML = '';
+            Array.from(lSet).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).forEach(val => {
+                const btn = document.createElement('button');
+                btn.className = `filter-btn ${filtrosSocorro.linha.has(val) ? 'active' : ''}`;
+                btn.innerText = val;
+                btn.onclick = () => {
+                    if (filtrosSocorro.linha.has(val)) { filtrosSocorro.linha.delete(val); btn.classList.remove('active'); }
+                    else { filtrosSocorro.linha.add(val); btn.classList.add('active'); }
+                    renderizarTabelaSocorro();
+                };
+                container.appendChild(btn);
+            });
+        }
+
         function renderizarTabelaSocorro() {
             const tbody = document.getElementById('tableBodySocorro');
             tbody.innerHTML = '';
             const termo = document.getElementById('inputPesquisaSocorro').value.trim().toLowerCase();
 
+            const inputInicio = document.getElementById('dataInicioSocorro').value;
+            const inputFim = document.getElementById('dataFimSocorro').value;
+            const dInicio = inputInicio ? new Date(inputInicio + "T00:00:00") : null;
+            const dFim = inputFim ? new Date(inputFim + "T23:59:59") : null;
+
             let exibidos = dadosSocorro.filter(item => {
-                if (!termo) return true;
-                return item.data.some(c => c && c.toString().toLowerCase().includes(termo));
+                const row = item.data;
+
+                // Filtro de Período baseado na coluna "Data" (índice 0)
+                if (dInicio || dFim) {
+                    const dtRegistro = parseData(row[0]);
+                    if (dtRegistro) {
+                        if (dInicio && dtRegistro < dInicio) return false;
+                        if (dFim && dtRegistro > dFim) return false;
+                    } else {
+                        return false;
+                    }
+                }
+
+                // Filtro por Linha (índice 2)
+                if (filtrosSocorro.linha.size > 0 && !filtrosSocorro.linha.has(formatCell(row[2]))) return false;
+
+                if (termo) {
+                    return row.some(c => c && c.toString().toLowerCase().includes(termo));
+                }
+                return true;
             });
 
-            // Ordem decrescente: O mais recente (linha maior) fica em cima
+            // Ordem decrescente: O mais recente fica no topo
             exibidos.sort((a, b) => b.rowIndex - a.rowIndex);
 
             if (exibidos.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum registro encontrado na aba Socorro.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum registro encontrado na aba Socorro.</td></tr>`;
                 return;
             }
 
@@ -884,13 +961,13 @@
                 };
 
                 let tdContent = '';
-                // Nº Incidente mantido como número inteiro puro
-                tdContent += `<td>${row[0] !== undefined && row[0] !== '' ? Number(row[0]) : ''}</td>`;
-                tdContent += `<td>${formatCell(row[1])}</td>`;
-                tdContent += `<td>${formatCell(row[2])}</td>`;
-                tdContent += `<td>${formatarHora(row[3])}</td>`;
+                tdContent += `<td>${formatCell(row[0])}</td>`; // Data
+                tdContent += `<td>${row[1] !== undefined && row[1] !== '' ? Number(row[1]) : ''}</td>`; // Incidente
+                tdContent += `<td>${formatCell(row[2])}</td>`; // Linha
+                tdContent += `<td>${formatCell(row[3])}</td>`; // Serviço
+                tdContent += `<td>${formatarHora(row[4])}</td>`; // Horário
 
-                for (let i = 4; i < 8; i++) {
+                for (let i = 5; i < 9; i++) {
                     tdContent += `<td>${formatCell(row[i])}</td>`;
                 }
 
@@ -920,14 +997,15 @@
 
             document.getElementById('modalSocorroTitle').innerText = `Editar Incidente (Linha ${rowIndex})`;
             document.getElementById('editRowIndexSocorro').value = rowIndex;
-            document.getElementById('sIncidente').value = r[0] || '';
-            document.getElementById('sLinha').value = r[1] || '';
-            document.getElementById('sServico').value = r[2] || '';
-            document.getElementById('sHorario').value = formatarHora(r[3]) || '';
-            document.getElementById('sCarroSai').value = r[4] || '';
-            document.getElementById('sCarroEntra').value = r[5] || '';
-            document.getElementById('sMotEntra').value = r[6] || '';
-            document.getElementById('sMotSai').value = r[7] || '';
+            document.getElementById('sData').value = formatToInputDate(r[0]);
+            document.getElementById('sIncidente').value = r[1] || '';
+            document.getElementById('sLinha').value = r[2] || '';
+            document.getElementById('sServico').value = r[3] || '';
+            document.getElementById('sHorario').value = formatarHora(r[4]) || '';
+            document.getElementById('sCarroSai').value = r[5] || '';
+            document.getElementById('sCarroEntra').value = r[6] || '';
+            document.getElementById('sMotEntra').value = r[7] || '';
+            document.getElementById('sMotSai').value = r[8] || '';
 
             document.getElementById('btnDeletarSocorro').style.display = 'inline-block';
             document.getElementById('modalSocorroOverlay').style.display = 'flex';
@@ -936,8 +1014,16 @@
         async function salvarRegistroSocorro(event) {
             event.preventDefault();
             const targetRow = document.getElementById('editRowIndexSocorro').value;
+            const dataInput = document.getElementById('sData').value;
+
+            let dataFormatada = dataInput;
+            if (dataInput && dataInput.includes('-')) {
+                const p = dataInput.split('-');
+                dataFormatada = `${p[2]}/${p[1]}/${p[0]}`;
+            }
 
             const rowData = [
+                dataFormatada,
                 document.getElementById('sIncidente').value ? Number(document.getElementById('sIncidente').value) : '',
                 document.getElementById('sLinha').value,
                 document.getElementById('sServico').value,
@@ -969,12 +1055,25 @@
         async function deletarRegistroSocorro() {
             const targetRow = document.getElementById('editRowIndexSocorro').value;
             if (!targetRow || !confirm("Deseja excluir este registro de socorro?")) return;
-            const payload = { sheetName: "Socorro", rowIndex: targetRow, rowData: ["","","","","","","",""] };
+            const payload = { sheetName: "Socorro", rowIndex: targetRow, rowData: ["","","","","","","","",""] };
             try {
                 await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
                 fecharModalSocorro();
                 setTimeout(carregarDadosSocorro, 1500);
             } catch (err) { alert("Erro ao excluir."); }
+        }
+
+        function limparFiltroDataSocorro() {
+            document.getElementById('dataInicioSocorro').value = '';
+            document.getElementById('dataFimSocorro').value = '';
+            renderizarTabelaSocorro();
+        }
+
+        function limparFiltrosSocorro() {
+            document.getElementById('inputPesquisaSocorro').value = '';
+            filtrosSocorro.linha.clear();
+            document.querySelectorAll('#filterLinhasSocorro .filter-btn').forEach(b => b.classList.remove('active'));
+            limparFiltroDataSocorro();
         }
 
         /* FUNÇÕES AUXILIARES DA ABA PRINCIPAL */
