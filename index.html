@@ -720,7 +720,7 @@
                 if (linhasSelecionadasIds.has(item.rowIndex)) tr.classList.add('linha-selecionada');
 
                 tr.onclick = (e) => {
-                    if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A') return;
+                    if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A' || e.target.classList.contains('anotacao-badge')) return;
                     
                     // SELEÇÃO MÚLTIPLA SOMENTE COM CTRL OU COMMAND APERTADO
                     if (e.ctrlKey || e.metaKey) {
@@ -748,7 +748,12 @@
                 tdContent += (imgVal && imgVal.startsWith('http')) ? `<td><a href="${imgVal}" target="_blank" class="img-link">🖼️ Imagem</a></td>` : `<td>${imgVal}</td>`;
                 
                 const anot = formatCell(row[9]);
-                tdContent += (anot && anot !== '-') ? `<td><div class="anotacao-badge" onclick="mostrarNotaCompleta('${anot}')">📝 Comentário</div></td>` : `<td>${anot}</td>`;
+                if (anot && anot !== '-') {
+                    const anotJson = JSON.stringify(anot).replace(/"/g, '&quot;');
+                    tdContent += `<td><div class="anotacao-badge" onclick="mostrarNotaCompleta(${anotJson})">📝 Comentário</div></td>`;
+                } else {
+                    tdContent += `<td>${anot}</td>`;
+                }
                 
                 tdContent += `<td>${formatCell(row[10])}</td>`;
                 
