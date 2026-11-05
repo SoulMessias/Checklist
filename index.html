@@ -704,7 +704,7 @@
         </div>
     </div>
 
-    <!-- Modal Form Socorro (Horário formatado como hora hh:mm) -->
+    <!-- Modal Form Socorro -->
     <div class="modal-overlay" id="modalSocorroOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -714,7 +714,7 @@
             <form id="dataFormSocorro" onsubmit="salvarRegistroSocorro(event)">
                 <input type="hidden" id="editRowIndexSocorro" value="">
                 <div class="form-grid">
-                    <div class="form-group"><label>Nº do Incidente</label><input type="text" id="sIncidente" required></div>
+                    <div class="form-group"><label>Nº do Incidente</label><input type="number" id="sIncidente" required></div>
                     <div class="form-group"><label>Linha</label><input type="text" id="sLinha" required></div>
                     <div class="form-group"><label>Serviço</label><input type="text" id="sServico"></div>
                     <div class="form-group"><label>Horário (HH:mm)</label><input type="time" id="sHorario"></div>
@@ -724,7 +724,7 @@
                     <div class="form-group"><label>Motorista que sai</label><input type="text" id="sMotSai"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-danger" id="btnDeletarSocorro" style="display: none;" onclick="deletarRegistroSocorro()">Excluir Registro</button>
+                    <button type="button" class="btn-danger" id="btnDeletarSocorro" style="display: none;" onclick="deletarRegistroSocorro()">Excluir Chamado</button>
                     <div style="display: flex; gap: 8px; margin-left: auto;">
                         <button type="button" class="btn btn-outline" onclick="fecharModalSocorro()">Cancelar</button>
                         <button type="submit" class="btn" style="background: var(--accent-orange);">Salvar na Aba Socorro</button>
@@ -757,6 +757,7 @@
         let filtrosAtivos = { linha: new Set(), dia: new Set(), tipo: new Set() };
         let apenasPendentesAtivo = false;
         let linhasSelecionadasIds = new Set();
+        let linhasSelecionadasSocorroIds = new Set();
 
         /* CONTROLE DO LOBBY */
         function abrirModulo(modulo) {
@@ -823,16 +824,13 @@
             }
         }
 
-        // Função auxiliar específica para formatar o Horário (HH:mm) vindo da planilha
         function formatarHora(val) {
             if (!val) return '';
             const str = val.toString().trim();
-            // Se o Google Sheets retornar uma data ISO completa gerada anteriormente
             if (str.includes('T')) {
                 const partes = str.split('T')[1];
                 if (partes) return partes.substring(0, 5);
             }
-            // Se já vier como string HH:mm ou similar
             if (str.length >= 5 && str.includes(':')) {
                 return str.substring(0, 5);
             }
@@ -849,6 +847,9 @@
                 return item.data.some(c => c && c.toString().toLowerCase().includes(termo));
             });
 
+            // Ordem decrescente: O mais recente (linha maior) fica em cima
+            exibidos.sort((a, b) => b.rowIndex - a.rowIndex);
+
             if (exibidos.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum registro encontrado na aba Socorro.</td></tr>`;
                 return;
@@ -857,15 +858,38 @@
             exibidos.forEach(item => {
                 const row = item.data;
                 const tr = document.createElement('tr');
+                tr.id = `row-socorro-${item.rowIndex}`;
+
+                if (linhasSelecionadasSocorroIds.has(item.rowIndex)) {
+                    tr.classList.add('linha-selecionada');
+                }
+
+                tr.onclick = (e) => {
+                    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+
+                    if (e.ctrlKey || e.metaKey) {
+                        if (linhasSelecionadasSocorroIds.has(item.rowIndex)) {
+                            linhasSelecionadasSocorroIds.delete(item.rowIndex);
+                            tr.classList.remove('linha-selecionada');
+                        } else {
+                            linhasSelecionadasSocorroIds.add(item.rowIndex);
+                            tr.classList.add('linha-selecionada');
+                        }
+                    } else {
+                        document.querySelectorAll('#painelSocorro tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
+                        linhasSelecionadasSocorroIds.clear();
+                        linhasSelecionadasSocorroIds.add(item.rowIndex);
+                        tr.classList.add('linha-selecionada');
+                    }
+                };
+
                 let tdContent = '';
-                
-                // Colunas 0 a 3 (Nº Incidente, Linha, Serviço, Horário)
-                tdContent += `<td>${formatCell(row[0])}</td>`;
+                // Nº Incidente mantido como número inteiro puro
+                tdContent += `<td>${row[0] !== undefined && row[0] !== '' ? Number(row[0]) : ''}</td>`;
                 tdContent += `<td>${formatCell(row[1])}</td>`;
                 tdContent += `<td>${formatCell(row[2])}</td>`;
-                tdContent += `<td>${formatarHora(row[3])}</td>`; // Horário formatado HH:mm
+                tdContent += `<td>${formatarHora(row[3])}</td>`;
 
-                // Colunas 4 a 7 (Carros e Motoristas)
                 for (let i = 4; i < 8; i++) {
                     tdContent += `<td>${formatCell(row[i])}</td>`;
                 }
@@ -914,7 +938,7 @@
             const targetRow = document.getElementById('editRowIndexSocorro').value;
 
             const rowData = [
-                document.getElementById('sIncidente').value,
+                document.getElementById('sIncidente').value ? Number(document.getElementById('sIncidente').value) : '',
                 document.getElementById('sLinha').value,
                 document.getElementById('sServico').value,
                 document.getElementById('sHorario').value,
@@ -1077,7 +1101,7 @@
                             tr.classList.add('linha-selecionada');
                         }
                     } else {
-                        document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
+                        document.querySelectorAll('#painelPrincipal tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
                         linhasSelecionadasIds.clear();
                         linhasSelecionadasIds.add(item.rowIndex);
                         tr.classList.add('linha-selecionada');
