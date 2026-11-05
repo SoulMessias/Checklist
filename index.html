@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Operacional</title>
+    <title>Painel Operacional & Central de Módulos</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -18,6 +18,8 @@
             --border-color: #e2e8f0;
             --accent-red: #ef4444;
             --accent-red-hover: #dc2626;
+            --accent-orange: #f97316;
+            --accent-orange-hover: #ea580c;
         }
 
         * {
@@ -34,6 +36,78 @@
             overflow-x: hidden;
         }
 
+        /* --- LOBBY ESTILIZAÇÃO --- */
+        .lobby-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 85vh;
+            gap: 24px;
+            text-align: center;
+        }
+
+        .lobby-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .lobby-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-top: -12px;
+        }
+
+        .lobby-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 650px;
+        }
+
+        .lobby-card {
+            background: var(--surface-color);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .lobby-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.15);
+        }
+
+        .lobby-card.socorro:hover {
+            border-color: var(--accent-orange);
+            box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.15);
+        }
+
+        .lobby-card .icon {
+            font-size: 2.5rem;
+        }
+
+        .lobby-card h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .lobby-card p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* --- CONTAINER PRINCIPAL --- */
         .container {
             width: 100%;
             max-width: 100%;
@@ -74,7 +148,7 @@
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
         }
 
         .date-filter-group {
@@ -233,9 +307,6 @@
             color: var(--primary);
         }
 
-        .metric-box .val.red { color: var(--accent-red); }
-        .metric-box .val.green { color: var(--primary); }
-
         .action-bar {
             display: flex;
             justify-content: space-between;
@@ -329,6 +400,7 @@
             white-space: nowrap;
         }
 
+        /* Colunas Tabela Principal */
         th:nth-child(1), td:nth-child(1) { width: 7%; }   
         th:nth-child(2), td:nth-child(2) { width: 9%; }   
         th:nth-child(3), td:nth-child(3) { width: 11%; }  
@@ -409,10 +481,34 @@
 </head>
 <body>
 
-    <div class="container">
+    <!-- LOBBY / SELEÇÃO INICIAL -->
+    <div class="lobby-container" id="lobbyContainer">
+        <h1 class="lobby-title">Central Operacional</h1>
+        <p class="lobby-subtitle">Selecione o módulo ou aba do Google Sheets que deseja gerenciar:</p>
+        
+        <div class="lobby-cards-grid">
+            <div class="lobby-card" onclick="abrirModulo('principal')">
+                <div class="icon">🚌</div>
+                <h2>Painel Operacional</h2>
+                <p>Controle de linhas de ônibus, vigências, tipos de alterações e pendências.</p>
+            </div>
+
+            <div class="lobby-card socorro" onclick="abrirModulo('socorro')">
+                <div class="icon">🆘</div>
+                <h2>Módulo Socorro</h2>
+                <p>Aba "Socorro" do Google Sheets para chamados e ocorrências emergenciais.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESTRUTURA DO PAINEL PRINCIPAL -->
+    <div class="container" id="painelPrincipal" style="display: none;">
         <div class="sticky-top-area" id="stickyTopArea">
             <header>
-                <h1>Painel Operacional</h1>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button class="btn btn-outline btn-sm" onclick="voltarAoLobby()">⬅ Voltar ao Lobby</button>
+                    <h1>Painel Operacional</h1>
+                </div>
                 <div class="header-actions">
                     <div class="status-badge" id="statusNuvem">Conectando...</div>
                 </div>
@@ -504,7 +600,37 @@
         </div>
     </div>
 
-    <!-- Modal Form -->
+    <!-- ESTRUTURA DO MÓDULO SOCORRO -->
+    <div class="container" id="painelSocorro" style="display: none;">
+        <header>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button class="btn btn-outline btn-sm" onclick="voltarAoLobby()">⬅ Voltar ao Lobby</button>
+                <h1 style="color: var(--accent-orange);">🆘 Módulo Socorro</h1>
+            </div>
+            <div class="header-actions">
+                <div class="status-badge" id="statusNuvemSocorro">Conectando...</div>
+                <button class="btn" style="background: var(--accent-orange);" onclick="abrirModalSocorro()">+ Novo Chamado</button>
+            </div>
+        </header>
+
+        <div class="table-card" style="margin-top: 16px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">ID/LINHA</th>
+                        <th style="width: 15%;">DATA/HORA</th>
+                        <th style="width: 25%;">OCORRÊNCIA</th>
+                        <th style="width: 20%;">ANOTAÇÕES</th>
+                        <th style="width: 15%;">STATUS</th>
+                        <th style="width: 15%;">AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBodySocorro"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Form Principal -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -574,17 +700,41 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyaSkxEYauds71HkFdUh6gCJMipD_2J_mqrmGfdSkwfpR6DjJzLyXScNRoNIBkaQvsnjA/exec";
 
+        let moduloAtual = null;
         let dadosGlobais = [];
+        let dadosSocorro = [];
         let filtrosAtivos = { linha: new Set(), dia: new Set(), tipo: new Set() };
         let apenasPendentesAtivo = false;
         let linhasSelecionadasIds = new Set();
 
-        window.addEventListener('DOMContentLoaded', carregarDados);
+        // --- LÓGICA DO LOBBY ---
+        function abrirModulo(modulo) {
+            moduloAtual = modulo;
+            document.getElementById('lobbyContainer').style.display = 'none';
 
+            if (modulo === 'principal') {
+                document.getElementById('painelPrincipal').style.display = 'flex';
+                document.getElementById('painelSocorro').style.display = 'none';
+                carregarDados();
+            } else if (modulo === 'socorro') {
+                document.getElementById('painelPrincipal').style.display = 'none';
+                document.getElementById('painelSocorro').style.display = 'flex';
+                carregarDadosSocorro();
+            }
+        }
+
+        function voltarAoLobby() {
+            document.getElementById('painelPrincipal').style.display = 'none';
+            document.getElementById('painelSocorro').style.display = 'none';
+            document.getElementById('lobbyContainer').style.display = 'flex';
+            moduloAtual = null;
+        }
+
+        // --- MÓDULO PRINCIPAL ---
         async function carregarDados() {
             const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar informações da planilha...</td></tr>`;
-            document.getElementById('statusNuvem').innerText = "A sincronizar...";
+            tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 20px;">Carregando informações da planilha...</td></tr>`;
+            document.getElementById('statusNuvem').innerText = "Sincronizando...";
 
             try {
                 const resp = await fetch(WEB_APP_URL);
@@ -598,10 +748,62 @@
             } catch (err) {
                 console.error("Erro:", err);
                 document.getElementById('statusNuvem').innerText = "Erro de Sincronização";
-                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da nuvem. Verifique se a URL do Web App está correta.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da nuvem.</td></tr>`;
             }
         }
 
+        // --- MÓDULO SOCORRO (ABA "Socorro") ---
+        async function carregarDadosSocorro() {
+            const tbody = document.getElementById('tableBodySocorro');
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Carregando registros da aba Socorro...</td></tr>`;
+            document.getElementById('statusNuvemSocorro').innerText = "Sincronizando...";
+
+            try {
+                const resp = await fetch(`${WEB_APP_URL}?sheet=Socorro`);
+                const data = await resp.json();
+                
+                dadosSocorro = data.slice(1).map((row, index) => ({ rowIndex: index + 2, data: row }));
+                renderizarTabelaSocorro();
+                document.getElementById('statusNuvemSocorro').innerText = "Conectado à aba Socorro";
+            } catch (err) {
+                console.error("Erro Socorro:", err);
+                document.getElementById('statusNuvemSocorro').innerText = "Erro de Sincronização";
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da aba Socorro. Verifique se a aba "Socorro" existe no Google Sheets.</td></tr>`;
+            }
+        }
+
+        function renderizarTabelaSocorro() {
+            const tbody = document.getElementById('tableBodySocorro');
+            tbody.innerHTML = '';
+
+            if (dadosSocorro.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum chamado registrado.</td></tr>`;
+                return;
+            }
+
+            dadosSocorro.forEach(item => {
+                const row = item.data;
+                const tr = document.createElement('tr');
+                let tdContent = '';
+                
+                for (let i = 0; i < 5; i++) {
+                    tdContent += `<td>${formatCell(row[i])}</td>`;
+                }
+                tdContent += `<td><button class="btn btn-outline btn-sm" onclick="editarRegistroSocorro(${item.rowIndex})">Editar</button></td>`;
+                tr.innerHTML = tdContent;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function abrirModalSocorro() {
+            alert("Abertura do formulário do Módulo Socorro (pode ser customizado com seus campos específicos da aba Socorro).");
+        }
+
+        function editarRegistroSocorro(rowIndex) {
+            alert(`Editar chamado Socorro da linha ${rowIndex}`);
+        }
+
+        // --- FUNÇÕES AUXILIARES E FORMATADORES ---
         function parseData(valorRaw) {
             if (!valorRaw) return null;
             const str = valorRaw.toString().trim();
@@ -676,7 +878,6 @@
             let dadosExibidos = dadosGlobais.filter(item => {
                 const row = item.data;
 
-                // Filtro de Período baseado na Coluna "Vigência" (índice 1)
                 if (dInicio || dFim) {
                     const dtVigencia = parseData(row[1]);
                     if (dtVigencia) {
@@ -701,15 +902,10 @@
                 return true;
             });
 
-            // ORDENAÇÃO: Do mais novo para o mais velho (baseado na coluna "Vigência" - índice 1)
             dadosExibidos.sort((a, b) => {
                 const dtA = parseData(a.data[1]);
                 const dtB = parseData(b.data[1]);
-                
-                const timeA = dtA ? dtA.getTime() : 0;
-                const timeB = dtB ? dtB.getTime() : 0;
-
-                return timeB - timeA; // Ordem decrescente (mais recente primeiro)
+                return (dtB ? dtB.getTime() : 0) - (dtA ? dtA.getTime() : 0);
             });
 
             dadosExibidos.forEach((item) => {
@@ -722,7 +918,6 @@
                 tr.onclick = (e) => {
                     if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A' || e.target.classList.contains('anotacao-badge')) return;
                     
-                    // SELEÇÃO MÚLTIPLA SOMENTE COM CTRL OU COMMAND APERTADO
                     if (e.ctrlKey || e.metaKey) {
                         if (linhasSelecionadasIds.has(item.rowIndex)) {
                             linhasSelecionadasIds.delete(item.rowIndex);
@@ -732,10 +927,8 @@
                             tr.classList.add('linha-selecionada');
                         }
                     } else {
-                        // Clique normal: limpa os anteriores e seleciona apenas este
                         document.querySelectorAll('tbody tr').forEach(t => t.classList.remove('linha-selecionada'));
                         linhasSelecionadasIds.clear();
-                        
                         linhasSelecionadasIds.add(item.rowIndex);
                         tr.classList.add('linha-selecionada');
                     }
@@ -833,6 +1026,7 @@
             }
 
             const payload = {
+                sheetName: "Página1", // Ou o nome exato da sua aba principal
                 rowIndex: targetRow,
                 col1: document.getElementById('fLinha').value,
                 col2: vigFormatada,
@@ -863,7 +1057,7 @@
         async function deletarRegistro() {
             const targetRow = document.getElementById('editRowIndex').value;
             if (!targetRow || !confirm("Deseja excluir este registro?")) return;
-            const payload = { rowIndex: targetRow, col1:"",col2:"",col3:"",col4:"",col5:"",col6:"",col7:"",col8:"",col9:"",col10:"",col11:"",col12:"" };
+            const payload = { sheetName: "Página1", rowIndex: targetRow, col1:"",col2:"",col3:"",col4:"",col5:"",col6:"",col7:"",col8:"",col9:"",col10:"",col11:"",col12:"" };
             try {
                 await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
                 fecharModal();
