@@ -415,7 +415,7 @@
         #painelPrincipal th:nth-child(12), #painelPrincipal td:nth-child(12) { width: 9%; } 
         #painelPrincipal th:nth-child(13), #painelPrincipal td:nth-child(13) { width: 7%; } 
 
-        /* Colunas Tabela Socorro (9 colunas + 1 Ações) */
+        /* Colunas Tabela Socorro */
         #painelSocorro th:nth-child(1), #painelSocorro td:nth-child(1) { width: 10%; } /* Data */
         #painelSocorro th:nth-child(2), #painelSocorro td:nth-child(2) { width: 10%; } /* Nº do Incidente */
         #painelSocorro th:nth-child(3), #painelSocorro td:nth-child(3) { width: 9%; }  /* Linha */
@@ -513,7 +513,7 @@
         </div>
     </div>
 
-    <!-- ESTRUTURA DA ABA 1 (Página1) - INTOCADA -->
+    <!-- ESTRUTURA DA ABA 1 (Página1) -->
     <div class="container" id="painelPrincipal" style="display: none;">
         <div class="sticky-top-area" id="stickyTopArea">
             <header>
@@ -625,7 +625,6 @@
                 </div>
             </header>
 
-            <!-- Painel de Filtro de Linhas para o Socorro -->
             <div class="top-grid" style="grid-template-columns: 1fr;">
                 <div class="card-panel">
                     <h3>Filtrar por Linha (Socorro)</h3>
@@ -733,7 +732,7 @@
         </div>
     </div>
 
-    <!-- Modal Form Socorro (Com campo Data) -->
+    <!-- Modal Form Socorro -->
     <div class="modal-overlay" id="modalSocorroOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -873,7 +872,7 @@
             const lSet = new Set();
             dadosSocorro.forEach(item => {
                 const r = item.data;
-                if (formatCell(r[2])) lSet.add(formatCell(r[2])); // Coluna Linha é o índice 2 agora
+                if (formatCell(r[2])) lSet.add(formatCell(r[2]));
             });
 
             const container = document.getElementById('filterLinhasSocorro');
@@ -904,7 +903,6 @@
             let exibidos = dadosSocorro.filter(item => {
                 const row = item.data;
 
-                // Filtro de Período baseado na coluna "Data" (índice 0)
                 if (dInicio || dFim) {
                     const dtRegistro = parseData(row[0]);
                     if (dtRegistro) {
@@ -915,7 +913,6 @@
                     }
                 }
 
-                // Filtro por Linha (índice 2)
                 if (filtrosSocorro.linha.size > 0 && !filtrosSocorro.linha.has(formatCell(row[2]))) return false;
 
                 if (termo) {
@@ -924,7 +921,6 @@
                 return true;
             });
 
-            // Ordem decrescente: O mais recente fica no topo
             exibidos.sort((a, b) => b.rowIndex - a.rowIndex);
 
             if (exibidos.length === 0) {
@@ -961,11 +957,11 @@
                 };
 
                 let tdContent = '';
-                tdContent += `<td>${formatCell(row[0])}</td>`; // Data
-                tdContent += `<td>${row[1] !== undefined && row[1] !== '' ? Number(row[1]) : ''}</td>`; // Incidente
-                tdContent += `<td>${formatCell(row[2])}</td>`; // Linha
-                tdContent += `<td>${formatCell(row[3])}</td>`; // Serviço
-                tdContent += `<td>${formatarHora(row[4])}</td>`; // Horário
+                tdContent += `<td>${formatCell(row[0])}</td>`;
+                tdContent += `<td>${row[1] !== undefined && row[1] !== '' ? Number(row[1]) : ''}</td>`;
+                tdContent += `<td>${formatCell(row[2])}</td>`;
+                tdContent += `<td>${formatCell(row[3])}</td>`;
+                tdContent += `<td>${formatarHora(row[4])}</td>`;
 
                 for (let i = 5; i < 9; i++) {
                     tdContent += `<td>${formatCell(row[i])}</td>`;
@@ -1234,17 +1230,29 @@
             atualizarMetricas(dadosExibidos);
         }
 
+        /* LÓGICA REVERSA E ESTREITA: Só soma na contagem se a célula estiver VAZIA (=== ""). Se houver qualquer caractere preenchendo, desconsidera. */
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
             let pMobi = 0, pTerm = 0, pAvis = 0, pAgen = 0;
+            
             dados.forEach(d => {
                 const r = d.data;
+                
+                // Se o status geral da linha for 'ok', ignora completamente
                 if (formatCell(r[10]).toLowerCase() === 'ok') return;
-                if (!formatCell(r[4]) || formatCell(r[4]) === '-') pMobi++;
-                if (!formatCell(r[5]) || formatCell(r[5]) === '-') pTerm++;
-                if (!formatCell(r[6]) || formatCell(r[6]) === '-') pAvis++;
-                if (!formatCell(r[7]) || formatCell(r[7]) === '-') pAgen++;
+
+                const valMobi = formatCell(r[4]).trim();
+                const valTerm = formatCell(r[5]).trim();
+                const valAvis = formatCell(r[6]).trim();
+                const valAgen = formatCell(r[7]).trim();
+
+                // Soma na contagem SOMENTE se a célula estiver estritamente vazia ("")
+                if (valMobi === "") pMobi++;
+                if (valTerm === "") pTerm++;
+                if (valAvis === "") pAvis++;
+                if (valAgen === "") pAgen++;
             });
+
             document.getElementById('mPendMobi').innerText = pMobi;
             document.getElementById('mPendTerm').innerText = pTerm;
             document.getElementById('mPendAvis').innerText = pAvis;
