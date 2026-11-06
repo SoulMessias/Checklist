@@ -400,7 +400,7 @@
             white-space: nowrap;
         }
 
-        /* Colunas Tabela Principal (Página1) */
+        /* Colunas Tabela Principal (Página1) - Intacta */
         #painelPrincipal th:nth-child(1), #painelPrincipal td:nth-child(1) { width: 7%; }   
         #painelPrincipal th:nth-child(2), #painelPrincipal td:nth-child(2) { width: 9%; }   
         #painelPrincipal th:nth-child(3), #painelPrincipal td:nth-child(3) { width: 11%; }  
@@ -416,16 +416,17 @@
         #painelPrincipal th:nth-child(13), #painelPrincipal td:nth-child(13) { width: 7%; } 
 
         /* Colunas Tabela Socorro (Aba 2) */
-        #painelSocorro th:nth-child(1), #painelSocorro td:nth-child(1) { width: 10%; } /* Data */
-        #painelSocorro th:nth-child(2), #painelSocorro td:nth-child(2) { width: 10%; } /* Nº do Incidente */
-        #painelSocorro th:nth-child(3), #painelSocorro td:nth-child(3) { width: 9%; }  /* Linha */
-        #painelSocorro th:nth-child(4), #painelSocorro td:nth-child(4) { width: 11%; } /* Serviço */
-        #painelSocorro th:nth-child(5), #painelSocorro td:nth-child(5) { width: 10%; } /* Horário */
-        #painelSocorro th:nth-child(6), #painelSocorro td:nth-child(6) { width: 10%; } /* Carro que sai */
-        #painelSocorro th:nth-child(7), #painelSocorro td:nth-child(7) { width: 10%; } /* Carro que entra */
-        #painelSocorro th:nth-child(8), #painelSocorro td:nth-child(8) { width: 10%; } /* Motorista que sai */
-        #painelSocorro th:nth-child(9), #painelSocorro td:nth-child(9) { width: 10%; } /* Motorista que entra */
-        #painelSocorro th:nth-child(10), #painelSocorro td:nth-child(10) { width: 10%; } /* Ações */
+        #painelSocorro th:nth-child(1), #painelSocorro td:nth-child(1) { width: 9%; }  /* Data */
+        #painelSocorro th:nth-child(2), #painelSocorro td:nth-child(2) { width: 9%; }  /* Nº do Incidente */
+        #painelSocorro th:nth-child(3), #painelSocorro td:nth-child(3) { width: 8%; }  /* Linha */
+        #painelSocorro th:nth-child(4), #painelSocorro td:nth-child(4) { width: 9%; }  /* Serviço */
+        #painelSocorro th:nth-child(5), #painelSocorro td:nth-child(5) { width: 12%; } /* Local do Socorro */
+        #painelSocorro th:nth-child(6), #painelSocorro td:nth-child(6) { width: 7%; }  /* Horário */
+        #painelSocorro th:nth-child(7), #painelSocorro td:nth-child(7) { width: 9%; }  /* Carro que sai */
+        #painelSocorro th:nth-child(8), #painelSocorro td:nth-child(8) { width: 9%; }  /* Carro que entra */
+        #painelSocorro th:nth-child(9), #painelSocorro td:nth-child(9) { width: 10.5%; } /* Motorista que entra */
+        #painelSocorro th:nth-child(10), #painelSocorro td:nth-child(10) { width: 10.5%; } /* Motorista que sai */
+        #painelSocorro th:nth-child(11), #painelSocorro td:nth-child(11) { width: 7%; }  /* Ações */
 
         thead th {
             position: sticky;
@@ -508,7 +509,7 @@
             <div class="lobby-card socorro" onclick="abrirModulo('socorro')">
                 <div class="icon">🆘</div>
                 <h2>Módulo Socorro</h2>
-                <p>Gestão da aba Socorro (Data, Incidente, Linha, Serviço, Horário, Carros e Motoristas).</p>
+                <p>Gestão da aba Socorro (Data, Incidente, Linha, Serviço, Local, Horário, Carros e Motoristas).</p>
             </div>
         </div>
     </div>
@@ -660,11 +661,12 @@
                             <th>Nº DO INCIDENTE</th>
                             <th>LINHA</th>
                             <th>SERVIÇO</th>
+                            <th>LOCAL DO SOCORRO</th>
                             <th>HORÁRIO</th>
                             <th>CARRO QUE SAI</th>
                             <th>CARRO QUE ENTRA</th>
-                            <th>MOTORISTA QUE SAI</th>
                             <th>MOTORISTA QUE ENTRA</th>
+                            <th>MOTORISTA QUE SAI</th>
                             <th>AÇÕES</th>
                         </tr>
                     </thead>
@@ -732,7 +734,7 @@
         </div>
     </div>
 
-    <!-- Modal Form Socorro (Aba 2) -->
+    <!-- Modal Form Socorro (Aba 2 - Motorista que sai em primeiro) -->
     <div class="modal-overlay" id="modalSocorroOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -746,6 +748,7 @@
                     <div class="form-group"><label>Nº do Incidente</label><input type="number" id="sIncidente" required></div>
                     <div class="form-group"><label>Linha</label><input type="text" id="sLinha" required></div>
                     <div class="form-group"><label>Serviço</label><input type="text" id="sServico"></div>
+                    <div class="form-group full-width"><label>Local do Socorro</label><input type="text" id="sLocalSocorro" placeholder="Ex: Terminal Central / Av. Brasil"></div>
                     <div class="form-group"><label>Horário (HH:mm)</label><input type="time" id="sHorario"></div>
                     <div class="form-group"><label>Carro que sai</label><input type="text" id="sCarroSai"></div>
                     <div class="form-group"><label>Carro que entra</label><input type="text" id="sCarroEntra"></div>
@@ -837,7 +840,7 @@
         /* MÓDULO SOCORRO (Aba Socorro - ABA 2) */
         async function carregarDadosSocorro() {
             const tbody = document.getElementById('tableBodySocorro');
-            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 20px;">Carregando registros da aba Socorro...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 20px;">Carregando registros da aba Socorro...</td></tr>`;
             document.getElementById('statusNuvemSocorro').innerText = "Sincronizando...";
 
             try {
@@ -851,12 +854,12 @@
             } catch (err) {
                 console.error("Erro Socorro:", err);
                 document.getElementById('statusNuvemSocorro').innerText = "Erro de Sincronização";
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da aba Socorro. Verifique se a aba "Socorro" existe no Google Sheets.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--accent-red); padding: 20px;">Erro ao carregar dados da aba Socorro. Verifique se a aba "Socorro" existe no Google Sheets.</td></tr>`;
             }
         }
 
         function formatarHora(val) {
-            if (!val) return '';
+            if (!val && val !== 0) return '';
             const str = val.toString().trim();
             if (str.includes('T')) {
                 const partes = str.split('T')[1];
@@ -924,7 +927,7 @@
             exibidos.sort((a, b) => b.rowIndex - a.rowIndex);
 
             if (exibidos.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum registro encontrado na aba Socorro.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum registro encontrado na aba Socorro.</td></tr>`;
                 return;
             }
 
@@ -956,26 +959,17 @@
                     }
                 };
 
-                // Estrutura das colunas exibidas na tabela:
-                // Col 1: Data
-                // Col 2: Nº Incidente
-                // Col 3: Linha
-                // Col 4: Serviço
-                // Col 5: Horário
-                // Col 6: Carro que sai (row[5])
-                // Col 7: Carro que entra (row[6])
-                // Col 8: Motorista que SAI (row[8]) - Invertido conforme solicitado
-                // Col 9: Motorista que ENTRA (row[7]) - Invertido conforme solicitado
                 let tdContent = '';
                 tdContent += `<td>${formatCell(row[0])}</td>`;
                 tdContent += `<td>${row[1] !== undefined && row[1] !== '' ? Number(row[1]) : ''}</td>`;
                 tdContent += `<td>${formatCell(row[2])}</td>`;
-                tdContent += `<td>${formatCell(row[3])}</td>`;
-                tdContent += `<td>${formatarHora(row[4])}</td>`;
-                tdContent += `<td>${formatCell(row[5])}</td>`;
+                tdContent += `<td>${formatCell(row[4])}</td>`; // Serviço
+                tdContent += `<td>${formatCell(row[3])}</td>`; // Local do Socorro
+                tdContent += `<td>${formatarHora(row[5])}</td>`;
                 tdContent += `<td>${formatCell(row[6])}</td>`;
-                tdContent += `<td>${formatCell(row[8])}</td>`; // Motorista que sai
-                tdContent += `<td>${formatCell(row[7])}</td>`; // Motorista que entra
+                tdContent += `<td>${formatCell(row[7])}</td>`;
+                tdContent += `<td>${formatCell(row[8])}</td>`; // Motorista que entra
+                tdContent += `<td>${formatCell(row[9])}</td>`; // Motorista que sai
 
                 tdContent += `<td><button class="btn btn-outline btn-sm" onclick="editarRegistroSocorro(${item.rowIndex})">Editar</button></td>`;
                 
@@ -1006,12 +1000,13 @@
             document.getElementById('sData').value = formatToInputDate(r[0]);
             document.getElementById('sIncidente').value = r[1] || '';
             document.getElementById('sLinha').value = r[2] || '';
-            document.getElementById('sServico').value = r[3] || '';
-            document.getElementById('sHorario').value = formatarHora(r[4]) || '';
-            document.getElementById('sCarroSai').value = r[5] || '';
-            document.getElementById('sCarroEntra').value = r[6] || '';
-            document.getElementById('sMotSai').value = r[8] || ''; // Motorista que sai (r[8])
-            document.getElementById('sMotEntra').value = r[7] || ''; // Motorista que entra (r[7])
+            document.getElementById('sServico').value = r[4] || '';
+            document.getElementById('sLocalSocorro').value = r[3] || '';
+            document.getElementById('sHorario').value = formatarHora(r[5]) || '';
+            document.getElementById('sCarroSai').value = r[6] || '';
+            document.getElementById('sCarroEntra').value = r[7] || '';
+            document.getElementById('sMotSai').value = r[9] || '';   // Motorista que sai primeiro no modal
+            document.getElementById('sMotEntra').value = r[8] || ''; // Motorista que entra em seguida
 
             document.getElementById('btnDeletarSocorro').style.display = 'inline-block';
             document.getElementById('modalSocorroOverlay').style.display = 'flex';
@@ -1028,15 +1023,16 @@
                 dataFormatada = `${p[2]}/${p[1]}/${p[0]}`;
             }
 
-            // Garante o contrato da planilha Socorro:
-            // r[7] = Motorista que entra
-            // r[8] = Motorista que sai
+            const horaInput = document.getElementById('sHorario').value;
+
+            // Mapeamento correto para salvamento na planilha (índice 8 para entra, 9 para sai)
             const rowData = [
                 dataFormatada,
                 document.getElementById('sIncidente').value ? Number(document.getElementById('sIncidente').value) : '',
                 document.getElementById('sLinha').value,
+                document.getElementById('sLocalSocorro').value,
                 document.getElementById('sServico').value,
-                document.getElementById('sHorario').value,
+                horaInput,
                 document.getElementById('sCarroSai').value,
                 document.getElementById('sCarroEntra').value,
                 document.getElementById('sMotEntra').value,
@@ -1064,7 +1060,7 @@
         async function deletarRegistroSocorro() {
             const targetRow = document.getElementById('editRowIndexSocorro').value;
             if (!targetRow || !confirm("Deseja excluir este registro de socorro?")) return;
-            const payload = { sheetName: "Socorro", rowIndex: targetRow, rowData: ["","","","","","","","",""] };
+            const payload = { sheetName: "Socorro", rowIndex: targetRow, rowData: ["","","","","","","","","",""] };
             try {
                 await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
                 fecharModalSocorro();
@@ -1091,7 +1087,6 @@
             let str = valorRaw.toString().trim();
             if (str === '' || str === '-') return null;
             
-            // Remove prefixos inválidos como "+0" (ex: "+02026-11-06...")
             str = str.replace(/^\+0+/, '');
 
             const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -1247,7 +1242,7 @@
             atualizarMetricas(dadosExibidos);
         }
 
-        /* LÓGICA DA ABA 1 (Mantida 100% intacta) */
+        /* LÓGICA DA ABA 1 (100% Intacta) */
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
             let pMobi = 0, pTerm = 0, pAvis = 0, pAgen = 0;
