@@ -415,7 +415,7 @@
         #painelPrincipal th:nth-child(12), #painelPrincipal td:nth-child(12) { width: 9%; } 
         #painelPrincipal th:nth-child(13), #painelPrincipal td:nth-child(13) { width: 7%; } 
 
-        /* Colunas Tabela Socorro */
+        /* Colunas Tabela Socorro (Aba 2) */
         #painelSocorro th:nth-child(1), #painelSocorro td:nth-child(1) { width: 10%; } /* Data */
         #painelSocorro th:nth-child(2), #painelSocorro td:nth-child(2) { width: 10%; } /* Nº do Incidente */
         #painelSocorro th:nth-child(3), #painelSocorro td:nth-child(3) { width: 9%; }  /* Linha */
@@ -423,8 +423,8 @@
         #painelSocorro th:nth-child(5), #painelSocorro td:nth-child(5) { width: 10%; } /* Horário */
         #painelSocorro th:nth-child(6), #painelSocorro td:nth-child(6) { width: 10%; } /* Carro que sai */
         #painelSocorro th:nth-child(7), #painelSocorro td:nth-child(7) { width: 10%; } /* Carro que entra */
-        #painelSocorro th:nth-child(8), #painelSocorro td:nth-child(8) { width: 10%; } /* Motorista que entra */
-        #painelSocorro th:nth-child(9), #painelSocorro td:nth-child(9) { width: 10%; } /* Motorista que sai */
+        #painelSocorro th:nth-child(8), #painelSocorro td:nth-child(8) { width: 10%; } /* Motorista que sai */
+        #painelSocorro th:nth-child(9), #painelSocorro td:nth-child(9) { width: 10%; } /* Motorista que entra */
         #painelSocorro th:nth-child(10), #painelSocorro td:nth-child(10) { width: 10%; } /* Ações */
 
         thead th {
@@ -612,7 +612,7 @@
         </div>
     </div>
 
-    <!-- ESTRUTURA DO MÓDULO SOCORRO (Aba Socorro) -->
+    <!-- ESTRUTURA DO MÓDULO SOCORRO (Aba Socorro - ABA 2) -->
     <div class="container" id="painelSocorro" style="display: none;">
         <div class="sticky-top-area">
             <header>
@@ -663,8 +663,8 @@
                             <th>HORÁRIO</th>
                             <th>CARRO QUE SAI</th>
                             <th>CARRO QUE ENTRA</th>
-                            <th>MOTORISTA QUE ENTRA</th>
                             <th>MOTORISTA QUE SAI</th>
+                            <th>MOTORISTA QUE ENTRA</th>
                             <th>AÇÕES</th>
                         </tr>
                     </thead>
@@ -732,7 +732,7 @@
         </div>
     </div>
 
-    <!-- Modal Form Socorro -->
+    <!-- Modal Form Socorro (Aba 2) -->
     <div class="modal-overlay" id="modalSocorroOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -749,8 +749,8 @@
                     <div class="form-group"><label>Horário (HH:mm)</label><input type="time" id="sHorario"></div>
                     <div class="form-group"><label>Carro que sai</label><input type="text" id="sCarroSai"></div>
                     <div class="form-group"><label>Carro que entra</label><input type="text" id="sCarroEntra"></div>
-                    <div class="form-group"><label>Motorista que entra</label><input type="text" id="sMotEntra"></div>
                     <div class="form-group"><label>Motorista que sai</label><input type="text" id="sMotSai"></div>
+                    <div class="form-group"><label>Motorista que entra</label><input type="text" id="sMotEntra"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-danger" id="btnDeletarSocorro" style="display: none;" onclick="deletarRegistroSocorro()">Excluir Chamado</button>
@@ -834,7 +834,7 @@
             }
         }
 
-        /* MÓDULO SOCORRO (Aba Socorro) */
+        /* MÓDULO SOCORRO (Aba Socorro - ABA 2) */
         async function carregarDadosSocorro() {
             const tbody = document.getElementById('tableBodySocorro');
             tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 20px;">Carregando registros da aba Socorro...</td></tr>`;
@@ -956,16 +956,26 @@
                     }
                 };
 
+                // Estrutura das colunas exibidas na tabela:
+                // Col 1: Data
+                // Col 2: Nº Incidente
+                // Col 3: Linha
+                // Col 4: Serviço
+                // Col 5: Horário
+                // Col 6: Carro que sai (row[5])
+                // Col 7: Carro que entra (row[6])
+                // Col 8: Motorista que SAI (row[8]) - Invertido conforme solicitado
+                // Col 9: Motorista que ENTRA (row[7]) - Invertido conforme solicitado
                 let tdContent = '';
                 tdContent += `<td>${formatCell(row[0])}</td>`;
                 tdContent += `<td>${row[1] !== undefined && row[1] !== '' ? Number(row[1]) : ''}</td>`;
                 tdContent += `<td>${formatCell(row[2])}</td>`;
                 tdContent += `<td>${formatCell(row[3])}</td>`;
                 tdContent += `<td>${formatarHora(row[4])}</td>`;
-
-                for (let i = 5; i < 9; i++) {
-                    tdContent += `<td>${formatCell(row[i])}</td>`;
-                }
+                tdContent += `<td>${formatCell(row[5])}</td>`;
+                tdContent += `<td>${formatCell(row[6])}</td>`;
+                tdContent += `<td>${formatCell(row[8])}</td>`; // Motorista que sai
+                tdContent += `<td>${formatCell(row[7])}</td>`; // Motorista que entra
 
                 tdContent += `<td><button class="btn btn-outline btn-sm" onclick="editarRegistroSocorro(${item.rowIndex})">Editar</button></td>`;
                 
@@ -1000,8 +1010,8 @@
             document.getElementById('sHorario').value = formatarHora(r[4]) || '';
             document.getElementById('sCarroSai').value = r[5] || '';
             document.getElementById('sCarroEntra').value = r[6] || '';
-            document.getElementById('sMotEntra').value = r[7] || '';
-            document.getElementById('sMotSai').value = r[8] || '';
+            document.getElementById('sMotSai').value = r[8] || ''; // Motorista que sai (r[8])
+            document.getElementById('sMotEntra').value = r[7] || ''; // Motorista que entra (r[7])
 
             document.getElementById('btnDeletarSocorro').style.display = 'inline-block';
             document.getElementById('modalSocorroOverlay').style.display = 'flex';
@@ -1018,6 +1028,9 @@
                 dataFormatada = `${p[2]}/${p[1]}/${p[0]}`;
             }
 
+            // Garante o contrato da planilha Socorro:
+            // r[7] = Motorista que entra
+            // r[8] = Motorista que sai
             const rowData = [
                 dataFormatada,
                 document.getElementById('sIncidente').value ? Number(document.getElementById('sIncidente').value) : '',
@@ -1072,11 +1085,15 @@
             limparFiltroDataSocorro();
         }
 
-        /* FUNÇÕES AUXILIARES DA ABA PRINCIPAL */
+        /* FUNÇÕES AUXILIARES DE DATA E FORMATAÇÃO */
         function parseData(valorRaw) {
             if (!valorRaw) return null;
-            const str = valorRaw.toString().trim();
+            let str = valorRaw.toString().trim();
             if (str === '' || str === '-') return null;
+            
+            // Remove prefixos inválidos como "+0" (ex: "+02026-11-06...")
+            str = str.replace(/^\+0+/, '');
+
             const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
             if (isoMatch) return new Date(isoMatch[1], isoMatch[2] - 1, isoMatch[3]);
             if (str.includes('/')) {
@@ -1096,9 +1113,9 @@
 
         function formatCell(val) {
             if (val === undefined || val === null) return '';
-            const str = val.toString().trim();
+            let str = val.toString().trim();
             const dt = parseData(str);
-            if (dt && !isNaN(dt.getTime()) && (/^\d{4}-\d{2}-\d{2}/.test(str) || /^\d{5}$/.test(str) || /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str))) {
+            if (dt && !isNaN(dt.getTime()) && (/^\+?0*\d{4}-\d{2}-\d{2}/.test(str) || /^\d{5}$/.test(str) || /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str))) {
                 return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
             }
             return str;
@@ -1230,7 +1247,7 @@
             atualizarMetricas(dadosExibidos);
         }
 
-        /* LÓGICA REVERSA E ESTREITA: Só soma na contagem se a célula estiver VAZIA (=== ""). Se houver qualquer caractere preenchendo, desconsidera. */
+        /* LÓGICA DA ABA 1 (Mantida 100% intacta) */
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
             let pMobi = 0, pTerm = 0, pAvis = 0, pAgen = 0;
@@ -1238,7 +1255,6 @@
             dados.forEach(d => {
                 const r = d.data;
                 
-                // Se o status geral da linha for 'ok', ignora completamente
                 if (formatCell(r[10]).toLowerCase() === 'ok') return;
 
                 const valMobi = formatCell(r[4]).trim();
@@ -1246,7 +1262,6 @@
                 const valAvis = formatCell(r[6]).trim();
                 const valAgen = formatCell(r[7]).trim();
 
-                // Soma na contagem SOMENTE se a célula estiver estritamente vazia ("")
                 if (valMobi === "") pMobi++;
                 if (valTerm === "") pTerm++;
                 if (valAvis === "") pAvis++;
