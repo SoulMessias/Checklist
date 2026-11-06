@@ -400,7 +400,7 @@
             white-space: nowrap;
         }
 
-        /* Colunas Tabela Principal (Página1) - Intacta */
+        /* Colunas Tabela Principal (Página1) */
         #painelPrincipal th:nth-child(1), #painelPrincipal td:nth-child(1) { width: 7%; }   
         #painelPrincipal th:nth-child(2), #painelPrincipal td:nth-child(2) { width: 9%; }   
         #painelPrincipal th:nth-child(3), #painelPrincipal td:nth-child(3) { width: 11%; }  
@@ -734,7 +734,7 @@
         </div>
     </div>
 
-    <!-- Modal Form Socorro (Aba 2 - Motorista que sai em primeiro) -->
+    <!-- Modal Form Socorro -->
     <div class="modal-overlay" id="modalSocorroOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -749,7 +749,7 @@
                     <div class="form-group"><label>Linha</label><input type="text" id="sLinha" required></div>
                     <div class="form-group"><label>Serviço</label><input type="text" id="sServico"></div>
                     <div class="form-group full-width"><label>Local do Socorro</label><input type="text" id="sLocalSocorro" placeholder="Ex: Terminal Central / Av. Brasil"></div>
-                    <div class="form-group"><label>Horário (HH:mm)</label><input type="time" id="sHorario"></div>
+                    <div class="form-group"><label>Horário (Ex: 14:30)</label><input type="text" id="sHorario" placeholder="14:30"></div>
                     <div class="form-group"><label>Carro que sai</label><input type="text" id="sCarroSai"></div>
                     <div class="form-group"><label>Carro que entra</label><input type="text" id="sCarroEntra"></div>
                     <div class="form-group"><label>Motorista que sai</label><input type="text" id="sMotSai"></div>
@@ -860,13 +860,12 @@
 
         function formatarHora(val) {
             if (!val && val !== 0) return '';
-            const str = val.toString().trim();
+            let str = val.toString().trim();
             if (str.includes('T')) {
-                const partes = str.split('T')[1];
-                if (partes) return partes.substring(0, 5);
+                str = str.split('T')[1];
             }
-            if (str.length >= 5 && str.includes(':')) {
-                return str.substring(0, 5);
+            if (str.length > 5 && str.split(':').length === 3) {
+                str = str.substring(0, 5);
             }
             return str;
         }
@@ -1005,8 +1004,8 @@
             document.getElementById('sHorario').value = formatarHora(r[5]) || '';
             document.getElementById('sCarroSai').value = r[6] || '';
             document.getElementById('sCarroEntra').value = r[7] || '';
-            document.getElementById('sMotSai').value = r[9] || '';   // Motorista que sai primeiro no modal
-            document.getElementById('sMotEntra').value = r[8] || ''; // Motorista que entra em seguida
+            document.getElementById('sMotSai').value = r[9] || '';
+            document.getElementById('sMotEntra').value = r[8] || '';
 
             document.getElementById('btnDeletarSocorro').style.display = 'inline-block';
             document.getElementById('modalSocorroOverlay').style.display = 'flex';
@@ -1023,9 +1022,8 @@
                 dataFormatada = `${p[2]}/${p[1]}/${p[0]}`;
             }
 
-            const horaInput = document.getElementById('sHorario').value;
+            const horaInput = document.getElementById('sHorario').value.trim();
 
-            // Mapeamento correto para salvamento na planilha (índice 8 para entra, 9 para sai)
             const rowData = [
                 dataFormatada,
                 document.getElementById('sIncidente').value ? Number(document.getElementById('sIncidente').value) : '',
@@ -1057,15 +1055,27 @@
             } catch (err) { alert("Erro ao salvar dados na aba Socorro."); }
         }
 
+        /* EXCLUIR LINHA INTEIRA NA ABA SOCORRO */
         async function deletarRegistroSocorro() {
             const targetRow = document.getElementById('editRowIndexSocorro').value;
-            if (!targetRow || !confirm("Deseja excluir este registro de socorro?")) return;
-            const payload = { sheetName: "Socorro", rowIndex: targetRow, rowData: ["","","","","","","","","",""] };
+            if (!targetRow || !confirm("Tem certeza que deseja excluir esta linha inteira da aba Socorro?")) return;
+            
+            const payload = {
+                sheetName: "Socorro",
+                action: "delete",
+                rowIndex: targetRow
+            };
+
+            document.getElementById('statusNuvemSocorro').innerText = "Excluindo...";
             try {
-                await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
                 fecharModalSocorro();
                 setTimeout(carregarDadosSocorro, 1500);
-            } catch (err) { alert("Erro ao excluir."); }
+            } catch (err) { alert("Erro ao excluir a linha."); }
         }
 
         function limparFiltroDataSocorro() {
@@ -1242,7 +1252,6 @@
             atualizarMetricas(dadosExibidos);
         }
 
-        /* LÓGICA DA ABA 1 (100% Intacta) */
         function atualizarMetricas(dados) {
             document.getElementById('mTotGeral').innerText = dados.length;
             let pMobi = 0, pTerm = 0, pAvis = 0, pAgen = 0;
@@ -1316,21 +1325,25 @@
                 vigFormatada = `${p[2]}/${p[1]}/${p[0]}`;
             }
 
+            const rowData = [
+                document.getElementById('fLinha').value,
+                vigFormatada,
+                document.getElementById('fTipo').value,
+                document.getElementById('fDia').value,
+                document.getElementById('fMobilibus').value.trim(),
+                document.getElementById('fTerminais').value.trim(),
+                document.getElementById('fAvisos').value.trim(),
+                document.getElementById('fAgencia').value.trim(),
+                document.getElementById('fImagem').value.trim(),
+                document.getElementById('fAnotacoes').value,
+                stat,
+                (stat.toLowerCase() === 'ok') ? 'Atualizado' : 'Pendente'
+            ];
+
             const payload = {
                 sheetName: "Página1",
                 rowIndex: targetRow,
-                col1: document.getElementById('fLinha').value,
-                col2: vigFormatada,
-                col3: document.getElementById('fTipo').value,
-                col4: document.getElementById('fDia').value,
-                col5: document.getElementById('fMobilibus').value.trim(),
-                col6: document.getElementById('fTerminais').value.trim(),
-                col7: document.getElementById('fAvisos').value.trim(),
-                col8: document.getElementById('fAgencia').value.trim(),
-                col9: document.getElementById('fImagem').value.trim(),
-                col10: document.getElementById('fAnotacoes').value,
-                col11: stat,
-                col12: (stat.toLowerCase() === 'ok') ? 'Atualizado' : 'Pendente'
+                rowData: rowData
             };
 
             document.getElementById('statusNuvem').innerText = "Salvando...";
@@ -1345,15 +1358,27 @@
             } catch (err) { alert("Erro ao salvar dados na nuvem."); }
         }
 
+        /* EXCLUIR LINHA INTEIRA NA ABA PRINCIPAL (Página1) */
         async function deletarRegistro() {
             const targetRow = document.getElementById('editRowIndex').value;
-            if (!targetRow || !confirm("Deseja excluir este registro?")) return;
-            const payload = { sheetName: "Página1", rowIndex: targetRow, col1:"",col2:"",col3:"",col4:"",col5:"",col6:"",col7:"",col8:"",col9:"",col10:"",col11:"",col12:"" };
+            if (!targetRow || !confirm("Tem certeza que deseja excluir esta linha inteira da planilha?")) return;
+            
+            const payload = {
+                sheetName: "Página1",
+                action: "delete",
+                rowIndex: targetRow
+            };
+
+            document.getElementById('statusNuvem').innerText = "Excluindo...";
             try {
-                await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
                 fecharModal();
                 setTimeout(carregarDados, 1500);
-            } catch (err) { alert("Erro ao excluir."); }
+            } catch (err) { alert("Erro ao excluir a linha."); }
         }
 
         function filtrarPendentesToggle() { apenasPendentesAtivo = !apenasPendentesAtivo; renderizarTabela(); }
